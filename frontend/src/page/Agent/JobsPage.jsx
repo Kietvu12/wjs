@@ -1,0 +1,69 @@
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import AgentJobsPageSession1 from '../../component/Agent/AgentJobsPageSession1';
+import AgentJobsPageSession2 from '../../component/Agent/AgentJobsPageSession2';
+
+const JobsPage = () => {
+  const [searchParams] = useSearchParams();
+  const [jobs, setJobs] = useState(null); // Start with null so AgentJobsPageSession2 can load initial jobs
+  const [filters, setFilters] = useState(null);
+
+  // Read query parameters from URL and set initial filters
+  useEffect(() => {
+    const campaignId = searchParams.get('campaignId');
+    const articleId = searchParams.get('articleId');
+    const eventId = searchParams.get('eventId');
+    const pickupId = searchParams.get('pickupId');
+    const postId = searchParams.get('postId');
+    const isHot = searchParams.get('isHot') === 'true';
+    const isPinned = searchParams.get('isPinned') === 'true';
+
+    if (campaignId || articleId || eventId || pickupId || postId || isHot || isPinned) {
+      setFilters({
+        campaignId: campaignId ? parseInt(campaignId) : null,
+        articleId: articleId ? parseInt(articleId) : null,
+        eventId: eventId ? parseInt(eventId) : null,
+        pickupId: pickupId ? parseInt(pickupId) : null,
+        postId: postId ? parseInt(postId) : null,
+        isHot: isHot || false,
+        isPinned: isPinned || false,
+      });
+    }
+  }, [searchParams]);
+
+  const handleSearch = (searchResults) => {
+    // When searching, reset to null to allow pagination to work with filters
+    // The pagination will load jobs with current filters
+    setJobs(null);
+  };
+
+  const handleFiltersChange = (newFilters) => {
+    setFilters(newFilters);
+  };
+
+  return (
+    <div className="flex gap-3 h-[calc(100vh-120px)]">
+      {/* Filter Panel - 1/4 screen width, compact mode */}
+      <div className="w-1/4 flex-shrink-0">
+        <AgentJobsPageSession1 
+          onSearch={handleSearch}
+          onFiltersChange={handleFiltersChange}
+          compact={true}
+        />
+      </div>
+      
+      {/* Job List Area - Full width with pagination */}
+      <div className="flex-1 min-w-0">
+        <AgentJobsPageSession2 
+          jobs={jobs} 
+          filters={filters} 
+          showAllJobs={true}
+          enablePagination={true}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default JobsPage;
+
