@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import apiService from '../../services/api';
 import NominationChat from '../../component/Chat/NominationChat';
+import NominationTimeline from '../../component/Chat/NominationTimeline';
 import { getJobApplicationStatus } from '../../utils/jobApplicationStatus';
 
 const AdminNominationDetailPage = () => {
@@ -186,10 +187,26 @@ const AdminNominationDetailPage = () => {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        {/* Left Column - Candidate & Job Info */}
-        <div className="lg:col-span-2 space-y-3">
+      {/* Main Content - 3 Column Layout */}
+      <div className="flex gap-3 h-[calc(100vh-180px)]">
+        {/* Left Column - Timeline (1/8 width) */}
+        <div className="w-[12.5%] flex-shrink-0">
+          <NominationTimeline nomination={nomination} />
+        </div>
+
+        {/* Middle Column - Chat (reduced width) */}
+        <div className="w-[45%] flex-shrink-0">
+          <NominationChat 
+            jobApplicationId={nomination.id} 
+            userType="admin"
+            collaboratorId={nomination.collaboratorId}
+            onScheduleInterview={() => loadNominationDetail()}
+            onScheduleNyusha={() => loadNominationDetail()}
+          />
+        </div>
+
+        {/* Right Column - Details (increased width) */}
+        <div className="w-[42.5%] flex-shrink-0 overflow-y-auto space-y-3">
           {/* Nomination Information */}
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
@@ -422,19 +439,6 @@ const AdminNominationDetailPage = () => {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Right Column - Chat */}
-        <div className="lg:col-span-1">
-          <div className="h-[calc(100vh-200px)]">
-            <NominationChat 
-              jobApplicationId={nomination.id} 
-              userType="admin"
-              collaboratorId={nomination.collaboratorId}
-              onScheduleInterview={() => loadNominationDetail()}
-              onScheduleNyusha={() => loadNominationDetail()}
-            />
-          </div>
         </div>
       </div>
     </div>

@@ -1193,62 +1193,53 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
                   <div className="text-center py-8 text-gray-500 text-sm">Loading...</div>
                 ) : (
                   <div className="space-y-1">
+                    {/* Chỉ hiển thị các lĩnh vực cha (parentId = null) */}
                     {categoryTree.length > 0 ? (
-                      // Render tree structure with indentation
-                      (() => {
-                        const renderCategoryTree = (categories, level = 0) => {
-                          return categories.map((cat) => {
-                            const catId = String(cat.id);
-                            const isSelected = selectedFields.includes(catId);
-                            const indent = level * 16; // 16px per level
-                            
-                            return (
-                              <div key={catId}>
-                                <label
-                                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
-                                  style={{ paddingLeft: `${8 + indent}px` }}
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={isSelected}
-                                    onChange={() => toggleField(catId)}
-                                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 flex-shrink-0"
-                                  />
-                                  <span className="text-xs text-gray-900 flex-1">
-                                    {level > 0 && <span className="text-gray-400 mr-1">└─</span>}
-                                    {cat.name}
-                                  </span>
-                                </label>
-                                {cat.children && cat.children.length > 0 && (
-                                  <div className="ml-4">
-                                    {renderCategoryTree(cat.children, level + 1)}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          });
-                        };
-                        return renderCategoryTree(categoryTree);
-                      })()
+                      // Chỉ render các category top-level (không có parentId)
+                      categoryTree
+                        .filter(cat => !cat.parentId) // Chỉ lấy các category cha
+                        .map((cat) => {
+                          const catId = String(cat.id);
+                          const isSelected = selectedFields.includes(catId);
+                          
+                          return (
+                            <label
+                              key={catId}
+                              className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleField(catId)}
+                                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 flex-shrink-0"
+                              />
+                              <span className="text-xs text-gray-900 flex-1">
+                                {cat.name}
+                              </span>
+                            </label>
+                          );
+                        })
                     ) : (
-                      // Fallback: flat list
-                      availableFields.map((field) => {
-                        const isSelected = selectedFields.includes(field.id);
-                        return (
-                          <label
-                            key={field.id}
-                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => toggleField(field.id)}
-                              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                            />
-                            <span className="text-xs text-gray-900">{field.name}</span>
-                          </label>
-                        );
-                      })
+                      // Fallback: flat list - chỉ lấy các field không có parentId
+                      availableFields
+                        .filter(field => !field.parentId)
+                        .map((field) => {
+                          const isSelected = selectedFields.includes(field.id);
+                          return (
+                            <label
+                              key={field.id}
+                              className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleField(field.id)}
+                                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                              />
+                              <span className="text-xs text-gray-900">{field.name}</span>
+                            </label>
+                          );
+                        })
                     )}
                   </div>
                 )}
@@ -1280,88 +1271,7 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
                 ) : (
                   <div className="space-y-4">
                     {selectedFields.map((fieldId) => {
-                      const field = availableFields.find(f => f.id === fieldId);
-                      if (!field) {
-                        // Try to find in tree
-                        const findInTree = (categories, targetId) => {
-                          for (const cat of categories) {
-                            if (String(cat.id) === String(targetId)) {
-                              return cat;
-                            }
-                            if (cat.children && cat.children.length > 0) {
-                              const found = findInTree(cat.children, targetId);
-                              if (found) return found;
-                            }
-                          }
-                          return null;
-                        };
-                        const foundField = findInTree(categoryTree, fieldId);
-                        if (!foundField) return null;
-                        
-                        // Render nested job types for this field
-                        const renderJobTypesTree = (category, level = 0) => {
-                          if (!category.children || category.children.length === 0) return null;
-                          
-                          return (
-                            <div className="space-y-1" style={{ marginLeft: `${level * 16}px` }}>
-                              {category.children.map((child) => {
-                                const childId = String(child.id);
-                                const isSelected = filters.jobTypeIds.includes(childId);
-                                
-                                return (
-                                  <div key={childId}>
-                                    <label
-                                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
-                                    >
-                                      <input
-                                        type="checkbox"
-                                        checked={isSelected}
-                                        onChange={() => toggleJobType(childId)}
-                                        className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 flex-shrink-0"
-                                      />
-                                      <span className="text-xs text-gray-900">
-                                        {level > 0 && <span className="text-gray-400 mr-1">└─</span>}
-                                        {child.name}
-                                      </span>
-                                    </label>
-                                    {child.children && child.children.length > 0 && (
-                                      <div className="ml-4">
-                                        {renderJobTypesTree(child, level + 1)}
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          );
-                        };
-                        
-                        return (
-                          <div key={fieldId} className="space-y-2">
-                            <h4 className="text-sm font-medium text-gray-700 mb-2">{foundField.name}</h4>
-                            {renderJobTypesTree(foundField)}
-                          </div>
-                        );
-                      }
-                      
-                      // Get all descendants (including nested)
-                      const allDescendantIds = findAllDescendants(fieldId);
-                      const directChildren = availableJobTypes.filter(jt => jt.parentId === fieldId);
-                      const allJobTypesForField = [
-                        ...directChildren,
-                        ...availableJobTypes.filter(jt => allDescendantIds.includes(jt.id) && jt.parentId !== fieldId)
-                      ];
-                      
-                      // Remove duplicates
-                      const uniqueJobTypes = Array.from(
-                        new Map(allJobTypesForField.map(jt => [jt.id, jt])).values()
-                      );
-                      
-                      const selectedJobTypesForField = filters.jobTypeIds.filter(jtId => {
-                        return uniqueJobTypes.some(jt => jt.id === jtId);
-                      });
-                      
-                      // Render with tree structure if available
+                      // Tìm field trong tree
                       const findCategoryInTree = (categories, targetId) => {
                         for (const cat of categories) {
                           if (String(cat.id) === String(targetId)) {
@@ -1376,62 +1286,84 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
                       };
                       
                       const fieldInTree = findCategoryInTree(categoryTree, fieldId);
+                      const field = availableFields.find(f => f.id === fieldId) || 
+                                   (fieldInTree ? { id: String(fieldInTree.id), name: fieldInTree.name } : null);
                       
-                      if (fieldInTree && fieldInTree.children && fieldInTree.children.length > 0) {
-                        // Render nested structure
-                        const renderNestedJobTypes = (category, level = 0) => {
-                          if (!category.children || category.children.length === 0) return null;
-                          
-                          return (
-                            <div className="space-y-1">
-                              {category.children.map((child) => {
-                                const childId = String(child.id);
-                                const isSelected = filters.jobTypeIds.includes(childId);
-                                
-                                return (
-                                  <div key={childId}>
-                                    <label
-                                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
-                                      style={{ paddingLeft: `${level * 16}px` }}
-                                    >
-                                      <input
-                                        type="checkbox"
-                                        checked={isSelected}
-                                        onChange={() => toggleJobType(childId)}
-                                        className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 flex-shrink-0"
-                                      />
-                                      <span className="text-xs text-gray-900">
-                                        {level > 0 && <span className="text-gray-400 mr-1">└─</span>}
-                                        {child.name}
-                                      </span>
-                                    </label>
-                                    {child.children && child.children.length > 0 && (
-                                      <div className="ml-4">
-                                        {renderNestedJobTypes(child, level + 1)}
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          );
-                        };
+                      if (!field && !fieldInTree) return null;
+                      
+                      // Render nested job types với cấu trúc phân cấp đầy đủ
+                      const renderNestedJobTypes = (category, level = 0) => {
+                        if (!category.children || category.children.length === 0) return null;
                         
                         return (
+                          <div className="space-y-1">
+                            {category.children.map((child) => {
+                              const childId = String(child.id);
+                              const isSelected = filters.jobTypeIds.includes(childId);
+                              
+                              return (
+                                <div key={childId}>
+                                  <label
+                                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
+                                    style={{ paddingLeft: `${level * 20}px` }}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() => toggleJobType(childId)}
+                                      className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 flex-shrink-0"
+                                    />
+                                    <span className="text-xs text-gray-900 flex-1">
+                                      {level > 0 && <span className="text-gray-400 mr-1">└─</span>}
+                                      {child.name}
+                                    </span>
+                                  </label>
+                                  {/* Render children của child (con của con) */}
+                                  {child.children && child.children.length > 0 && (
+                                    <div>
+                                      {renderNestedJobTypes(child, level + 1)}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      };
+                      
+                      // Nếu có field trong tree và có children, render tree structure
+                      if (fieldInTree && fieldInTree.children && fieldInTree.children.length > 0) {
+                        return (
                           <div key={fieldId} className="space-y-2">
-                            <h4 className="text-sm font-medium text-gray-700 mb-2">{field.name}</h4>
-                            {renderNestedJobTypes(fieldInTree)}
+                            <h4 className="text-sm font-medium text-gray-700 mb-2 border-b border-gray-200 pb-2">
+                              {fieldInTree.name}
+                            </h4>
+                            {renderNestedJobTypes(fieldInTree, 0)}
                           </div>
                         );
                       }
                       
-                      // Fallback: flat list
+                      // Fallback: Nếu không có tree structure, dùng flat list với descendants
+                      const allDescendantIds = findAllDescendants(fieldId);
+                      const directChildren = availableJobTypes.filter(jt => jt.parentId === fieldId);
+                      const allJobTypesForField = [
+                        ...directChildren,
+                        ...availableJobTypes.filter(jt => allDescendantIds.includes(jt.id) && jt.parentId !== fieldId)
+                      ];
+                      
+                      // Remove duplicates
+                      const uniqueJobTypes = Array.from(
+                        new Map(allJobTypesForField.map(jt => [jt.id, jt])).values()
+                      );
+                      
                       return (
                         <div key={fieldId} className="space-y-2">
-                          <h4 className="text-sm font-medium text-gray-700 mb-2">{field.name}</h4>
+                          <h4 className="text-sm font-medium text-gray-700 mb-2 border-b border-gray-200 pb-2">
+                            {field?.name || fieldInTree?.name || 'Unknown'}
+                          </h4>
                           <div className="space-y-1">
                             {uniqueJobTypes.map((jobType) => {
-                              const isSelected = selectedJobTypesForField.includes(jobType.id);
+                              const isSelected = filters.jobTypeIds.includes(jobType.id);
                               return (
                                 <label
                                   key={jobType.id}

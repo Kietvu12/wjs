@@ -23,6 +23,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { translations } from '../../translations/translations';
 import apiService from '../../services/api';
 import NominationChat from '../../component/Chat/NominationChat';
+import NominationTimeline from '../../component/Chat/NominationTimeline';
 import { getJobApplicationStatus } from '../../utils/jobApplicationStatus';
 
 const NominationDetail = () => {
@@ -139,11 +140,26 @@ const NominationDetail = () => {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Candidate & Job Information */}
-          <div className="lg:col-span-2 space-y-6">
+      {/* Content - 3 Column Layout */}
+      <div className="flex-1 overflow-hidden p-6">
+        <div className="flex gap-6 h-full">
+          {/* Left Column - Timeline (1/8 width) */}
+          <div className="w-[12.5%] flex-shrink-0">
+            <NominationTimeline nomination={nomination} />
+          </div>
+
+          {/* Middle Column - Chat (reduced width) */}
+          <div className="w-[45%] flex-shrink-0">
+            <NominationChat 
+              jobApplicationId={nomination.id} 
+              userType="ctv"
+              onScheduleInterview={() => loadNominationDetail()}
+              onScheduleNyusha={() => loadNominationDetail()}
+            />
+          </div>
+
+          {/* Right Column - Details (increased width) */}
+          <div className="w-[42.5%] flex-shrink-0 overflow-y-auto space-y-6">
             {/* Candidate Info Card */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-6">
@@ -385,18 +401,6 @@ const NominationDetail = () => {
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-
-          {/* Right Column - Chat */}
-          <div className="lg:col-span-1">
-            <div className="h-[calc(100vh-200px)]">
-              <NominationChat 
-                jobApplicationId={nomination.id} 
-                userType="ctv"
-                onScheduleInterview={() => loadNominationDetail()}
-                onScheduleNyusha={() => loadNominationDetail()}
-              />
             </div>
           </div>
         </div>
