@@ -71,7 +71,7 @@ function App() {
   return (
     <LanguageProvider>
       <BrowserRouter>
-        <Routes>
+        <Routes basename="/jobshare">
           {/* Login Routes */}
           <Route path="/login" element={<LoginPage defaultUserType="ctv" />} />
           <Route path="/admin/login" element={<LoginPage defaultUserType="admin" />} />
