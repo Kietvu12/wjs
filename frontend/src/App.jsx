@@ -70,8 +70,8 @@ const RootRedirect = () => {
 function App() {
   return (
     <LanguageProvider>
-      <BrowserRouter>
-        <Routes basename="/jobshare/">
+      <BrowserRouter basename="/jobshare">
+        <Routes>
           {/* Login Routes */}
           <Route path="/login" element={<LoginPage defaultUserType="ctv" />} />
           <Route path="/admin/login" element={<LoginPage defaultUserType="admin" />} />
