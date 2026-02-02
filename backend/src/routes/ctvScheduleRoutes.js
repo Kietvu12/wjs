@@ -11,5 +11,12 @@ const router = express.Router();
  */
 router.get('/schedule', authenticateCTV, scheduleController.getSchedule);
 
+/**
+ * @route   POST /api/ctv/calendars
+ * @desc    Create new calendar event for CTV
+ * @access  Private (CTV)
+ */
+router.post('/', authenticateCTV, scheduleController.createCalendar);
+
 export default router;
 

@@ -22,16 +22,12 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from 'lucide-react';
-import { useLanguage } from '../../context/LanguageContext';
-import { translations } from '../../translations/translations';
 import apiService from '../../services/api';
-import AddCandidate from './AddCandidate';
+import AddCandidate from '../Agent/AddCandidate';
 
-const NominationPage = () => {
+const AdminNominationPage = () => {
   const { jobId } = useParams();
   const navigate = useNavigate();
-  const { language } = useLanguage();
-  const t = translations[language];
   
   const [activeTab, setActiveTab] = useState('existing'); // 'existing' or 'new'
   const [step, setStep] = useState('select'); // 'select' or 'confirm'
@@ -65,7 +61,7 @@ const NominationPage = () => {
   const loadJobDetail = async () => {
     try {
       setLoading(true);
-      const response = await apiService.getJobById(jobId);
+      const response = await apiService.getAdminJobById(jobId);
       
       if (response.success && response.data?.job) {
         setJob(response.data.job);
@@ -83,14 +79,13 @@ const NominationPage = () => {
       const params = {
         page: currentPage,
         limit: itemsPerPage,
-        isDuplicate: '0' // Only show non-duplicate CVs
       };
       
       if (searchTerm) {
         params.search = searchTerm;
       }
       
-      const response = await apiService.getCVStorages(params);
+      const response = await apiService.getAdminCVs(params);
       if (response.success && response.data) {
         setCvStorages(response.data.cvs || []);
         setTotalItems(response.data.pagination?.total || 0);
@@ -106,7 +101,7 @@ const NominationPage = () => {
   const handleSelectCV = async (cvId) => {
     try {
       setLoading(true);
-      const cvResponse = await apiService.getCVStorageById(cvId);
+      const cvResponse = await apiService.getAdminCVById(cvId);
       
       if (!cvResponse.success || !cvResponse.data?.cv) {
         alert('Không tìm thấy thông tin ứng viên');
@@ -114,12 +109,6 @@ const NominationPage = () => {
       }
 
       const cv = cvResponse.data.cv;
-
-      // Check if CV is duplicate
-      if (cv.isDuplicate) {
-        alert(t.duplicateCVWarning || 'Hồ sơ này đã được đánh dấu là trùng lặp. Không thể tiến cử.');
-        return;
-      }
 
       // Get gender value (default to empty string if not valid)
       let genderValue = '';
@@ -133,7 +122,7 @@ const NominationPage = () => {
       setSelectedCvId(cvId);
       setSelectedCV(cv);
       setCvEditData({
-        name: cv.name || '',
+        name: cv.name || cv.fullName || '',
         furigana: cv.furigana || '',
         email: cv.email || '',
         phone: cv.phone || '',
@@ -141,9 +130,9 @@ const NominationPage = () => {
         age: cv.ages || cv.age || '',
         gender: genderValue,
         addressCurrent: cv.addressCurrent || cv.address || '',
-        currentIncome: cv.currentIncome || '',
-        desiredIncome: cv.desiredIncome || '',
-        desiredWorkLocation: cv.desiredWorkLocation || '',
+        currentIncome: cv.currentIncome || cv.currentSalary || '',
+        desiredIncome: cv.desiredIncome || cv.desiredSalary || '',
+        desiredWorkLocation: cv.desiredWorkLocation || cv.desiredLocation || '',
         nyushaTime: cv.nyushaTime || '',
         strengths: cv.strengths || '',
         motivation: cv.motivation || '',
@@ -180,15 +169,15 @@ const NominationPage = () => {
       formData.append('strengths', cvEditData.strengths || '');
       formData.append('motivation', cvEditData.motivation || '');
 
-      const response = await apiService.updateCVStorage(selectedCvId, formData);
+      const response = await apiService.updateAdminCV(selectedCvId, formData);
       
       if (response.success) {
         // Reload CV data
-        const cvResponse = await apiService.getCVStorageById(selectedCvId);
+        const cvResponse = await apiService.getAdminCVById(selectedCvId);
         if (cvResponse.success && cvResponse.data?.cv) {
           setSelectedCV(cvResponse.data.cv);
           setCvEditData({
-            name: cvResponse.data.cv.name || '',
+            name: cvResponse.data.cv.name || cvResponse.data.cv.fullName || '',
             furigana: cvResponse.data.cv.furigana || '',
             email: cvResponse.data.cv.email || '',
             phone: cvResponse.data.cv.phone || '',
@@ -196,9 +185,9 @@ const NominationPage = () => {
             age: cvResponse.data.cv.ages || cvResponse.data.cv.age || '',
             gender: cvResponse.data.cv.gender?.toString() || '',
             addressCurrent: cvResponse.data.cv.addressCurrent || cvResponse.data.cv.address || '',
-            currentIncome: cvResponse.data.cv.currentIncome || '',
-            desiredIncome: cvResponse.data.cv.desiredIncome || '',
-            desiredWorkLocation: cvResponse.data.cv.desiredWorkLocation || '',
+            currentIncome: cvResponse.data.cv.currentIncome || cvResponse.data.cv.currentSalary || '',
+            desiredIncome: cvResponse.data.cv.desiredIncome || cvResponse.data.cv.desiredSalary || '',
+            desiredWorkLocation: cvResponse.data.cv.desiredWorkLocation || cvResponse.data.cv.desiredLocation || '',
             nyushaTime: cvResponse.data.cv.nyushaTime || '',
             strengths: cvResponse.data.cv.strengths || '',
             motivation: cvResponse.data.cv.motivation || '',
@@ -233,7 +222,7 @@ const NominationPage = () => {
       
       // Use edited data if available, otherwise use original CV data
       const cvData = editingCV ? cvEditData : {
-        name: selectedCV.name || '',
+        name: selectedCV.name || selectedCV.fullName || '',
         furigana: selectedCV.furigana || '',
         email: selectedCV.email || '',
         phone: selectedCV.phone || '',
@@ -241,45 +230,32 @@ const NominationPage = () => {
         ages: selectedCV.ages || selectedCV.age || '',
         gender: selectedCV.gender?.toString() || '',
         addressCurrent: selectedCV.addressCurrent || selectedCV.address || '',
-        currentIncome: selectedCV.currentIncome || '',
-        desiredIncome: selectedCV.desiredIncome || '',
-        desiredWorkLocation: selectedCV.desiredWorkLocation || '',
+        currentIncome: selectedCV.currentIncome || selectedCV.currentSalary || '',
+        desiredIncome: selectedCV.desiredIncome || selectedCV.desiredSalary || '',
+        desiredWorkLocation: selectedCV.desiredWorkLocation || selectedCV.desiredLocation || '',
         nyushaTime: selectedCV.nyushaTime || '',
         strengths: selectedCV.strengths || '',
         motivation: selectedCV.motivation || '',
       };
 
       // Create job application with CV storage
-      // Send as JSON instead of FormData since backend expects req.body
+      // Send as JSON since backend expects req.body (not FormData)
       const requestData = {
-        jobId: String(jobId || ''), // Ensure jobId is a string
-        cvCode: selectedCV.code || '',
-        name: cvData.name,
-        furigana: cvData.furigana,
-        email: cvData.email,
-        phone: cvData.phone,
-        addressCurrent: cvData.addressCurrent,
-        birthDate: cvData.birthDate,
-        ages: cvData.ages || cvData.age || '',
-        gender: cvData.gender,
-        currentIncome: cvData.currentIncome,
-        desiredIncome: cvData.desiredIncome,
-        desiredWorkLocation: cvData.desiredWorkLocation,
-        nyushaTime: cvData.nyushaTime,
-        selfPromotion: cvData.strengths,
-        reasonApply: cvData.motivation,
-        cvType: 1 // Existing CV
+        jobId: parseInt(jobId), // Backend expects integer
+        cvCode: selectedCV.code || selectedCV.id?.toString() || '', // Backend expects cvCode, not cvId
       };
 
       // Debug: Log request data to check jobId
       console.log('Submitting nomination with jobId:', requestData.jobId);
       console.log('Full request data:', requestData);
 
-      const response = await apiService.createJobApplication(requestData);
+      const response = await apiService.createAdminJobApplication(requestData);
 
       if (response.success) {
-        alert(t.nominationSuccess || 'Tiến cử thành công!');
-        navigate(`/agent/jobs/${jobId}`);
+        alert('Tiến cử thành công!');
+        navigate(`/admin/jobs/${jobId}`);
+      } else {
+        alert(response.message || 'Có lỗi xảy ra khi tiến cử');
       }
     } catch (error) {
       console.error('Error submitting nomination:', error);
@@ -418,7 +394,7 @@ const NominationPage = () => {
                     setEditingCV(false);
                     // Reset to original data
                     setCvEditData({
-                      name: selectedCV.name || '',
+                      name: selectedCV.name || selectedCV.fullName || '',
                       furigana: selectedCV.furigana || '',
                       email: selectedCV.email || '',
                       phone: selectedCV.phone || '',
@@ -426,9 +402,9 @@ const NominationPage = () => {
                       age: selectedCV.ages || selectedCV.age || '',
                       gender: selectedCV.gender?.toString() || '',
                       addressCurrent: selectedCV.addressCurrent || selectedCV.address || '',
-                      currentIncome: selectedCV.currentIncome || '',
-                      desiredIncome: selectedCV.desiredIncome || '',
-                      desiredWorkLocation: selectedCV.desiredWorkLocation || '',
+                      currentIncome: selectedCV.currentIncome || selectedCV.currentSalary || '',
+                      desiredIncome: selectedCV.desiredIncome || selectedCV.desiredSalary || '',
+                      desiredWorkLocation: selectedCV.desiredWorkLocation || selectedCV.desiredLocation || '',
                       nyushaTime: selectedCV.nyushaTime || '',
                       strengths: selectedCV.strengths || '',
                       motivation: selectedCV.motivation || '',
@@ -587,11 +563,11 @@ const NominationPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-500 mb-1">Mã CV</label>
-                <p className="text-sm text-gray-900 font-medium">{selectedCV.code || '—'}</p>
+                <p className="text-sm text-gray-900 font-medium">{selectedCV.code || selectedCV.id || '—'}</p>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-500 mb-1">Họ tên (Kanji)</label>
-                <p className="text-sm text-gray-900">{cvEditData.name || selectedCV.name || '—'}</p>
+                <p className="text-sm text-gray-900">{cvEditData.name || selectedCV.name || selectedCV.fullName || '—'}</p>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-500 mb-1">Họ tên (Kana)</label>
@@ -630,22 +606,22 @@ const NominationPage = () => {
                 <label className="block text-xs font-semibold text-gray-500 mb-1">Địa chỉ</label>
                 <p className="text-sm text-gray-900">{cvEditData.addressCurrent || selectedCV.addressCurrent || selectedCV.address || '—'}</p>
               </div>
-              {cvEditData.currentIncome || selectedCV.currentIncome ? (
+              {cvEditData.currentIncome || selectedCV.currentIncome || selectedCV.currentSalary ? (
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1">Lương hiện tại</label>
-                  <p className="text-sm text-gray-900">{cvEditData.currentIncome || selectedCV.currentIncome}</p>
+                  <p className="text-sm text-gray-900">{cvEditData.currentIncome || selectedCV.currentIncome || selectedCV.currentSalary}</p>
                 </div>
               ) : null}
-              {cvEditData.desiredIncome || selectedCV.desiredIncome ? (
+              {cvEditData.desiredIncome || selectedCV.desiredIncome || selectedCV.desiredSalary ? (
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1">Lương mong muốn</label>
-                  <p className="text-sm text-gray-900">{cvEditData.desiredIncome || selectedCV.desiredIncome}</p>
+                  <p className="text-sm text-gray-900">{cvEditData.desiredIncome || selectedCV.desiredIncome || selectedCV.desiredSalary}</p>
                 </div>
               ) : null}
-              {cvEditData.desiredWorkLocation || selectedCV.desiredWorkLocation ? (
+              {cvEditData.desiredWorkLocation || selectedCV.desiredWorkLocation || selectedCV.desiredLocation ? (
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1">Địa điểm mong muốn</label>
-                  <p className="text-sm text-gray-900">{cvEditData.desiredWorkLocation || selectedCV.desiredWorkLocation}</p>
+                  <p className="text-sm text-gray-900">{cvEditData.desiredWorkLocation || selectedCV.desiredWorkLocation || selectedCV.desiredLocation}</p>
                 </div>
               ) : null}
               {cvEditData.nyushaTime || selectedCV.nyushaTime ? (
@@ -703,7 +679,7 @@ const NominationPage = () => {
       <div className="bg-white rounded-2xl p-4 border border-gray-200 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => navigate(`/agent/jobs/${jobId}`)}
+            onClick={() => navigate(`/admin/jobs/${jobId}`)}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-5 h-5 text-gray-700" />
@@ -761,7 +737,7 @@ const NominationPage = () => {
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
           >
-            {t.selectExistingCV || 'Chọn ứng viên có sẵn'}
+            Chọn ứng viên có sẵn
           </button>
           <button
             onClick={() => setActiveTab('new')}
@@ -771,7 +747,7 @@ const NominationPage = () => {
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
           >
-            {t.createNewCV || 'Tạo hồ sơ mới'}
+            Tạo hồ sơ mới
           </button>
         </div>
 
@@ -784,7 +760,7 @@ const NominationPage = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder={t.searchCV || 'Tìm kiếm ứng viên...'}
+                  placeholder="Tìm kiếm ứng viên..."
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
@@ -797,26 +773,22 @@ const NominationPage = () => {
               {/* CV List */}
               {loadingCVs ? (
                 <div className="text-center py-8 text-gray-500">
-                  {t.loading || 'Đang tải...'}
+                  Đang tải...
                 </div>
               ) : filteredCVStorages.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                  {t.noCVFound || 'Không tìm thấy ứng viên nào'}
+                  Không tìm thấy ứng viên nào
                 </div>
               ) : (
                 <>
                   <div className="space-y-3 max-h-200 overflow-y-auto">
                     {filteredCVStorages.map((cv) => {
-                      const canSelect = !cv.isDuplicate;
-                      
                       return (
                         <div
                           key={cv.id}
-                          onClick={() => canSelect && handleSelectCV(cv.id)}
+                          onClick={() => handleSelectCV(cv.id)}
                           className={`p-4 border-2 rounded-lg transition-all ${
-                            !canSelect
-                              ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
-                              : selectedCvId === cv.id
+                            selectedCvId === cv.id
                               ? 'border-blue-500 bg-blue-50 cursor-pointer'
                               : 'border-gray-200 hover:border-gray-300 cursor-pointer'
                           }`}
@@ -824,24 +796,18 @@ const NominationPage = () => {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
-                                {cv.name ? cv.name.charAt(0) : '?'}
+                                {(cv.name || cv.fullName || '?').charAt(0)}
                               </div>
                               <div>
-                                <p className="font-semibold text-gray-900">{cv.name || 'N/A'}</p>
+                                <p className="font-semibold text-gray-900">{cv.name || cv.fullName || 'N/A'}</p>
                                 <p className="text-sm text-gray-600">{cv.email || 'N/A'}</p>
-                                <p className="text-xs text-gray-500">{cv.code}</p>
+                                <p className="text-xs text-gray-500">{cv.code || cv.id}</p>
                               </div>
                             </div>
-                            {selectedCvId === cv.id && canSelect && (
+                            {selectedCvId === cv.id && (
                               <CheckCircle className="w-6 h-6 text-blue-500" />
                             )}
                           </div>
-                          {cv.isDuplicate && (
-                            <div className="mt-2 flex items-center gap-2 text-xs text-red-600">
-                              <AlertTriangle className="w-4 h-4" />
-                              <span>{t.duplicateCVWarning || 'Hồ sơ trùng lặp'}</span>
-                            </div>
-                          )}
                         </div>
                       );
                     })}
@@ -911,7 +877,7 @@ const NominationPage = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-600">
-                          {t.page || 'Trang'} {currentPage} / {totalPages} ({totalItems} {t.results || 'kết quả'})
+                          Trang {currentPage} / {totalPages} ({totalItems} kết quả)
                         </span>
                         <select
                           value={itemsPerPage}
@@ -921,10 +887,10 @@ const NominationPage = () => {
                           }}
                           className="px-2 py-1 border border-gray-300 rounded text-sm"
                         >
-                          <option value="10">10 / {t.page || 'trang'}</option>
-                          <option value="20">20 / {t.page || 'trang'}</option>
-                          <option value="50">50 / {t.page || 'trang'}</option>
-                          <option value="100">100 / {t.page || 'trang'}</option>
+                          <option value="10">10 / trang</option>
+                          <option value="20">20 / trang</option>
+                          <option value="50">50 / trang</option>
+                          <option value="100">100 / trang</option>
                         </select>
                       </div>
                     </div>
@@ -935,8 +901,8 @@ const NominationPage = () => {
           ) : (
             <AddCandidate 
               jobId={jobId}
-              onSuccess={() => navigate(`/agent/jobs/${jobId}`)}
-              onCancel={() => navigate(`/agent/jobs/${jobId}`)}
+              onSuccess={() => navigate(`/admin/jobs/${jobId}`)}
+              onCancel={() => navigate(`/admin/jobs/${jobId}`)}
             />
           )}
         </div>
@@ -945,4 +911,5 @@ const NominationPage = () => {
   );
 };
 
-export default NominationPage;
+export default AdminNominationPage;
+

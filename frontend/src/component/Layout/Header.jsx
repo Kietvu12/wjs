@@ -4,7 +4,6 @@ import { Bell, User, Globe, ChevronDown, LogOut, MessageCircle } from 'lucide-re
 import { useLanguage } from '../../context/LanguageContext';
 import { translations } from '../../translations/translations';
 import apiService from '../../services/api';
-import ChatBox from '../Chat/ChatBox';
 
 
 const Header = () => {
@@ -13,7 +12,6 @@ const Header = () => {
   const { language, changeLanguage } = useLanguage();
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showChatBox, setShowChatBox] = useState(false);
   const [userInfo, setUserInfo] = useState(null);
   const languageMenuRef = useRef(null);
   const userMenuRef = useRef(null);
@@ -144,15 +142,6 @@ const Header = () => {
             )}
           </div>
 
-          {/* Chat Icon */}
-          <button
-            onClick={() => setShowChatBox(!showChatBox)}
-            className="bg-gray-100 hover:bg-gray-200 rounded-lg p-2 sm:p-2.5 relative transition-colors"
-            title="Tin nhắn"
-          >
-            <MessageCircle className="w-5 h-5 text-gray-700" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full"></span>
-          </button>
 
           {/* Notification Bell */}
           <button 
@@ -202,10 +191,6 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Chat Box */}
-      {showChatBox && (
-        <ChatBox userType="ctv" onClose={() => setShowChatBox(false)} />
-      )}
     </header>
   );
 };

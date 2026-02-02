@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import apiService from '../../services/api';
 import {
   ArrowLeft,
@@ -25,12 +25,17 @@ import {
   Upload,
   Plus,
   Trash2,
+  Edit,
+  ChevronRight,
 } from 'lucide-react';
 
 
 const AdminAddNominationPage = () => {
   const navigate = useNavigate();
-  const { nominationId } = useParams();
+  const { nominationId, jobId: jobIdFromParams } = useParams();
+  const [searchParams] = useSearchParams();
+  const jobIdFromQuery = searchParams.get('jobId');
+  const jobId = jobIdFromParams || jobIdFromQuery;
   const [formData, setFormData] = useState({
     // Basic Information
     candidateId: '',
@@ -46,9 +51,7 @@ const AdminAddNominationPage = () => {
     status: 1, // 1: Admin đang xử lý hồ sơ (pending)
     // Financial
     referralFee: '',
-    annualSalary: '',
-    monthlySalary: '',
-    salaryType: 2, // 1: annual, 2: monthly
+    yearlySalary: '',
     // Notes
     notes: '',
     // Required fields for API
@@ -57,6 +60,7 @@ const AdminAddNominationPage = () => {
     gender: '', // 1: Nam, 2: Nữ
   });
 
+  const [step, setStep] = useState('form'); // 'form' or 'confirm'
   const [candidateTab, setCandidateTab] = useState('existing'); // 'existing' or 'new'
   const [candidateSearch, setCandidateSearch] = useState('');
   const [jobSearch, setJobSearch] = useState('');
@@ -69,6 +73,11 @@ const AdminAddNominationPage = () => {
   const [collaborators, setCollaborators] = useState([]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [editingCV, setEditingCV] = useState(false);
+  const [cvEditData, setCvEditData] = useState({});
+  const [savingCV, setSavingCV] = useState(false);
 
   // New candidate form data
   const [newCandidateData, setNewCandidateData] = useState({
@@ -127,45 +136,188 @@ const AdminAddNominationPage = () => {
     loadCollaborators();
     if (nominationId) {
       loadNominationData();
+    } else if (jobId) {
+      // If jobId is provided in params or query, pre-select the job
+      const preSelectJob = async () => {
+        try {
+          const jobResponse = await apiService.getAdminJobById(jobId);
+          if (jobResponse.success && jobResponse.data?.job) {
+            const job = jobResponse.data.job;
+            setFormData(prev => ({
+              ...prev,
+              jobId: job.id,
+              jobTitle: job.title,
+            }));
+            setSelectedJob(job);
+            setJobSearch(job.title);
+          }
+        } catch (error) {
+          console.error('Error loading job:', error);
+        }
+      };
+      preSelectJob();
     }
-  }, [nominationId]);
+  }, [nominationId, jobId]);
 
   const loadNominationData = async () => {
     try {
       setLoading(true);
       const response = await apiService.getAdminJobApplicationById(nominationId);
-      if (response.success && response.data?.application) {
-        const app = response.data.application;
-        setFormData({
-          candidateId: app.cvId || '',
-          candidateName: app.name || app.cv?.fullName || '',
-          jobId: app.jobId || '',
-          jobTitle: app.job?.title || '',
-          collaboratorId: app.collaboratorId || '',
+      if (response.success && response.data?.jobApplication) {
+        const app = response.data.jobApplication;
+        
+        // Set job data first
+        if (app.jobId) {
+          const jobIdStr = app.jobId.toString();
+          setFormData(prev => ({
+            ...prev,
+            jobId: jobIdStr, // Ensure it's a string
+            jobTitle: app.job?.title || '',
+          }));
+          
+          // If job object exists, use it; otherwise load from API
+          if (app.job && app.job.id) {
+            setSelectedJob(app.job);
+            setJobSearch(app.job.title || '');
+          } else {
+            // Load job details from API
+            try {
+              const jobResponse = await apiService.getAdminJobById(app.jobId);
+              if (jobResponse.success && jobResponse.data?.job) {
+                setSelectedJob(jobResponse.data.job);
+                setJobSearch(jobResponse.data.job.title || '');
+                setFormData(prev => ({
+                  ...prev,
+                  jobTitle: jobResponse.data.job.title || '',
+                }));
+              } else {
+                setJobSearch(`Job ID: ${app.jobId}`);
+              }
+            } catch (jobError) {
+              console.error('Error loading job:', jobError);
+              setJobSearch(`Job ID: ${app.jobId}`);
+            }
+          }
+        }
+        
+        // Set candidate data
+        if (app.cvCode && app.cv) {
+          // If CV exists, load it and set as selected
+          setCandidateTab('existing');
+          setFormData(prev => ({
+            ...prev,
+            candidateId: app.cv.id?.toString() || '',
+            candidateName: app.cv.name || app.cv.fullName || app.name || '',
+            name: app.cv.name || app.cv.fullName || app.name || '',
+            email: app.cv.email || '',
+            phone: app.cv.phone || '',
+            birthDate: app.cv.birthDate || app.birthDate || '',
+            gender: app.cv.gender?.toString() || app.gender?.toString() || '',
+          }));
+          setSelectedCandidate(app.cv);
+          setCandidateSearch(app.cv.name || app.cv.fullName || app.name || '');
+          setCvEditData({
+            name: app.cv.name || app.cv.fullName || '',
+            furigana: app.cv.furigana || '',
+            email: app.cv.email || '',
+            phone: app.cv.phone || '',
+            birthDate: app.cv.birthDate || '',
+            age: app.cv.ages || app.cv.age || '',
+            gender: app.cv.gender?.toString() || '',
+            addressCurrent: app.cv.addressCurrent || app.cv.address || '',
+            currentIncome: app.cv.currentIncome || app.cv.currentSalary || '',
+            desiredIncome: app.cv.desiredIncome || app.cv.desiredSalary || '',
+            desiredWorkLocation: app.cv.desiredWorkLocation || app.cv.desiredLocation || '',
+            nyushaTime: app.cv.nyushaTime || '',
+            strengths: app.cv.strengths || '',
+            motivation: app.cv.motivation || '',
+          });
+        } else if (app.cvCode) {
+          // If only cvCode exists, try to load CV by code
+          try {
+            const cvResponse = await apiService.getAdminCVs({ search: app.cvCode, limit: 1 });
+            if (cvResponse.success && cvResponse.data?.cvs && cvResponse.data.cvs.length > 0) {
+              const cv = cvResponse.data.cvs[0];
+              setCandidateTab('existing');
+              setFormData(prev => ({
+                ...prev,
+                candidateId: cv.id?.toString() || '',
+                candidateName: cv.name || cv.fullName || app.name || '',
+                name: cv.name || cv.fullName || app.name || '',
+                email: cv.email || '',
+                phone: cv.phone || '',
+                birthDate: cv.birthDate || app.birthDate || '',
+                gender: cv.gender?.toString() || app.gender?.toString() || '',
+              }));
+              setSelectedCandidate(cv);
+              setCandidateSearch(cv.name || cv.fullName || app.name || '');
+              setCvEditData({
+                name: cv.name || cv.fullName || '',
+                furigana: cv.furigana || '',
+                email: cv.email || '',
+                phone: cv.phone || '',
+                birthDate: cv.birthDate || '',
+                age: cv.ages || cv.age || '',
+                gender: cv.gender?.toString() || '',
+                addressCurrent: cv.addressCurrent || cv.address || '',
+                currentIncome: cv.currentIncome || cv.currentSalary || '',
+                desiredIncome: cv.desiredIncome || cv.desiredSalary || '',
+                desiredWorkLocation: cv.desiredWorkLocation || cv.desiredLocation || '',
+                nyushaTime: cv.nyushaTime || '',
+                strengths: cv.strengths || '',
+                motivation: cv.motivation || '',
+              });
+            } else {
+              // Fallback: use data from application
+              setCandidateTab('existing');
+              setFormData(prev => ({
+                ...prev,
+                candidateName: app.name || '',
+                name: app.name || '',
+                birthDate: app.birthDate || '',
+                gender: app.gender?.toString() || '',
+              }));
+              setCandidateSearch(app.name || '');
+            }
+          } catch (cvError) {
+            console.error('Error loading CV by code:', cvError);
+            // Fallback: use data from application
+            setCandidateTab('existing');
+            setFormData(prev => ({
+              ...prev,
+              candidateName: app.name || '',
+              name: app.name || '',
+              birthDate: app.birthDate || '',
+              gender: app.gender?.toString() || '',
+            }));
+            setCandidateSearch(app.name || '');
+          }
+        } else {
+          // No CV, use application data
+          setCandidateTab('existing');
+          setFormData(prev => ({
+            ...prev,
+            candidateName: app.name || '',
+            name: app.name || '',
+            birthDate: app.birthDate || '',
+            gender: app.gender?.toString() || '',
+          }));
+          setCandidateSearch(app.name || '');
+        }
+        
+        // Set other form data
+        setFormData(prev => ({
+          ...prev,
+          collaboratorId: app.collaboratorId?.toString() || '',
           collaboratorName: app.collaborator?.name || '',
           appliedDate: app.appliedAt ? app.appliedAt.split('T')[0] : new Date().toISOString().split('T')[0],
           interviewDate: app.interviewDate ? app.interviewDate.split('T')[0] : '',
           status: app.status || 1,
           referralFee: app.referralFee || '',
-          annualSalary: app.annualSalary || '',
-          monthlySalary: app.monthlySalary || '',
-          salaryType: app.salaryType || 2,
+          yearlySalary: app.yearlySalary || app.annualSalary || '',
           notes: app.notes || '',
-          name: app.name || app.cv?.fullName || '',
-          birthDate: app.birthDate || app.cv?.birthDate || '',
-          gender: app.gender || app.cv?.gender || '',
-        });
-        if (app.cvId) {
-          setCandidateTab('existing');
-          setCandidateSearch(app.name || app.cv?.fullName || '');
-          setFormData(prev => ({ ...prev, candidateId: app.cvId }));
-        } else {
-          setCandidateTab('existing');
-          setCandidateSearch(app.name || '');
-        }
-        if (app.jobId) {
-          setJobSearch(app.job?.title || '');
-        }
+        }));
+        
         if (app.collaboratorId) {
           setCollaboratorSearch(app.collaborator?.name || '');
         }
@@ -433,36 +585,134 @@ const AdminAddNominationPage = () => {
     }));
   };
 
-  const handleCandidateSelect = (candidate) => {
-    setFormData(prev => ({
+  // Tools handlers
+  const handleAddLearnedTool = () => {
+    setNewCandidateData(prev => ({
       ...prev,
-      candidateId: candidate.id,
-      candidateName: candidate.fullName || candidate.name,
-      name: candidate.fullName || candidate.name,
-      email: candidate.email || '',
-      phone: candidate.phone || '',
-      birthDate: candidate.birthDate || '',
-      gender: candidate.gender || '',
+      learnedTools: [...prev.learnedTools, '']
     }));
-    setCandidateSearch(candidate.fullName || candidate.name);
-    setShowCandidateDropdown(false);
-    // Clear errors
-    if (errors.candidateId) {
-      setErrors(prev => ({ ...prev, candidateId: '' }));
+  };
+
+  const updateLearnedTool = (index, value) => {
+    const updated = [...newCandidateData.learnedTools];
+    updated[index] = value;
+    setNewCandidateData(prev => ({ ...prev, learnedTools: updated }));
+  };
+
+  const removeLearnedTool = (index) => {
+    setNewCandidateData(prev => ({
+      ...prev,
+      learnedTools: prev.learnedTools.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleAddExperienceTool = () => {
+    setNewCandidateData(prev => ({
+      ...prev,
+      experienceTools: [...prev.experienceTools, '']
+    }));
+  };
+
+  const updateExperienceTool = (index, value) => {
+    const updated = [...newCandidateData.experienceTools];
+    updated[index] = value;
+    setNewCandidateData(prev => ({ ...prev, experienceTools: updated }));
+  };
+
+  const removeExperienceTool = (index) => {
+    setNewCandidateData(prev => ({
+      ...prev,
+      experienceTools: prev.experienceTools.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleCandidateSelect = async (candidate) => {
+    try {
+      // Load full candidate data
+      const cvResponse = await apiService.getAdminCVById(candidate.id);
+      const fullCandidate = cvResponse.success && cvResponse.data?.cv ? cvResponse.data.cv : candidate;
+      
+      setFormData(prev => ({
+        ...prev,
+        candidateId: candidate.id,
+        candidateName: candidate.fullName || candidate.name,
+        name: candidate.fullName || candidate.name,
+        email: candidate.email || '',
+        phone: candidate.phone || '',
+        birthDate: candidate.birthDate || '',
+        gender: candidate.gender || '',
+      }));
+      setSelectedCandidate(fullCandidate);
+      setCvEditData({
+        name: fullCandidate.name || fullCandidate.fullName || '',
+        furigana: fullCandidate.furigana || '',
+        email: fullCandidate.email || '',
+        phone: fullCandidate.phone || '',
+        birthDate: fullCandidate.birthDate || '',
+        age: fullCandidate.age || fullCandidate.ages || '',
+        gender: fullCandidate.gender?.toString() || '',
+        addressCurrent: fullCandidate.addressCurrent || fullCandidate.address || '',
+        currentIncome: fullCandidate.currentIncome || fullCandidate.currentSalary || '',
+        desiredIncome: fullCandidate.desiredIncome || fullCandidate.desiredSalary || '',
+        desiredWorkLocation: fullCandidate.desiredWorkLocation || fullCandidate.desiredLocation || '',
+        nyushaTime: fullCandidate.nyushaTime || '',
+        strengths: fullCandidate.strengths || '',
+        motivation: fullCandidate.motivation || '',
+      });
+      setCandidateSearch(candidate.fullName || candidate.name);
+      setShowCandidateDropdown(false);
+      // Clear errors
+      if (errors.candidateId) {
+        setErrors(prev => ({ ...prev, candidateId: '' }));
+      }
+    } catch (error) {
+      console.error('Error loading candidate:', error);
+      // Fallback to basic data
+      setFormData(prev => ({
+        ...prev,
+        candidateId: candidate.id,
+        candidateName: candidate.fullName || candidate.name,
+        name: candidate.fullName || candidate.name,
+        email: candidate.email || '',
+        phone: candidate.phone || '',
+        birthDate: candidate.birthDate || '',
+        gender: candidate.gender || '',
+      }));
+      setSelectedCandidate(candidate);
+      setCandidateSearch(candidate.fullName || candidate.name);
+      setShowCandidateDropdown(false);
     }
   };
 
-  const handleJobSelect = (job) => {
-    setFormData(prev => ({
-      ...prev,
-      jobId: job.id,
-      jobTitle: job.title,
-    }));
-    setJobSearch(job.title);
-    setShowJobDropdown(false);
-    // Clear errors
-    if (errors.jobId) {
-      setErrors(prev => ({ ...prev, jobId: '' }));
+  const handleJobSelect = async (job) => {
+    try {
+      // Load full job data
+      const jobResponse = await apiService.getAdminJobById(job.id);
+      const fullJob = jobResponse.success && jobResponse.data?.job ? jobResponse.data.job : job;
+      
+      setFormData(prev => ({
+        ...prev,
+        jobId: job.id,
+        jobTitle: job.title,
+      }));
+      setSelectedJob(fullJob);
+      setJobSearch(job.title);
+      setShowJobDropdown(false);
+      // Clear errors
+      if (errors.jobId) {
+        setErrors(prev => ({ ...prev, jobId: '' }));
+      }
+    } catch (error) {
+      console.error('Error loading job:', error);
+      // Fallback to basic data
+      setFormData(prev => ({
+        ...prev,
+        jobId: job.id,
+        jobTitle: job.title,
+      }));
+      setSelectedJob(job);
+      setJobSearch(job.title);
+      setShowJobDropdown(false);
     }
   };
 
@@ -540,23 +790,210 @@ const AdminAddNominationPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleGoToConfirm = () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    // Validate jobId is present
+    if (!formData.jobId) {
+      alert('ID việc làm là bắt buộc');
+      setErrors(prev => ({ ...prev, jobId: 'ID việc làm là bắt buộc' }));
+      return;
+    }
+
+    // Ensure we have selected job and candidate data
+    if (!selectedJob && formData.jobId) {
+      const job = jobs.find(j => j.id === formData.jobId || j.id.toString() === formData.jobId.toString());
+      if (job) {
+        setSelectedJob(job);
+      } else {
+        // Try to load job from API
+        apiService.getAdminJobById(formData.jobId).then(response => {
+          if (response.success && response.data?.job) {
+            setSelectedJob(response.data.job);
+          }
+        }).catch(err => {
+          console.error('Error loading job:', err);
+        });
+      }
+    }
+    if (!selectedCandidate && formData.candidateId) {
+      const candidate = candidates.find(c => c.id === formData.candidateId || c.id.toString() === formData.candidateId.toString());
+      if (candidate) {
+        setSelectedCandidate(candidate);
+        setCvEditData({
+          name: candidate.name || candidate.fullName || '',
+          furigana: candidate.furigana || '',
+          email: candidate.email || '',
+          phone: candidate.phone || '',
+          birthDate: candidate.birthDate || '',
+          age: candidate.age || candidate.ages || '',
+          gender: candidate.gender?.toString() || '',
+          addressCurrent: candidate.addressCurrent || candidate.address || '',
+          currentIncome: candidate.currentIncome || candidate.currentSalary || '',
+          desiredIncome: candidate.desiredIncome || candidate.desiredSalary || '',
+          desiredWorkLocation: candidate.desiredWorkLocation || candidate.desiredLocation || '',
+          nyushaTime: candidate.nyushaTime || '',
+          strengths: candidate.strengths || '',
+          motivation: candidate.motivation || '',
+        });
+      }
+    }
+    setStep('confirm');
+  };
+
+  const handleSaveCVEdit = async () => {
+    if (!formData.candidateId) return;
+
+    try {
+      setSavingCV(true);
+      const updateFormData = new FormData();
+      
+      // Map edited data to form fields
+      updateFormData.append('nameKanji', cvEditData.name || '');
+      updateFormData.append('nameKana', cvEditData.furigana || '');
+      updateFormData.append('email', cvEditData.email || '');
+      updateFormData.append('phone', cvEditData.phone || '');
+      updateFormData.append('birthDate', cvEditData.birthDate || '');
+      updateFormData.append('age', cvEditData.age || '');
+      updateFormData.append('gender', cvEditData.gender || '');
+      updateFormData.append('address', cvEditData.addressCurrent || '');
+      updateFormData.append('currentSalary', cvEditData.currentIncome || '');
+      updateFormData.append('desiredSalary', cvEditData.desiredIncome || '');
+      updateFormData.append('desiredLocation', cvEditData.desiredWorkLocation || '');
+      updateFormData.append('nyushaTime', cvEditData.nyushaTime || '');
+      updateFormData.append('strengths', cvEditData.strengths || '');
+      updateFormData.append('motivation', cvEditData.motivation || '');
+
+      const response = await apiService.updateAdminCV(formData.candidateId, updateFormData);
+      
+      if (response.success) {
+        // Reload candidate data
+        const cvResponse = await apiService.getAdminCVById(formData.candidateId);
+        if (cvResponse.success && cvResponse.data?.cv) {
+          setSelectedCandidate(cvResponse.data.cv);
+          setCvEditData({
+            name: cvResponse.data.cv.name || cvResponse.data.cv.fullName || '',
+            furigana: cvResponse.data.cv.furigana || '',
+            email: cvResponse.data.cv.email || '',
+            phone: cvResponse.data.cv.phone || '',
+            birthDate: cvResponse.data.cv.birthDate || '',
+            age: cvResponse.data.cv.age || cvResponse.data.cv.ages || '',
+            gender: cvResponse.data.cv.gender?.toString() || '',
+            addressCurrent: cvResponse.data.cv.addressCurrent || cvResponse.data.cv.address || '',
+            currentIncome: cvResponse.data.cv.currentIncome || cvResponse.data.cv.currentSalary || '',
+            desiredIncome: cvResponse.data.cv.desiredIncome || cvResponse.data.cv.desiredSalary || '',
+            desiredWorkLocation: cvResponse.data.cv.desiredWorkLocation || cvResponse.data.cv.desiredLocation || '',
+            nyushaTime: cvResponse.data.cv.nyushaTime || '',
+            strengths: cvResponse.data.cv.strengths || '',
+            motivation: cvResponse.data.cv.motivation || '',
+          });
+        }
+        setEditingCV(false);
+        alert('Đã cập nhật thông tin ứng viên thành công!');
+      } else {
+        alert(response.message || 'Có lỗi xảy ra khi cập nhật thông tin');
+      }
+    } catch (error) {
+      console.error('Error saving CV edit:', error);
+      alert(error.message || 'Có lỗi xảy ra khi cập nhật thông tin');
+    } finally {
+      setSavingCV(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    
+    // Validate jobId is present
+    if (!formData.jobId) {
+      alert('ID việc làm là bắt buộc');
+      setErrors(prev => ({ ...prev, jobId: 'ID việc làm là bắt buộc' }));
+      return;
+    }
+
     if (!validateForm()) {
       return;
     }
 
     try {
       setLoading(true);
-      const submitFormData = new FormData();
       
-      // Required fields
-      submitFormData.append('jobId', formData.jobId);
-      if (formData.candidateId) {
-        submitFormData.append('cvId', formData.candidateId);
-      } else if (nominationId) {
-        // When editing, if no candidateId, we need to keep the existing cvId
-        // This will be handled by backend, but we can add it if needed
+      // Required fields - ensure jobId is present
+      const jobIdToSubmit = formData.jobId || (selectedJob?.id);
+      if (!jobIdToSubmit) {
+        alert('ID việc làm là bắt buộc. Vui lòng chọn lại công việc.');
+        setLoading(false);
+        setStep('form');
+        return;
+      }
+      
+      // For update, backend expects JSON (req.body), not FormData
+      // For create, we can use FormData if needed
+      if (nominationId) {
+        // Update: Use JSON object
+        const updateData = {
+          jobId: parseInt(jobIdToSubmit),
+        };
+        
+        // Add cvCode if candidate is selected
+        if (selectedCandidate?.code) {
+          updateData.cvCode = selectedCandidate.code;
+        } else if (formData.candidateId && selectedCandidate) {
+          updateData.cvCode = selectedCandidate.code || formData.candidateId;
+        }
+        
+        if (formData.collaboratorId) {
+          updateData.collaboratorId = parseInt(formData.collaboratorId);
+        }
+        
+        if (formData.appliedDate) {
+          updateData.appliedAt = formData.appliedDate;
+        }
+        if (formData.interviewDate) {
+          updateData.interviewDate = formData.interviewDate;
+        }
+        
+        // Status
+        const statusMap = {
+          'pending': 1,
+          'interviewed': 4,
+          'accepted': 8,
+          'rejected': 15
+        };
+        const statusValue = typeof formData.status === 'string' 
+          ? (statusMap[formData.status] || 1)
+          : formData.status;
+        updateData.status = statusValue;
+        
+        // Financial
+        if (formData.referralFee) updateData.referralFee = parseFloat(formData.referralFee);
+        if (formData.yearlySalary) updateData.yearlySalary = parseFloat(formData.yearlySalary);
+        
+        // Notes
+        if (formData.notes) updateData.notes = formData.notes;
+        
+        const response = await apiService.updateAdminJobApplication(nominationId, updateData);
+        if (response.success) {
+          alert('Đơn tiến cử đã được cập nhật thành công!');
+          navigate(`/admin/nominations/${nominationId}`);
+        } else {
+          alert(response.message || 'Có lỗi xảy ra khi cập nhật đơn tiến cử');
+        }
+        setLoading(false);
+        return;
+      }
+      
+      // Create: Use FormData
+      const submitFormData = new FormData();
+      submitFormData.append('jobId', jobIdToSubmit.toString());
+      
+      if (formData.candidateId && selectedCandidate) {
+        const cvCode = selectedCandidate.code || formData.candidateId;
+        if (cvCode) {
+          submitFormData.append('cvCode', cvCode);
+        }
       }
       if (formData.collaboratorId) {
         submitFormData.append('collaboratorId', formData.collaboratorId);
@@ -598,9 +1035,19 @@ const AdminAddNominationPage = () => {
         cvFormData.append('educations', JSON.stringify(newCandidateData.educations || []));
         cvFormData.append('workExperiences', JSON.stringify(newCandidateData.workExperiences || []));
         cvFormData.append('certificates', JSON.stringify(newCandidateData.certificates || []));
+        if (newCandidateData.learnedTools && newCandidateData.learnedTools.length > 0) {
+          cvFormData.append('learnedTools', JSON.stringify(newCandidateData.learnedTools));
+        }
+        if (newCandidateData.experienceTools && newCandidateData.experienceTools.length > 0) {
+          cvFormData.append('experienceTools', JSON.stringify(newCandidateData.experienceTools));
+        }
         
         // Skills and summary
         cvFormData.append('technicalSkills', newCandidateData.technicalSkills || '');
+        if (newCandidateData.jlptLevel) cvFormData.append('jlptLevel', newCandidateData.jlptLevel);
+        if (newCandidateData.experienceYears) cvFormData.append('experienceYears', newCandidateData.experienceYears);
+        if (newCandidateData.specialization) cvFormData.append('specialization', newCandidateData.specialization);
+        if (newCandidateData.qualification) cvFormData.append('qualification', newCandidateData.qualification);
         cvFormData.append('careerSummary', newCandidateData.careerSummary || '');
         cvFormData.append('strengths', newCandidateData.strengths || '');
         cvFormData.append('motivation', newCandidateData.motivation || '');
@@ -615,10 +1062,6 @@ const AdminAddNominationPage = () => {
         cvFormData.append('interviewTime', newCandidateData.interviewTime || '');
         
         // Additional fields
-        cvFormData.append('jlptLevel', newCandidateData.jlptLevel || '');
-        cvFormData.append('experienceYears', newCandidateData.experienceYears || '');
-        cvFormData.append('specialization', newCandidateData.specialization || '');
-        cvFormData.append('qualification', newCandidateData.qualification || '');
         cvFormData.append('otherDocuments', newCandidateData.otherDocuments || '');
         cvFormData.append('notes', newCandidateData.notes || '');
         
@@ -643,11 +1086,20 @@ const AdminAddNominationPage = () => {
           return;
         }
       } else {
-        if (formData.name) submitFormData.append('name', formData.name);
-        if (formData.birthDate) submitFormData.append('birthDate', formData.birthDate);
-        if (formData.gender) submitFormData.append('gender', formData.gender);
-        if (formData.email) submitFormData.append('email', formData.email);
-        if (formData.phone) submitFormData.append('phone', formData.phone);
+        // Use edited data if available, otherwise use formData
+        const candidateData = editingCV && Object.keys(cvEditData).length > 0 ? cvEditData : {
+          name: formData.name || selectedCandidate?.name || selectedCandidate?.fullName || '',
+          birthDate: formData.birthDate || selectedCandidate?.birthDate || '',
+          gender: formData.gender || selectedCandidate?.gender?.toString() || '',
+          email: formData.email || selectedCandidate?.email || '',
+          phone: formData.phone || selectedCandidate?.phone || '',
+        };
+        
+        if (candidateData.name) submitFormData.append('name', candidateData.name);
+        if (candidateData.birthDate) submitFormData.append('birthDate', candidateData.birthDate);
+        if (candidateData.gender) submitFormData.append('gender', candidateData.gender);
+        if (candidateData.email) submitFormData.append('email', candidateData.email);
+        if (candidateData.phone) submitFormData.append('phone', candidateData.phone);
       }
       
       // Dates
@@ -668,21 +1120,18 @@ const AdminAddNominationPage = () => {
       
       // Financial
       if (formData.referralFee) submitFormData.append('referralFee', formData.referralFee);
-      if (formData.annualSalary) submitFormData.append('annualSalary', formData.annualSalary);
-      if (formData.monthlySalary) submitFormData.append('monthlySalary', formData.monthlySalary);
-      submitFormData.append('salaryType', formData.salaryType || 2);
+      if (formData.yearlySalary) submitFormData.append('yearlySalary', formData.yearlySalary);
       
       // Notes
       if (formData.notes) submitFormData.append('notes', formData.notes);
 
-      const response = nominationId 
-        ? await apiService.updateAdminJobApplication(nominationId, submitFormData)
-        : await apiService.createAdminJobApplication(submitFormData);
+      // Create only (update already handled above)
+      const response = await apiService.createAdminJobApplication(submitFormData);
       if (response.success) {
-        alert(nominationId ? 'Đơn tiến cử đã được cập nhật thành công!' : 'Đơn tiến cử đã được tạo thành công!');
-        navigate(nominationId ? `/admin/nominations/${nominationId}` : '/admin/nominations');
+        alert('Đơn tiến cử đã được tạo thành công!');
+        navigate('/admin/nominations');
       } else {
-        alert(response.message || (nominationId ? 'Có lỗi xảy ra khi cập nhật đơn tiến cử' : 'Có lỗi xảy ra khi tạo đơn tiến cử'));
+        alert(response.message || 'Có lỗi xảy ra khi tạo đơn tiến cử');
       }
     } catch (error) {
       console.error('Error creating nomination:', error);
@@ -713,6 +1162,411 @@ const AdminAddNominationPage = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return '—';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  const formatGender = (gender) => {
+    if (gender === '1' || gender === 1) return 'Nam';
+    if (gender === '2' || gender === 2) return 'Nữ';
+    return '—';
+  };
+
+  // Confirmation Step
+  if (step === 'confirm') {
+    return (
+      <div className="space-y-3">
+        {/* Header */}
+        <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setStep('form')}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4 text-gray-600" />
+            </button>
+            <div>
+              <h1 className="text-lg font-bold text-gray-900">Xác nhận tiến cử</h1>
+              <p className="text-xs text-gray-500 mt-1">Kiểm tra và chỉnh sửa thông tin trước khi tiến cử</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setStep('form')}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center gap-1.5"
+            >
+              <X className="w-3.5 h-3.5" />
+              Quay lại
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={loading || editingCV}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Save className="w-3.5 h-3.5" />
+              {loading ? (nominationId ? 'Đang cập nhật...' : 'Đang lưu...') : (nominationId ? 'Cập nhật đơn tiến cử' : 'Xác nhận và tạo đơn tiến cử')}
+            </button>
+          </div>
+        </div>
+
+        {/* Job Information */}
+        {selectedJob && (
+          <div className="bg-white rounded-lg p-6 border border-gray-200">
+            <div className="flex items-center gap-3 mb-4">
+              <Briefcase className="w-6 h-6 text-blue-600" />
+              <h2 className="text-lg font-bold text-gray-900">Thông tin công việc</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Tiêu đề</label>
+                <p className="text-sm text-gray-900 font-medium">{selectedJob.title}</p>
+              </div>
+              {selectedJob.company && (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Công ty</label>
+                  <p className="text-sm text-gray-900">{selectedJob.company.name}</p>
+                </div>
+              )}
+              {selectedJob.recruitingCompany?.companyName && (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Công ty tuyển dụng</label>
+                  <p className="text-sm text-gray-900">{selectedJob.recruitingCompany.companyName}</p>
+                </div>
+              )}
+              {selectedJob.workLocation && (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Địa điểm</label>
+                  <p className="text-sm text-gray-900 flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                    {selectedJob.workLocation}
+                  </p>
+                </div>
+              )}
+              {selectedJob.estimatedSalary && (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Lương ước tính</label>
+                  <p className="text-sm text-gray-900 flex items-center gap-1">
+                    <DollarSign className="w-3.5 h-3.5 text-gray-400" />
+                    {selectedJob.estimatedSalary}
+                  </p>
+                </div>
+              )}
+              {selectedJob.category && (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Danh mục</label>
+                  <p className="text-sm text-gray-900">{selectedJob.category.name}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Candidate Information */}
+        {selectedCandidate && candidateTab === 'existing' && (
+          <div className="bg-white rounded-lg p-6 border border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <User className="w-6 h-6 text-blue-600" />
+                <h2 className="text-lg font-bold text-gray-900">Thông tin ứng viên</h2>
+              </div>
+              {!editingCV ? (
+                <button
+                  onClick={() => setEditingCV(true)}
+                  className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                  Sửa nhanh
+                </button>
+              ) : (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setEditingCV(false);
+                      // Reset to original data
+                      setCvEditData({
+                        name: selectedCandidate.name || selectedCandidate.fullName || '',
+                        furigana: selectedCandidate.furigana || '',
+                        email: selectedCandidate.email || '',
+                        phone: selectedCandidate.phone || '',
+                        birthDate: selectedCandidate.birthDate || '',
+                        age: selectedCandidate.age || selectedCandidate.ages || '',
+                        gender: selectedCandidate.gender?.toString() || '',
+                        addressCurrent: selectedCandidate.addressCurrent || selectedCandidate.address || '',
+                        currentIncome: selectedCandidate.currentIncome || selectedCandidate.currentSalary || '',
+                        desiredIncome: selectedCandidate.desiredIncome || selectedCandidate.desiredSalary || '',
+                        desiredWorkLocation: selectedCandidate.desiredWorkLocation || selectedCandidate.desiredLocation || '',
+                        nyushaTime: selectedCandidate.nyushaTime || '',
+                        strengths: selectedCandidate.strengths || '',
+                        motivation: selectedCandidate.motivation || '',
+                      });
+                    }}
+                    className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center gap-1.5"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    Hủy
+                  </button>
+                  <button
+                    onClick={handleSaveCVEdit}
+                    disabled={savingCV}
+                    className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    {savingCV ? 'Đang lưu...' : 'Lưu'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {editingCV ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-1">Họ tên (Kanji) *</label>
+                  <input
+                    type="text"
+                    value={cvEditData.name}
+                    onChange={(e) => setCvEditData({ ...cvEditData, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-1">Họ tên (Kana)</label>
+                  <input
+                    type="text"
+                    value={cvEditData.furigana}
+                    onChange={(e) => setCvEditData({ ...cvEditData, furigana: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={cvEditData.email}
+                    onChange={(e) => setCvEditData({ ...cvEditData, email: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-1">Số điện thoại</label>
+                  <input
+                    type="tel"
+                    value={cvEditData.phone}
+                    onChange={(e) => setCvEditData({ ...cvEditData, phone: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-1">Ngày sinh</label>
+                  <input
+                    type="date"
+                    value={cvEditData.birthDate}
+                    onChange={(e) => setCvEditData({ ...cvEditData, birthDate: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-1">Tuổi</label>
+                  <input
+                    type="number"
+                    value={cvEditData.age}
+                    onChange={(e) => setCvEditData({ ...cvEditData, age: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-1">Giới tính *</label>
+                  <select
+                    value={cvEditData.gender}
+                    onChange={(e) => setCvEditData({ ...cvEditData, gender: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  >
+                    <option value="">Chọn</option>
+                    <option value="1">Nam</option>
+                    <option value="2">Nữ</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-semibold text-gray-900 mb-1">Địa chỉ</label>
+                  <input
+                    type="text"
+                    value={cvEditData.addressCurrent}
+                    onChange={(e) => setCvEditData({ ...cvEditData, addressCurrent: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-1">Lương hiện tại</label>
+                  <input
+                    type="text"
+                    value={cvEditData.currentIncome}
+                    onChange={(e) => setCvEditData({ ...cvEditData, currentIncome: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-1">Lương mong muốn</label>
+                  <input
+                    type="text"
+                    value={cvEditData.desiredIncome}
+                    onChange={(e) => setCvEditData({ ...cvEditData, desiredIncome: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-1">Địa điểm mong muốn</label>
+                  <input
+                    type="text"
+                    value={cvEditData.desiredWorkLocation}
+                    onChange={(e) => setCvEditData({ ...cvEditData, desiredWorkLocation: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-1">Thời gian nhập công ty</label>
+                  <input
+                    type="text"
+                    value={cvEditData.nyushaTime}
+                    onChange={(e) => setCvEditData({ ...cvEditData, nyushaTime: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-semibold text-gray-900 mb-1">Điểm mạnh</label>
+                  <textarea
+                    value={cvEditData.strengths}
+                    onChange={(e) => setCvEditData({ ...cvEditData, strengths: e.target.value })}
+                    rows="3"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-semibold text-gray-900 mb-1">Động lực</label>
+                  <textarea
+                    value={cvEditData.motivation}
+                    onChange={(e) => setCvEditData({ ...cvEditData, motivation: e.target.value })}
+                    rows="3"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Mã CV</label>
+                  <p className="text-sm text-gray-900 font-medium">{selectedCandidate.code || '—'}</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Họ tên (Kanji)</label>
+                  <p className="text-sm text-gray-900">{cvEditData.name || selectedCandidate.name || selectedCandidate.fullName || '—'}</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Họ tên (Kana)</label>
+                  <p className="text-sm text-gray-900">{cvEditData.furigana || selectedCandidate.furigana || '—'}</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Email</label>
+                  <p className="text-sm text-gray-900 flex items-center gap-1">
+                    <Mail className="w-3.5 h-3.5 text-gray-400" />
+                    {cvEditData.email || selectedCandidate.email || '—'}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Số điện thoại</label>
+                  <p className="text-sm text-gray-900 flex items-center gap-1">
+                    <Phone className="w-3.5 h-3.5 text-gray-400" />
+                    {cvEditData.phone || selectedCandidate.phone || '—'}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Ngày sinh</label>
+                  <p className="text-sm text-gray-900 flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                    {formatDate(cvEditData.birthDate || selectedCandidate.birthDate)}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Tuổi</label>
+                  <p className="text-sm text-gray-900">{cvEditData.age || selectedCandidate.age || selectedCandidate.ages || '—'}</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Giới tính</label>
+                  <p className="text-sm text-gray-900">{formatGender(cvEditData.gender || selectedCandidate.gender)}</p>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Địa chỉ</label>
+                  <p className="text-sm text-gray-900">{cvEditData.addressCurrent || selectedCandidate.addressCurrent || selectedCandidate.address || '—'}</p>
+                </div>
+                {cvEditData.currentIncome || selectedCandidate.currentIncome || selectedCandidate.currentSalary ? (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Lương hiện tại</label>
+                    <p className="text-sm text-gray-900">{cvEditData.currentIncome || selectedCandidate.currentIncome || selectedCandidate.currentSalary}</p>
+                  </div>
+                ) : null}
+                {cvEditData.desiredIncome || selectedCandidate.desiredIncome || selectedCandidate.desiredSalary ? (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Lương mong muốn</label>
+                    <p className="text-sm text-gray-900">{cvEditData.desiredIncome || selectedCandidate.desiredIncome || selectedCandidate.desiredSalary}</p>
+                  </div>
+                ) : null}
+                {cvEditData.desiredWorkLocation || selectedCandidate.desiredWorkLocation || selectedCandidate.desiredLocation ? (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Địa điểm mong muốn</label>
+                    <p className="text-sm text-gray-900">{cvEditData.desiredWorkLocation || selectedCandidate.desiredWorkLocation || selectedCandidate.desiredLocation}</p>
+                  </div>
+                ) : null}
+                {cvEditData.nyushaTime || selectedCandidate.nyushaTime ? (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Thời gian nhập công ty</label>
+                    <p className="text-sm text-gray-900">{cvEditData.nyushaTime || selectedCandidate.nyushaTime}</p>
+                  </div>
+                ) : null}
+                {cvEditData.strengths || selectedCandidate.strengths ? (
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Điểm mạnh</label>
+                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{cvEditData.strengths || selectedCandidate.strengths}</p>
+                  </div>
+                ) : null}
+                {cvEditData.motivation || selectedCandidate.motivation ? (
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Động lực</label>
+                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{cvEditData.motivation || selectedCandidate.motivation}</p>
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* New Candidate Preview (if creating new candidate) */}
+        {candidateTab === 'new' && (
+          <div className="bg-white rounded-lg p-6 border border-gray-200">
+            <div className="flex items-center gap-3 mb-4">
+              <User className="w-6 h-6 text-blue-600" />
+              <h2 className="text-lg font-bold text-gray-900">Thông tin ứng viên mới</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Họ tên (Kanji)</label>
+                <p className="text-sm text-gray-900">{newCandidateData.nameKanji || '—'}</p>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Email</label>
+                <p className="text-sm text-gray-900">{newCandidateData.email || '—'}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Form Step
   return (
     <div className="space-y-3">
       {/* Header */}
@@ -737,14 +1591,28 @@ const AdminAddNominationPage = () => {
             <X className="w-3.5 h-3.5" />
             Hủy
           </button>
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Save className="w-3.5 h-3.5" />
-            {loading ? (nominationId ? 'Đang cập nhật...' : 'Đang lưu...') : (nominationId ? 'Cập nhật đơn tiến cử' : 'Lưu đơn tiến cử')}
-          </button>
+          {step === 'form' ? (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                handleGoToConfirm();
+              }}
+              disabled={loading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+              Xác nhận tiến cử
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={loading || editingCV}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Save className="w-3.5 h-3.5" />
+              {loading ? (nominationId ? 'Đang cập nhật...' : 'Đang lưu...') : (nominationId ? 'Cập nhật đơn tiến cử' : 'Xác nhận và tạo đơn tiến cử')}
+            </button>
+          )}
         </div>
       </div>
 
@@ -1282,35 +2150,132 @@ const AdminAddNominationPage = () => {
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-[10px] font-semibold text-gray-900 mb-1">
-                        Trình độ JLPT
+                        JLPT Level - 日本語能力試験
                       </label>
-                      <select
-                        name="jlptLevel"
-                        value={newCandidateData.jlptLevel}
-                        onChange={handleNewCandidateInputChange}
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
-                      >
-                        <option value="">Chọn</option>
-                        <option value="1">N1</option>
-                        <option value="2">N2</option>
-                        <option value="3">N3</option>
-                        <option value="4">N4</option>
-                        <option value="5">N5</option>
-                      </select>
+                      <div className="flex items-center border border-gray-300 rounded focus-within:ring-2 focus-within:ring-blue-600">
+                        <span className="px-2 py-1.5 text-xs text-gray-500 bg-gray-50 rounded-l border-r border-gray-300">N</span>
+                        <input
+                          type="number"
+                          name="jlptLevel"
+                          value={newCandidateData.jlptLevel}
+                          onChange={handleNewCandidateInputChange}
+                          placeholder="VD: 3"
+                          min="1"
+                          max="5"
+                          className="flex-1 px-2 py-1.5 text-xs focus:outline-none bg-transparent"
+                        />
+                      </div>
+                      <p className="text-[9px] text-gray-500 mt-0.5">Nhập số từ 1 (N1) đến 5 (N5)</p>
                     </div>
                     <div>
                       <label className="block text-[10px] font-semibold text-gray-900 mb-1">
-                        Số năm kinh nghiệm
+                        Số năm kinh nghiệm - 経験年数
                       </label>
                       <input
                         type="number"
                         name="experienceYears"
                         value={newCandidateData.experienceYears}
                         onChange={handleNewCandidateInputChange}
-                        placeholder="VD: 5"
+                        placeholder="VD: 3"
                         min="0"
                         className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
                       />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                        Chuyên ngành - 専門分野
+                      </label>
+                      <input
+                        type="number"
+                        name="specialization"
+                        value={newCandidateData.specialization}
+                        onChange={handleNewCandidateInputChange}
+                        placeholder="ID chuyên ngành"
+                        min="0"
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                        Bằng cấp - 資格
+                      </label>
+                      <input
+                        type="number"
+                        name="qualification"
+                        value={newCandidateData.qualification}
+                        onChange={handleNewCandidateInputChange}
+                        placeholder="ID bằng cấp"
+                        min="0"
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-gray-900 mb-2">
+                      Công cụ đã học - 学習したツール
+                    </label>
+                    <div className="space-y-1.5">
+                      {newCandidateData.learnedTools.map((tool, index) => (
+                        <div key={index} className="flex gap-1.5">
+                          <input
+                            type="text"
+                            value={tool}
+                            onChange={(e) => updateLearnedTool(index, e.target.value)}
+                            placeholder="VD: React, Python, Docker..."
+                            className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeLearnedTool(index)}
+                            className="p-1.5 text-red-500 hover:text-red-700"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={handleAddLearnedTool}
+                        className="text-[10px] text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                      >
+                        <Plus className="w-3 h-3" />
+                        Thêm công cụ đã học
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-gray-900 mb-2">
+                      Công cụ có kinh nghiệm - 経験のあるツール
+                    </label>
+                    <div className="space-y-1.5">
+                      {newCandidateData.experienceTools.map((tool, index) => (
+                        <div key={index} className="flex gap-1.5">
+                          <input
+                            type="text"
+                            value={tool}
+                            onChange={(e) => updateExperienceTool(index, e.target.value)}
+                            placeholder="VD: AWS, Kubernetes, TypeScript..."
+                            className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeExperienceTool(index)}
+                            className="p-1.5 text-red-500 hover:text-red-700"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={handleAddExperienceTool}
+                        className="text-[10px] text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                      >
+                        <Plus className="w-3 h-3" />
+                        Thêm công cụ có kinh nghiệm
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1805,35 +2770,15 @@ const AdminAddNominationPage = () => {
                 <label className="block text-xs font-semibold text-gray-900 mb-2">
                   Lương (ước tính)
                 </label>
-                  <div className="space-y-2">
-                    <select
-                      name="salaryType"
-                      value={formData.salaryType}
-                      onChange={(e) => setFormData(prev => ({ ...prev, salaryType: parseInt(e.target.value) }))}
+                  <div>
+                    <input
+                      type="number"
+                      name="yearlySalary"
+                      value={formData.yearlySalary}
+                      onChange={handleInputChange}
+                      placeholder="VD: 800 (万円/năm)"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
-                    >
-                      <option value="1">Lương năm (万円/năm)</option>
-                      <option value="2">Lương tháng (万円/tháng)</option>
-                    </select>
-                    {formData.salaryType === 1 ? (
-                      <input
-                        type="number"
-                        name="annualSalary"
-                        value={formData.annualSalary}
-                        onChange={handleInputChange}
-                        placeholder="VD: 800"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
-                      />
-                    ) : (
-                      <input
-                        type="number"
-                        name="monthlySalary"
-                        value={formData.monthlySalary}
-                        onChange={handleInputChange}
-                        placeholder="VD: 50"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
-                      />
-                    )}
+                    />
                   </div>
               </div>
             </div>

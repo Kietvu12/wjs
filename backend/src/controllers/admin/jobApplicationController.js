@@ -129,6 +129,12 @@ export const jobApplicationController = {
           attributes: ['id', 'name', 'email', 'code']
         },
         {
+          model: Admin,
+          as: 'admin',
+          required: false,
+          attributes: ['id', 'name', 'email']
+        },
+        {
           model: CVStorage,
           as: 'cv',
           required: false,
@@ -211,6 +217,12 @@ export const jobApplicationController = {
             model: Collaborator,
             as: 'collaborator',
             required: false
+          },
+          {
+            model: Admin,
+            as: 'admin',
+            required: false,
+            attributes: ['id', 'name', 'email']
           },
           {
             model: CVStorage,
@@ -307,6 +319,7 @@ export const jobApplicationController = {
       const jobApplication = await JobApplication.create({
         jobId,
         collaboratorId: collaboratorId || null,
+        adminId: req.admin?.id || null,
         title,
         status,
         cvCode: cvCode || null,
@@ -331,6 +344,12 @@ export const jobApplicationController = {
             model: Collaborator,
             as: 'collaborator',
             required: false
+          },
+          {
+            model: Admin,
+            as: 'admin',
+            required: false,
+            attributes: ['id', 'name', 'email']
           },
           {
             model: CVStorage,
@@ -424,17 +443,119 @@ export const jobApplicationController = {
         }
       }
 
-      // Update fields
+      // Update fields - loại bỏ monthlySalary, chỉ cho phép yearlySalary
       Object.keys(updateData).forEach(key => {
+        // Loại bỏ monthlySalary khỏi update
+        if (key === 'monthlySalary' || key === 'monthly_salary') {
+          return;
+        }
         if (updateData[key] !== undefined) {
           jobApplication[key] = updateData[key];
         }
       });
+      
+      // Đảm bảo yearlySalary được cập nhật nếu có trong updateData
+      if (updateData.yearlySalary !== undefined) {
+        // Parse thành number nếu là string
+        const yearlySalaryValue = typeof updateData.yearlySalary === 'string' 
+          ? parseFloat(updateData.yearlySalary) 
+          : updateData.yearlySalary;
+        jobApplication.yearlySalary = yearlySalaryValue;
+        console.log(`[Update Job Application] Cập nhật yearlySalary: ${yearlySalaryValue} (từ ${updateData.yearlySalary})`);
+      }
 
       await jobApplication.save();
+      
+      // Reload để đảm bảo giá trị đã được cập nhật
+      await jobApplication.reload();
 
-      // Nếu monthlySalary được cập nhật, tính lại amount của payment_request
-      if (updateData.monthlySalary !== undefined && updateData.monthlySalary !== oldData.monthlySalary) {
+      // Check if status is nyusha (8) and has yearlySalary - create payment request immediately
+      const isNyusha = jobApplication.status === 8;
+      const hasYearlySalary = jobApplication.yearlySalary && jobApplication.yearlySalary > 0;
+      const hasCollaborator = jobApplication.collaboratorId;
+      
+      console.log(`[Payment Request] Kiểm tra điều kiện tạo payment request cho job application #${jobApplication.id}:`, {
+        isNyusha,
+        hasYearlySalary,
+        yearlySalary: jobApplication.yearlySalary,
+        hasCollaborator,
+        collaboratorId: jobApplication.collaboratorId
+      });
+
+      // Tự động tạo payment request ngay khi status = nyusha (8) và có yearlySalary và có collaborator
+      if (isNyusha && hasYearlySalary && hasCollaborator) {
+        try {
+          // Kiểm tra xem đã có payment request chưa
+          let paymentRequest = await PaymentRequest.findOne({
+            where: {
+              jobApplicationId: jobApplication.id
+            }
+          });
+
+          if (!paymentRequest) {
+            // Tính toán commission amount
+            console.log(`[Payment Request] Tính toán commission cho job application #${jobApplication.id}:`, {
+              jobId: jobApplication.jobId,
+              yearlySalary: jobApplication.yearlySalary,
+              collaboratorId: jobApplication.collaboratorId,
+              cvCode: jobApplication.cvCode
+            });
+
+            const commissionAmount = await calculateCommission({
+              jobId: jobApplication.jobId,
+              jobApplicationId: jobApplication.id,
+              yearlySalary: jobApplication.yearlySalary,
+              collaboratorId: jobApplication.collaboratorId,
+              cvCode: jobApplication.cvCode
+            });
+
+            console.log(`[Payment Request] Commission amount tính được: ${commissionAmount}`);
+
+            // Kiểm tra commission amount hợp lệ
+            if (commissionAmount === null || commissionAmount === undefined || isNaN(commissionAmount)) {
+              console.error(`[Payment Request] Commission amount không hợp lệ: ${commissionAmount}`);
+              throw new Error(`Không thể tính được số tiền hoa hồng. Commission amount: ${commissionAmount}`);
+            }
+
+            // Tạo payment request mới
+            paymentRequest = await PaymentRequest.create({
+              collaboratorId: jobApplication.collaboratorId,
+              jobApplicationId: jobApplication.id,
+              amount: parseFloat(commissionAmount),
+              status: 0 // Chờ duyệt
+            });
+
+            console.log(`[Payment Request] Tự động tạo payment request #${paymentRequest.id} cho job application #${jobApplication.id} với amount: ${paymentRequest.amount} (ngay khi nyusha)`);
+          } else if (paymentRequest.status === 0) {
+            // Nếu payment request đã tồn tại và đang chờ duyệt, cập nhật amount nếu yearlySalary thay đổi
+            if (updateData.yearlySalary !== undefined && updateData.yearlySalary !== oldData.yearlySalary) {
+              console.log(`[Payment Request] Cập nhật amount cho payment request #${paymentRequest.id}`);
+              const newCommissionAmount = await calculateCommission({
+                jobId: jobApplication.jobId,
+                jobApplicationId: jobApplication.id,
+                yearlySalary: jobApplication.yearlySalary,
+                collaboratorId: jobApplication.collaboratorId,
+                cvCode: jobApplication.cvCode
+              });
+
+              console.log(`[Payment Request] New commission amount: ${newCommissionAmount}`);
+              
+              if (newCommissionAmount !== null && newCommissionAmount !== undefined && !isNaN(newCommissionAmount)) {
+                paymentRequest.amount = parseFloat(newCommissionAmount);
+                await paymentRequest.save();
+                console.log(`[Payment Request] Đã cập nhật amount: ${paymentRequest.amount}`);
+              } else {
+                console.error(`[Payment Request] Commission amount không hợp lệ: ${newCommissionAmount}`);
+              }
+            }
+          }
+        } catch (paymentError) {
+          console.error('[Payment Request] Error creating/updating payment request:', paymentError);
+          console.error('[Payment Request] Error stack:', paymentError.stack);
+          // Không throw error, chỉ log để không ảnh hưởng đến việc update job application
+        }
+      } else if (updateData.yearlySalary !== undefined && updateData.yearlySalary !== oldData.yearlySalary) {
+        // Nếu chỉ cập nhật yearlySalary (không phải nyusha), cập nhật amount của payment_request nếu có
         try {
           const paymentRequest = await PaymentRequest.findOne({
             where: {
@@ -447,7 +568,7 @@ export const jobApplicationController = {
             const newCommissionAmount = await calculateCommission({
               jobId: jobApplication.jobId,
               jobApplicationId: jobApplication.id,
-              monthlySalary: updateData.monthlySalary || jobApplication.monthlySalary,
+              yearlySalary: jobApplication.yearlySalary,
               collaboratorId: jobApplication.collaboratorId,
               cvCode: jobApplication.cvCode
             });
@@ -473,6 +594,12 @@ export const jobApplicationController = {
             model: Collaborator,
             as: 'collaborator',
             required: false
+          },
+          {
+            model: Admin,
+            as: 'admin',
+            required: false,
+            attributes: ['id', 'name', 'email']
           },
           {
             model: CVStorage,
@@ -535,6 +662,103 @@ export const jobApplicationController = {
       }
 
       await jobApplication.save();
+
+      // Cập nhật CV status/phase dựa trên job application status
+      if (jobApplication.cvCode) {
+        try {
+          const cv = await CVStorage.findOne({
+            where: { code: jobApplication.cvCode }
+          });
+
+          if (cv) {
+            // Map job application status sang CV phase/status
+            // Status mapping:
+            // 1: Admin đang xử lý hồ sơ -> CV status giữ nguyên
+            // 2: Đang tiến cử -> CV status = 1 (active)
+            // 3-7: Các giai đoạn -> CV status = 1 (active)
+            // 8: Đã nyusha -> CV status = 1 (active)
+            // 9-11: Thanh toán -> CV status = 1 (active)
+            // 12, 15, 16, 17: Từ chối/Hủy -> CV status có thể giữ nguyên hoặc = 2 (archived)
+            
+            let newCVStatus = cv.status; // Giữ nguyên mặc định
+            
+            if (jobApplication.status >= 2 && jobApplication.status <= 11) {
+              // Các status tích cực -> active
+              newCVStatus = 1;
+            } else if (jobApplication.status === 12 || jobApplication.status === 15 || 
+                       jobApplication.status === 16 || jobApplication.status === 17) {
+              // Từ chối/Hủy -> có thể archive hoặc giữ nguyên
+              // Tạm thời giữ nguyên, có thể thay đổi logic sau
+              newCVStatus = cv.status;
+            }
+
+            if (cv.status !== newCVStatus) {
+              cv.status = newCVStatus;
+              await cv.save();
+              console.log(`[Job Application] Đã cập nhật CV status: ${cv.code} -> ${newCVStatus}`);
+            }
+          }
+        } catch (cvError) {
+          console.error('[Job Application] Error updating CV status:', cvError);
+          // Không throw error, chỉ log
+        }
+      }
+
+      // Tự động tạo payment request ngay khi status = nyusha (8)
+      const isNyusha = jobApplication.status === 8;
+      const hasYearlySalary = jobApplication.yearlySalary && jobApplication.yearlySalary > 0;
+      const hasCollaborator = jobApplication.collaboratorId;
+
+      if (isNyusha && hasYearlySalary && hasCollaborator) {
+        try {
+          // Kiểm tra xem đã có payment request chưa
+          let paymentRequest = await PaymentRequest.findOne({
+            where: {
+              jobApplicationId: jobApplication.id
+            }
+          });
+
+          if (!paymentRequest) {
+            // Tính toán commission amount
+            console.log(`[Payment Request] Tính toán commission cho job application #${jobApplication.id} (updateStatus):`, {
+              jobId: jobApplication.jobId,
+              yearlySalary: jobApplication.yearlySalary,
+              collaboratorId: jobApplication.collaboratorId,
+              cvCode: jobApplication.cvCode
+            });
+
+            const commissionAmount = await calculateCommission({
+              jobId: jobApplication.jobId,
+              jobApplicationId: jobApplication.id,
+              yearlySalary: jobApplication.yearlySalary,
+              collaboratorId: jobApplication.collaboratorId,
+              cvCode: jobApplication.cvCode
+            });
+
+            console.log(`[Payment Request] Commission amount tính được (updateStatus): ${commissionAmount}`);
+
+            // Kiểm tra commission amount hợp lệ
+            if (commissionAmount === null || commissionAmount === undefined || isNaN(commissionAmount)) {
+              console.error(`[Payment Request] Commission amount không hợp lệ (updateStatus): ${commissionAmount}`);
+              throw new Error(`Không thể tính được số tiền hoa hồng. Commission amount: ${commissionAmount}`);
+            }
+
+            // Tạo payment request mới
+            paymentRequest = await PaymentRequest.create({
+              collaboratorId: jobApplication.collaboratorId,
+              jobApplicationId: jobApplication.id,
+              amount: parseFloat(commissionAmount),
+              status: 0 // Chờ duyệt
+            });
+
+            console.log(`[Payment Request] Tự động tạo payment request #${paymentRequest.id} cho job application #${jobApplication.id} khi cập nhật status với amount: ${paymentRequest.amount} (ngay khi nyusha)`);
+          }
+        } catch (paymentError) {
+          console.error('[Payment Request] Error creating payment request (updateStatus):', paymentError);
+          console.error('[Payment Request] Error stack (updateStatus):', paymentError.stack);
+          // Không throw error, chỉ log để không ảnh hưởng đến việc update status
+        }
+      }
 
       // Log action
       await ActionLog.create({

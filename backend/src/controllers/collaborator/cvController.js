@@ -113,9 +113,10 @@ export const cvController = {
         order: orderClause
       });
 
-      // Get applications count for each CV using Sequelize model
+      // Get applications count and latest status for each CV using Sequelize model
       const cvCodes = rows.map(cv => cv.code).filter(code => code); // Filter out null/undefined codes
       let countMap = {};
+      let latestStatusMap = {};
       
       if (cvCodes.length > 0) {
         // Count job applications grouped by cvCode using Sequelize
@@ -140,12 +141,34 @@ export const cvController = {
             countMap[item.cvCode] = parseInt(item.count) || 0;
           }
         });
+
+        // Get latest application status for each CV
+        // Use a subquery approach to get the most recent application for each CV
+        for (const cvCode of cvCodes) {
+          const latestApp = await JobApplication.findOne({
+            where: {
+              cvCode: cvCode,
+              status: {
+                [Op.not]: null
+              }
+            },
+            order: [['updated_at', 'DESC']],
+            attributes: ['status'],
+            raw: true,
+            paranoid: true
+          });
+          
+          if (latestApp) {
+            latestStatusMap[cvCode] = latestApp.status;
+          }
+        }
       }
 
-      // Attach applications count to each CV
+      // Attach applications count and latest status to each CV
       const cvsWithCount = rows.map(cv => {
         const cvData = cv.toJSON();
         cvData.applicationsCount = countMap[cv.code] || 0;
+        cvData.latestApplicationStatus = latestStatusMap[cv.code] || null;
         return cvData;
       });
 

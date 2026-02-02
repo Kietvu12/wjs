@@ -14,6 +14,9 @@ import {
   Eye,
   EyeOff,
   ArrowUpDown,
+  Copy,
+  MoreVertical,
+  X,
 } from 'lucide-react';
 
 const JobCategoriesPage = () => {
@@ -24,6 +27,15 @@ const JobCategoriesPage = () => {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [expandedCategories, setExpandedCategories] = useState(new Set());
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [showQuickAddModal, setShowQuickAddModal] = useState(false);
+  const [quickAddParentId, setQuickAddParentId] = useState(null);
+  const [quickAddFormData, setQuickAddFormData] = useState({
+    name: '',
+    slug: '',
+    description: '',
+    order: 0,
+    status: 1,
+  });
 
   useEffect(() => {
     loadCategories();
@@ -111,6 +123,92 @@ const JobCategoriesPage = () => {
     } catch (error) {
       console.error('Error updating status:', error);
       alert(error.message || 'Có lỗi xảy ra');
+    }
+  };
+
+  const handleQuickAdd = (parentId) => {
+    setQuickAddParentId(parentId);
+    setQuickAddFormData({
+      name: '',
+      slug: '',
+      description: '',
+      order: 0,
+      status: 1,
+    });
+    setShowQuickAddModal(true);
+  };
+
+  const generateSlug = (name) => {
+    return name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  };
+
+  const handleQuickAddSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!quickAddFormData.name || !quickAddFormData.name.trim()) {
+      alert('Tên danh mục là bắt buộc');
+      return;
+    }
+
+    try {
+      const requestData = {
+        name: quickAddFormData.name.trim(),
+        slug: quickAddFormData.slug.trim() || generateSlug(quickAddFormData.name),
+        description: quickAddFormData.description || null,
+        parentId: quickAddParentId,
+        order: quickAddFormData.order || 0,
+        status: quickAddFormData.status,
+      };
+
+      const response = await apiService.createJobCategory(requestData);
+      if (response.success) {
+        alert('Tạo danh mục con thành công!');
+        setShowQuickAddModal(false);
+        setQuickAddParentId(null);
+        loadCategories();
+        // Auto-expand parent
+        if (quickAddParentId) {
+          setExpandedCategories(prev => new Set([...prev, quickAddParentId]));
+        }
+      } else {
+        alert(response.message || 'Có lỗi xảy ra khi tạo');
+      }
+    } catch (error) {
+      console.error('Error creating category:', error);
+      alert(error.message || 'Có lỗi xảy ra khi tạo');
+    }
+  };
+
+  const handleDuplicate = async (category) => {
+    if (!window.confirm(`Bạn có chắc muốn sao chép danh mục "${category.name}"?`)) {
+      return;
+    }
+
+    try {
+      const requestData = {
+        name: `${category.name} (Copy)`,
+        slug: `${category.slug}-copy`,
+        description: category.description || null,
+        parentId: category.parentId,
+        order: category.order || 0,
+        status: category.status,
+      };
+
+      const response = await apiService.createJobCategory(requestData);
+      if (response.success) {
+        alert('Sao chép danh mục thành công!');
+        loadCategories();
+      } else {
+        alert(response.message || 'Có lỗi xảy ra khi sao chép');
+      }
+    } catch (error) {
+      console.error('Error duplicating category:', error);
+      alert(error.message || 'Có lỗi xảy ra khi sao chép');
     }
   };
 
@@ -207,6 +305,14 @@ const JobCategoriesPage = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-1">
+            {/* Quick Add Child Button */}
+            <button
+              onClick={() => handleQuickAdd(category.id)}
+              className="p-2 hover:bg-green-100 rounded transition-colors"
+              title="Thêm category con nhanh"
+            >
+              <Plus className="w-4 h-4 text-green-600" />
+            </button>
             <button
               onClick={() => toggleStatus(category)}
               className="p-2 hover:bg-gray-200 rounded transition-colors"
@@ -217,6 +323,13 @@ const JobCategoriesPage = () => {
               ) : (
                 <EyeOff className="w-4 h-4 text-gray-400" />
               )}
+            </button>
+            <button
+              onClick={() => handleDuplicate(category)}
+              className="p-2 hover:bg-purple-100 rounded transition-colors"
+              title="Sao chép"
+            >
+              <Copy className="w-4 h-4 text-purple-600" />
             </button>
             <button
               onClick={() => navigate(`/admin/job-categories/${category.id}/edit`)}
@@ -326,6 +439,140 @@ const JobCategoriesPage = () => {
           </div>
         )}
       </div>
+
+      {/* Quick Add Modal */}
+      {showQuickAddModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center" 
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+          onClick={() => setShowQuickAddModal(false)}
+        >
+          <div 
+            className="bg-white rounded-lg shadow-xl w-full max-w-md p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Thêm category con nhanh
+              </h3>
+              <button
+                onClick={() => setShowQuickAddModal(false)}
+                className="p-1 hover:bg-gray-100 rounded transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <form onSubmit={handleQuickAddSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  Tên danh mục <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={quickAddFormData.name}
+                  onChange={(e) => {
+                    const name = e.target.value;
+                    setQuickAddFormData(prev => ({
+                      ...prev,
+                      name,
+                      slug: prev.slug || generateSlug(name)
+                    }));
+                  }}
+                  placeholder="VD: Software Development"
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  Slug <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={quickAddFormData.slug}
+                  onChange={(e) => setQuickAddFormData(prev => ({
+                    ...prev,
+                    slug: e.target.value
+                  }))}
+                  placeholder="VD: software-development"
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  Mô tả
+                </label>
+                <textarea
+                  value={quickAddFormData.description}
+                  onChange={(e) => setQuickAddFormData(prev => ({
+                    ...prev,
+                    description: e.target.value
+                  }))}
+                  placeholder="Mô tả về danh mục..."
+                  rows="3"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                    Thứ tự
+                  </label>
+                  <input
+                    type="number"
+                    value={quickAddFormData.order}
+                    onChange={(e) => setQuickAddFormData(prev => ({
+                      ...prev,
+                      order: parseInt(e.target.value) || 0
+                    }))}
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                    Trạng thái
+                  </label>
+                  <select
+                    value={quickAddFormData.status}
+                    onChange={(e) => setQuickAddFormData(prev => ({
+                      ...prev,
+                      status: parseInt(e.target.value)
+                    }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  >
+                    <option value="1">Đang hoạt động</option>
+                    <option value="0">Ẩn</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowQuickAddModal(false)}
+                  className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors"
+                >
+                  Tạo nhanh
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

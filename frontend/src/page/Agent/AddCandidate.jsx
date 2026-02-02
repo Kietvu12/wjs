@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import apiService from '../../services/api';
 
 import {
@@ -33,6 +35,13 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
     address: '',
     phone: '',
     email: '',
+    // Residence & Visa Information
+    addressOrigin: '',
+    passport: '',
+    currentResidence: '',
+    jpResidenceStatus: '',
+    visaExpirationDate: '',
+    otherCountry: '',
     // Education
     educations: [],
     // Work Experience
@@ -40,6 +49,12 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
     // Skills & Certificates
     technicalSkills: '',
     certificates: [],
+    learnedTools: [],
+    experienceTools: [],
+    jlptLevel: '',
+    experienceYears: '',
+    specialization: '',
+    qualification: '',
     // Self Introduction
     careerSummary: '',
     strengths: '',
@@ -61,22 +76,79 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
   // API Base URL for CV parsing
   const API_BASE_URL = 'https://unboiled-nonprescriptive-hiedi.ngrok-free.dev';
 
+  // Calculate age from birth date
+  const calculateAge = (birthDate) => {
+    if (!birthDate) return '';
+    const today = new Date();
+    const birth = birthDate instanceof Date ? birthDate : new Date(birthDate);
+    if (isNaN(birth.getTime())) return '';
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age.toString();
+  };
+
+  // Handle date change from DatePicker
+  const handleBirthDateChange = (date) => {
+    if (date) {
+      const dateString = date.toISOString().split('T')[0];
+      const age = calculateAge(date);
+      setFormData(prev => ({
+        ...prev,
+        birthDate: dateString,
+        age: age
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        birthDate: '',
+        age: ''
+      }));
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [name]: value
+      };
+      
+      // Auto-calculate age when birthDate changes
+      if (name === 'birthDate' && value) {
+        const age = calculateAge(value);
+        newData.age = age;
+      }
+      
+      return newData;
+    });
   };
 
   // Helper function to merge parsed data with form structure
   const mergeResumeData = (parsedData) => {
+    const dob = parsedData.personal_info?.dob || '';
+    let birthDateValue = dob || '';
+    // Convert date string to proper format if needed
+    if (birthDateValue && !birthDateValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      // Try to parse different date formats
+      const parsedDate = new Date(birthDateValue);
+      if (!isNaN(parsedDate.getTime())) {
+        birthDateValue = parsedDate.toISOString().split('T')[0];
+      } else {
+        birthDateValue = '';
+      }
+    }
+    const calculatedAge = birthDateValue ? calculateAge(new Date(birthDateValue)) : (parsedData.personal_info?.age || '');
+    
     setFormData(prev => ({
       ...prev,
       nameKanji: parsedData.personal_info?.full_name_kanji || prev.nameKanji,
       nameKana: parsedData.personal_info?.full_name_kana || prev.nameKana,
-      birthDate: parsedData.personal_info?.dob || prev.birthDate,
-      age: parsedData.personal_info?.age || prev.age,
+      birthDate: birthDateValue || prev.birthDate,
+      age: calculatedAge || prev.age,
       gender: parsedData.personal_info?.gender || prev.gender,
       postalCode: parsedData.personal_info?.contact?.postal_code || prev.postalCode,
       address: parsedData.personal_info?.contact?.address || prev.address,
@@ -274,6 +346,47 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
     }));
   };
 
+  // Tools handlers
+  const handleAddLearnedTool = () => {
+    setFormData(prev => ({
+      ...prev,
+      learnedTools: [...prev.learnedTools, '']
+    }));
+  };
+
+  const updateLearnedTool = (index, value) => {
+    const updated = [...formData.learnedTools];
+    updated[index] = value;
+    setFormData(prev => ({ ...prev, learnedTools: updated }));
+  };
+
+  const removeLearnedTool = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      learnedTools: prev.learnedTools.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleAddExperienceTool = () => {
+    setFormData(prev => ({
+      ...prev,
+      experienceTools: [...prev.experienceTools, '']
+    }));
+  };
+
+  const updateExperienceTool = (index, value) => {
+    const updated = [...formData.experienceTools];
+    updated[index] = value;
+    setFormData(prev => ({ ...prev, experienceTools: updated }));
+  };
+
+  const removeExperienceTool = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      experienceTools: prev.experienceTools.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -317,13 +430,31 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
       formDataToSend.append('phone', formData.phone || '');
       formDataToSend.append('email', formData.email || '');
       
+      // Residence & Visa Information
+      formDataToSend.append('addressOrigin', formData.addressOrigin || '');
+      if (formData.passport) formDataToSend.append('passport', formData.passport);
+      if (formData.currentResidence) formDataToSend.append('currentResidence', formData.currentResidence);
+      if (formData.jpResidenceStatus) formDataToSend.append('jpResidenceStatus', formData.jpResidenceStatus);
+      formDataToSend.append('visaExpirationDate', formData.visaExpirationDate || '');
+      formDataToSend.append('otherCountry', formData.otherCountry || '');
+      
       // JSON fields - send as JSON strings (backend will parse)
       formDataToSend.append('educations', JSON.stringify(formData.educations || []));
       formDataToSend.append('workExperiences', JSON.stringify(formData.workExperiences || []));
       formDataToSend.append('certificates', JSON.stringify(formData.certificates || []));
+      if (formData.learnedTools && formData.learnedTools.length > 0) {
+        formDataToSend.append('learnedTools', JSON.stringify(formData.learnedTools));
+      }
+      if (formData.experienceTools && formData.experienceTools.length > 0) {
+        formDataToSend.append('experienceTools', JSON.stringify(formData.experienceTools));
+      }
       
       // Skills and summary
       formDataToSend.append('technicalSkills', formData.technicalSkills || '');
+      if (formData.jlptLevel) formDataToSend.append('jlptLevel', formData.jlptLevel);
+      if (formData.experienceYears) formDataToSend.append('experienceYears', formData.experienceYears);
+      if (formData.specialization) formDataToSend.append('specialization', formData.specialization);
+      if (formData.qualification) formDataToSend.append('qualification', formData.qualification);
       formDataToSend.append('careerSummary', formData.careerSummary || '');
       formDataToSend.append('strengths', formData.strengths || '');
       formDataToSend.append('motivation', formData.motivation || '');
@@ -498,14 +629,23 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                     Ngày sinh - 生年月日
                   </label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                      type="text"
-                      name="birthDate"
-                      value={formData.birthDate}
-                      onChange={handleInputChange}
-                      placeholder="1990年1月1日"
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 z-10 pointer-events-none" />
+                    <DatePicker
+                      selected={formData.birthDate ? new Date(formData.birthDate) : null}
+                      onChange={handleBirthDateChange}
+                      dateFormat="yyyy-MM-dd"
+                      maxDate={new Date()}
+                      placeholderText="Chọn ngày sinh"
                       className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                      showYearDropdown
+                      showMonthDropdown
+                      dropdownMode="select"
+                      yearDropdownItemNumber={100}
+                      scrollableYearDropdown
+                      locale="vi"
+                      isClearable
+                      peekNextMonth
+                      showMonthYearPicker={false}
                     />
                   </div>
                 </div>
@@ -519,7 +659,8 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                     value={formData.age}
                     onChange={handleInputChange}
                     placeholder="30"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    readOnly
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-600 cursor-not-allowed"
                   />
                 </div>
                 <div>
@@ -609,6 +750,121 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                         />
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Residence & Visa Information */}
+              <div className="border-t pt-4 mt-4">
+                <h3 className="text-sm font-bold text-gray-700 mb-3">
+                  Thông tin cư trú & Visa (在留情報)
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-900 mb-1">
+                      Địa chỉ gốc - 出身地
+                    </label>
+                    <input
+                      type="text"
+                      name="addressOrigin"
+                      value={formData.addressOrigin}
+                      onChange={handleInputChange}
+                      placeholder="VD: ベトナム ホーチミン市"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-900 mb-1">
+                        Passport - パスポート
+                      </label>
+                      <select
+                        name="passport"
+                        value={formData.passport}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                      >
+                        <option value="">Chọn</option>
+                        <option value="1">Có</option>
+                        <option value="0">Không</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-900 mb-1">
+                        Nơi cư trú hiện tại - 現在の居住地
+                      </label>
+                      <select
+                        name="currentResidence"
+                        value={formData.currentResidence}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                      >
+                        <option value="">Chọn</option>
+                        <option value="1">Nhật Bản</option>
+                        <option value="2">Việt Nam</option>
+                        <option value="3">Khác</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-900 mb-1">
+                        Tình trạng cư trú tại Nhật - 在留資格
+                      </label>
+                      <select
+                        name="jpResidenceStatus"
+                        value={formData.jpResidenceStatus}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                      >
+                        <option value="">Chọn</option>
+                        <option value="1">技術・人文知識・国際業務</option>
+                        <option value="2">特定技能</option>
+                        <option value="3">留学</option>
+                        <option value="4">永住者</option>
+                        <option value="5">日本人の配偶者等</option>
+                        <option value="6">定住者</option>
+                        <option value="7">その他</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-900 mb-1">
+                        Ngày hết hạn Visa - 在留期限
+                      </label>
+                      <DatePicker
+                        selected={formData.visaExpirationDate ? new Date(formData.visaExpirationDate) : null}
+                        onChange={(date) => {
+                          if (date) {
+                            setFormData(prev => ({
+                              ...prev,
+                              visaExpirationDate: date.toISOString().split('T')[0]
+                            }));
+                          } else {
+                            setFormData(prev => ({
+                              ...prev,
+                              visaExpirationDate: ''
+                            }));
+                          }
+                        }}
+                        dateFormat="yyyy-MM-dd"
+                        placeholderText="Chọn ngày hết hạn"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                        isClearable
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-900 mb-1">
+                      Quốc gia khác - その他の国
+                    </label>
+                    <input
+                      type="text"
+                      name="otherCountry"
+                      value={formData.otherCountry}
+                      onChange={handleInputChange}
+                      placeholder="VD: アメリカ"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    />
                   </div>
                 </div>
               </div>
@@ -884,6 +1140,71 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
               Kỹ năng & Chứng chỉ (資格)
             </h2>
             <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                    JLPT Level - 日本語能力試験
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm font-semibold text-gray-600 pointer-events-none">N</span>
+                    <input
+                      type="number"
+                      name="jlptLevel"
+                      value={formData.jlptLevel}
+                      onChange={handleInputChange}
+                      min="1"
+                      max="5"
+                      placeholder="1-5"
+                      className="w-full pl-6 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    />
+                  </div>
+                  <p className="text-[10px] text-gray-500 mt-1">Nhập số từ 1 (N1) đến 5 (N5)</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                    Số năm kinh nghiệm - 経験年数
+                  </label>
+                  <input
+                    type="number"
+                    name="experienceYears"
+                    value={formData.experienceYears}
+                    onChange={handleInputChange}
+                    placeholder="VD: 3"
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                    Chuyên ngành - 専門分野
+                  </label>
+                  <input
+                    type="number"
+                    name="specialization"
+                    value={formData.specialization}
+                    onChange={handleInputChange}
+                    placeholder="ID chuyên ngành"
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                    Bằng cấp - 資格
+                  </label>
+                  <input
+                    type="number"
+                    name="qualification"
+                    value={formData.qualification}
+                    onChange={handleInputChange}
+                    placeholder="ID bằng cấp"
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                  />
+                </div>
+              </div>
               <div>
                 <label className="block text-xs font-bold text-gray-900 mb-1">
                   Kỹ năng kỹ thuật (活かせる経験・知識・技術)
@@ -941,6 +1262,72 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                   >
                     <Plus className="w-4 h-4" />
                     Thêm chứng chỉ
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-900 mb-2">
+                  Công cụ đã học - 学習したツール
+                </label>
+                <div className="space-y-2">
+                  {formData.learnedTools.map((tool, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={tool}
+                        onChange={(e) => updateLearnedTool(index, e.target.value)}
+                        placeholder="VD: React, Python, Docker..."
+                        className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeLearnedTool(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={handleAddLearnedTool}
+                    className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Thêm công cụ đã học
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-900 mb-2">
+                  Công cụ có kinh nghiệm - 経験のあるツール
+                </label>
+                <div className="space-y-2">
+                  {formData.experienceTools.map((tool, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={tool}
+                        onChange={(e) => updateExperienceTool(index, e.target.value)}
+                        placeholder="VD: AWS, Kubernetes, TypeScript..."
+                        className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeExperienceTool(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={handleAddExperienceTool}
+                    className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Thêm công cụ có kinh nghiệm
                   </button>
                 </div>
               </div>

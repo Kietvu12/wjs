@@ -109,6 +109,49 @@ const AdminCandidateDetailPage = () => {
     return 'bg-red-100 text-red-800 border-red-300';
   };
 
+  const downloadCV = async (cvPath) => {
+    if (!cvPath) {
+      alert('Không có file CV để tải xuống');
+      return;
+    }
+
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+      let fullUrl;
+      
+      // If path starts with http, use it directly
+      if (cvPath.startsWith('http')) {
+        fullUrl = cvPath;
+      } else {
+        // Remove leading slash if exists and construct URL
+        const cleanPath = cvPath.startsWith('/') ? cvPath.substring(1) : cvPath;
+        const apiBase = baseUrl.replace('/api', '');
+        fullUrl = `${apiBase}/${cleanPath}`;
+      }
+      
+      // Encode URL properly to handle special characters
+      const encodedUrl = encodeURI(fullUrl);
+      
+      // Try to open in new tab
+      const newWindow = window.open(encodedUrl, '_blank');
+      
+      // If popup blocked, try download instead
+      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+        // Fallback: create download link
+        const link = document.createElement('a');
+        link.href = encodedUrl;
+        link.download = cvPath.split('/').pop() || 'cv.pdf';
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      console.error('Error downloading CV:', error);
+      alert('Không thể tải file CV. Vui lòng thử lại sau.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -453,15 +496,13 @@ const AdminCandidateDetailPage = () => {
                         <p className="text-xs text-gray-500">{candidate.curriculumVitae}</p>
                       </div>
                     </div>
-                    <a
-                      href={`${import.meta.env.VITE_API_URL || ''}${candidate.curriculumVitae}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => downloadCV(candidate.curriculumVitae)}
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5"
                     >
                       <Download className="w-3.5 h-3.5" />
                       Tải xuống
-                    </a>
+                    </button>
                   </div>
                 </div>
               ) : (
@@ -477,15 +518,13 @@ const AdminCandidateDetailPage = () => {
                         <p className="text-xs text-gray-500">{candidate.otherDocuments}</p>
                       </div>
                     </div>
-                    <a
-                      href={`${import.meta.env.VITE_API_URL || ''}${candidate.otherDocuments}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => downloadCV(candidate.otherDocuments)}
                       className="px-4 py-2 bg-gray-600 text-white rounded-lg text-xs font-semibold hover:bg-gray-700 transition-colors flex items-center gap-1.5"
                     >
                       <Download className="w-3.5 h-3.5" />
                       Tải xuống
-                    </a>
+                    </button>
                   </div>
                 </div>
               )}

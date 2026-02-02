@@ -160,13 +160,24 @@ export const typeController = {
    */
   createType: async (req, res, next) => {
     try {
-      const { typename } = req.body;
+      const { typename, cvField } = req.body;
 
       if (!typename) {
         return res.status(400).json({
           success: false,
           message: 'Tên loại setting là bắt buộc'
         });
+      }
+
+      // Validate cvField if provided
+      if (cvField) {
+        const validCvFields = ['jlptLevel', 'experienceYears', 'specialization', 'qualification'];
+        if (!validCvFields.includes(cvField)) {
+          return res.status(400).json({
+            success: false,
+            message: `cvField không hợp lệ. Chỉ chấp nhận: ${validCvFields.join(', ')}`
+          });
+        }
       }
 
       // Check if typename already exists
@@ -178,7 +189,7 @@ export const typeController = {
         });
       }
 
-      const type = await Type.create({ typename });
+      const type = await Type.create({ typename, cvField: cvField || null });
 
       // Log action
       await ActionLog.create({
@@ -207,7 +218,7 @@ export const typeController = {
   updateType: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const { typename } = req.body;
+      const { typename, cvField } = req.body;
 
       const type = await Type.findByPk(id);
       if (!type) {
@@ -230,6 +241,20 @@ export const typeController = {
             message: 'Tên loại setting đã tồn tại'
           });
         }
+      }
+
+      // Validate cvField if provided
+      if (cvField !== undefined) {
+        if (cvField) {
+          const validCvFields = ['jlptLevel', 'experienceYears', 'specialization', 'qualification'];
+          if (!validCvFields.includes(cvField)) {
+            return res.status(400).json({
+              success: false,
+              message: `cvField không hợp lệ. Chỉ chấp nhận: ${validCvFields.join(', ')}`
+            });
+          }
+        }
+        type.cvField = cvField || null;
       }
 
       if (typename !== undefined) {

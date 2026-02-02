@@ -24,7 +24,23 @@ const AgentJobsPageSession2 = ({ jobs: propJobs, filters, showAllJobs = false, e
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalJobs, setTotalJobs] = useState(0);
+  const [ctvProfile, setCtvProfile] = useState(null);
   const limit = showAllJobs ? 10 : 3; // Show 10 jobs per page if showAllJobs, otherwise 3
+
+  // Load CTV profile to get rank level
+  useEffect(() => {
+    const loadCTVProfile = async () => {
+      try {
+        const response = await apiService.getCTVProfile();
+        if (response.success && response.data) {
+          setCtvProfile(response.data.collaborator || response.data);
+        }
+      } catch (error) {
+        console.error('Error loading CTV profile:', error);
+      }
+    };
+    loadCTVProfile();
+  }, []);
 
   // Load initial jobs on mount (only if no propJobs and no filters)
   useEffect(() => {
@@ -228,7 +244,7 @@ const mockJobs = [
       jobId: 'Mã việc làm',
       jobCategory: 'Phân loại nghề nghiệp',
       hiringCompany: 'Công ty tuyển dụng',
-      companyCommission: 'Công ty bạn',
+      companyCommission: 'Có thể nhận',
       fullAmount: 'Toàn bộ',
       sameDayPayment: 'Có thể thanh toán trong ngày',
       viewMore: 'Xem thêm JobShare Workstation khác',
@@ -353,22 +369,179 @@ const mockJobs = [
       tags.push({ label: 'Ứng tuyển trực tiếp', color: 'orange' });
     }
 
-    // Get commission info from jobValues
+    // Helper function to parse number from string with thousand separators
+    // Salary range can be in different formats:
+    // - "3.000.000" = 3,000,000 base units = 3 million (7 digits)
+    // - "343.800.000" = 343,800,000 base units = 343.8 million (9 digits)
+    // - "343.800" = 343.8 million (already in millions, 6 digits with separator)
+    // - "3" = 3 million (already in millions, 1 digit)
+    const parseNumber = (str) => {
+      if (!str) return 0;
+      const originalStr = String(str);
+      // Remove all dots and commas (thousand separators), then parse
+      const cleaned = originalStr.replace(/[.,]/g, '');
+      const num = parseFloat(cleaned) || 0;
+      
+      // Count digits to determine the scale
+      const digitCount = cleaned.replace(/[^0-9]/g, '').length;
+      const hasSeparators = /[.,]/.test(originalStr);
+      
+      // If number has 7+ digits, it's definitely in base units (yen/VND)
+      // Convert to millions: 3,000,000 -> 3 million
+      if (digitCount >= 7) {
+        return num / 1000000;
+      }
+      // If number has 4-6 digits with separators, it could be:
+      // - "3.000" = 3,000 (thousands) -> 3 million if it's actually 3,000,000
+      // - "343.800" = 343.8 million (already in millions with decimal separator)
+      // We need to check: if it has a pattern like "343.800" (digits.digits), treat as decimal
+      else if (digitCount >= 4 && hasSeparators) {
+        // Check if it looks like a decimal in millions (e.g., "343.800" = 343.8)
+        // Pattern: digits.digits where the part after dot is 3 digits (thousand separator in decimal)
+        const decimalPattern = /^(\d+)\.(\d{3})$/;
+        if (decimalPattern.test(originalStr)) {
+          // It's already in millions with decimal separator: "343.800" = 343.8 million
+          // Parse as decimal: replace the last dot with nothing, then divide by 1000
+          // "343.800" -> "343800" -> 343800 -> 343.8
+          const beforeDot = originalStr.split('.')[0];
+          const afterDot = originalStr.split('.').slice(1).join('');
+          return parseFloat(beforeDot + '.' + afterDot);
+        }
+        // Otherwise, it's likely thousands that need conversion
+        // "3.000" = 3,000 -> 3 million (if it's actually 3,000,000)
+        return num / 1000;
+      }
+      // If number is small (< 1000) or has 1-3 digits, assume it's already in millions
+      // Example: "3" = 3 million
+      else {
+        return num;
+      }
+    };
+
+    // Helper function to parse salary range "min - max" (supports thousand separators)
+    const parseSalaryRange = (rangeStr) => {
+      if (!rangeStr) return null;
+      // Match pattern: "number - number" (supports dots, commas, spaces)
+      // Examples: "3.000.000 - 8.000.000", "3000000 - 8000000", "3,000,000 - 8,000,000"
+      const rangeMatch = rangeStr.match(/([\d.,]+)\s*-\s*([\d.,]+)/);
+      if (rangeMatch) {
+        const minSalary = parseNumber(rangeMatch[1]);
+        const maxSalary = parseNumber(rangeMatch[2]);
+        if (minSalary > 0 && maxSalary > 0) {
+          return { min: minSalary, max: maxSalary, avg: (minSalary + maxSalary) / 2 };
+        }
+      }
+      return null;
+    };
+
+    // Calculate commission based on salary range, job percent, and CTV rank percent
     const jobValues = job.jobValues || job.profits || [];
     let commissionText = 'Liên hệ';
+    
+    // Get CTV rank level percent
+    const ctvRankPercent = ctvProfile?.rankLevel?.percent ? parseFloat(ctvProfile.rankLevel.percent) : 0;
+    
+    // Get salary range with type = "year"
+    const salaryRanges = job.salaryRanges || [];
+    const yearSalaryRange = salaryRanges.find(sr => sr.type === 'year' || sr.type === 'Year' || sr.type === 'YEAR');
     
     if (jobValues.length > 0) {
       const firstJobValue = jobValues[0];
       const commissionType = job.jobCommissionType || 'fixed';
       const value = firstJobValue.value;
+      const valueId = firstJobValue.valueId || firstJobValue.valueRef?.id;
       
-      if (value !== null && value !== undefined) {
-        if (commissionType === 'fixed') {
-          const amount = parseInt(value) || 0;
+      // Parse salary range if available
+      const salaryRangeData = yearSalaryRange && yearSalaryRange.salaryRange 
+        ? parseSalaryRange(yearSalaryRange.salaryRange) 
+        : null;
+      
+      // Check if valueId = 6 (exception case - display fixed amount directly)
+      if (valueId === 6) {
+        if (value !== null && value !== undefined) {
+          if (commissionType === 'fixed') {
+            const fixedAmount = parseFloat(value) || 0;
+            if (fixedAmount > 0) {
+              // CTV nhận % theo level
+              const ctvAmount = ctvRankPercent > 0 ? fixedAmount * (ctvRankPercent / 100) : fixedAmount;
+              commissionText = `${Math.round(ctvAmount).toLocaleString('vi-VN')} triệu`;
+            }
+          } else if (commissionType === 'percent') {
+            // Nếu có salary range, tính dựa trên đó
+            if (salaryRangeData) {
+              const jobPercent = parseFloat(value) || 0;
+              const platformCommissionMin = salaryRangeData.min * (jobPercent / 100);
+              const platformCommissionMax = salaryRangeData.max * (jobPercent / 100);
+              const ctvMinAmount = ctvRankPercent > 0 
+                ? platformCommissionMin * (ctvRankPercent / 100) 
+                : platformCommissionMin;
+              const ctvMaxAmount = ctvRankPercent > 0 
+                ? platformCommissionMax * (ctvRankPercent / 100) 
+                : platformCommissionMax;
+              
+              // Format with appropriate precision to preserve difference between min and max
+              const formatCommission = (amount) => {
+                if (amount < 1) {
+                  // For amounts < 1 million, show 2 decimal places
+                  return amount.toFixed(2).replace(/\.?0+$/, '');
+                } else if (amount < 10) {
+                  // For amounts 1-10 million, show 1 decimal place
+                  return amount.toFixed(1).replace(/\.?0+$/, '');
+                } else {
+                  // For amounts >= 10 million, round to integer
+                  return Math.round(amount).toString();
+                }
+              };
+              
+              const formattedMin = formatCommission(ctvMinAmount);
+              const formattedMax = formatCommission(ctvMaxAmount);
+              commissionText = `${formattedMin.replace('.', ',')} - ${formattedMax.replace('.', ',')} triệu`;
+            } else {
+              commissionText = `${value}%`;
+            }
+          }
+        }
+      } else {
+        // Normal case: calculate based on salary range
+        if (salaryRangeData && commissionType === 'percent' && value !== null && value !== undefined) {
+          const jobPercent = parseFloat(value) || 0;
+          
+          // Calculate min and max commission: salary * jobPercent * ctvRankPercent
+          const platformCommissionMin = salaryRangeData.min * (jobPercent / 100);
+          const platformCommissionMax = salaryRangeData.max * (jobPercent / 100);
+          
+          const ctvMinAmount = ctvRankPercent > 0 
+            ? platformCommissionMin * (ctvRankPercent / 100) 
+            : platformCommissionMin;
+          const ctvMaxAmount = ctvRankPercent > 0 
+            ? platformCommissionMax * (ctvRankPercent / 100) 
+            : platformCommissionMax;
+          
+          // Format with appropriate precision to preserve difference between min and max
+          const formatCommission = (amount) => {
+            if (amount < 1) {
+              // For amounts < 1 million, show 2 decimal places
+              return amount.toFixed(2).replace(/\.?0+$/, '');
+            } else if (amount < 10) {
+              // For amounts 1-10 million, show 1 decimal place
+              return amount.toFixed(1).replace(/\.?0+$/, '');
+            } else {
+              // For amounts >= 10 million, round to integer
+              return Math.round(amount).toString();
+            }
+          };
+          
+          const formattedMin = formatCommission(ctvMinAmount);
+          const formattedMax = formatCommission(ctvMaxAmount);
+          commissionText = `${formattedMin.replace('.', ',')} - ${formattedMax.replace('.', ',')} triệu`;
+        } else if (commissionType === 'fixed' && value !== null && value !== undefined) {
+          // Fixed amount
+          const amount = parseFloat(value) || 0;
           if (amount > 0) {
             commissionText = `${amount.toLocaleString('vi-VN')} triệu`;
           }
-        } else if (commissionType === 'percent') {
+        } else if (commissionType === 'percent' && value !== null && value !== undefined) {
+          // Percent but no salary range
           commissionText = `${value}%`;
         }
       }
@@ -403,6 +576,7 @@ const mockJobs = [
       tags,
       title: job.title || '',
       company: job.company?.name || '',
+      recruitingCompany: job.recruitingCompany,
       techniqueRequirements,
       educationRequirements,
       location: locationText,
@@ -481,7 +655,9 @@ const mockJobs = [
                   <div className="flex items-start gap-2">
                     <Building2 className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
                     <div className="text-sm text-gray-700">
-                      <span className="font-medium">{t.hiringCompany}:</span> {job.company}
+                      <span className="font-medium">{t.hiringCompany}:</span> {
+                        job.recruitingCompany?.companyName || job.company || 'N/A'
+                      }
                     </div>
                   </div>
 

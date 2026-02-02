@@ -18,7 +18,32 @@ import {
   DollarSign as Money,
   Award,
   Users,
+  CheckSquare,
 } from 'lucide-react';
+
+// Dữ liệu quốc gia và tỉnh/thành phố
+const countryProvincesData = {
+  'Vietnam': [
+    'Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ', 'An Giang', 'Bà Rịa - Vũng Tàu',
+    'Bắc Giang', 'Bắc Kạn', 'Bạc Liêu', 'Bắc Ninh', 'Bến Tre', 'Bình Định', 'Bình Dương',
+    'Bình Phước', 'Bình Thuận', 'Cà Mau', 'Cao Bằng', 'Đắk Lắk', 'Đắk Nông', 'Điện Biên',
+    'Đồng Nai', 'Đồng Tháp', 'Gia Lai', 'Hà Giang', 'Hà Nam', 'Hà Tĩnh', 'Hải Dương',
+    'Hậu Giang', 'Hòa Bình', 'Hưng Yên', 'Khánh Hòa', 'Kiên Giang', 'Kon Tum', 'Lai Châu',
+    'Lâm Đồng', 'Lạng Sơn', 'Lào Cai', 'Long An', 'Nam Định', 'Nghệ An', 'Ninh Bình',
+    'Ninh Thuận', 'Phú Thọ', 'Phú Yên', 'Quảng Bình', 'Quảng Nam', 'Quảng Ngãi', 'Quảng Ninh',
+    'Quảng Trị', 'Sóc Trăng', 'Sơn La', 'Tây Ninh', 'Thái Bình', 'Thái Nguyên', 'Thanh Hóa',
+    'Thừa Thiên Huế', 'Tiền Giang', 'Trà Vinh', 'Tuyên Quang', 'Vĩnh Long', 'Vĩnh Phúc', 'Yên Bái'
+  ],
+  'Japan': [
+    'Tokyo', 'Osaka', 'Kyoto', 'Yokohama', 'Nagoya', 'Sapporo', 'Fukuoka', 'Kobe', 'Kawasaki',
+    'Saitama', 'Hiroshima', 'Sendai', 'Chiba', 'Kitakyushu', 'Sakai', 'Niigata', 'Hamamatsu',
+    'Shizuoka', 'Sagamihara', 'Okayama', 'Kumamoto', 'Kagoshima', 'Utsunomiya', 'Hachioji',
+    'Matsuyama', 'Kanazawa', 'Nagano', 'Toyama', 'Gifu', 'Fukushima', 'Mito', 'Akita', 'Aomori',
+    'Morioka', 'Yamagata', 'Fukui', 'Tottori', 'Matsue', 'Kofu', 'Maebashi', 'Takamatsu',
+    'Tokushima', 'Kochi', 'Miyazaki', 'Naha', 'Okinawa'
+  ],
+  'Other': [] // Cho phép nhập tùy chỉnh
+};
 
 
 const AdminAddJobPage = () => {
@@ -59,6 +84,8 @@ const AdminAddJobPage = () => {
   // Related data arrays
   const [workingLocations, setWorkingLocations] = useState([]);
   const [workingLocationDetails, setWorkingLocationDetails] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedProvinces, setSelectedProvinces] = useState([]);
   const [salaryRanges, setSalaryRanges] = useState([]);
   const [salaryRangeDetails, setSalaryRangeDetails] = useState([]);
   const [overtimeAllowances, setOvertimeAllowances] = useState([]);
@@ -82,9 +109,30 @@ const AdminAddJobPage = () => {
   const [loading, setLoading] = useState(false);
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
   const [showAddValueModal, setShowAddValueModal] = useState(false);
+  const [showEditTypeModal, setShowEditTypeModal] = useState(false);
+  const [showEditValueModal, setShowEditValueModal] = useState(false);
+  const [editingType, setEditingType] = useState(null);
+  const [editingValue, setEditingValue] = useState(null);
   const [newTypeName, setNewTypeName] = useState('');
   const [newValueNames, setNewValueNames] = useState(''); // Textarea: mỗi dòng là một Value
   const [selectedTypeForValue, setSelectedTypeForValue] = useState('');
+  const [useComparisonOperator, setUseComparisonOperator] = useState(false);
+  const [comparisonOperator, setComparisonOperator] = useState('');
+  const [comparisonValue, setComparisonValue] = useState('');
+  const [comparisonValueEnd, setComparisonValueEnd] = useState('');
+  // Recruiting Company state
+  const [recruitingCompany, setRecruitingCompany] = useState({
+    companyName: '',
+    revenue: '',
+    numberOfEmployees: '',
+    headquarters: '',
+    companyIntroduction: '',
+    stockExchangeInfo: '',
+    investmentCapital: '',
+    establishedDate: '',
+    services: [],
+    businessSectors: []
+  });
 
   useEffect(() => {
     loadCategories();
@@ -210,6 +258,23 @@ const AdminAddJobPage = () => {
         if (job.jobCampaigns && job.jobCampaigns.length > 0) {
           setSelectedCampaignIds(job.jobCampaigns.map(jc => jc.campaignId || jc.campaign?.id).filter(Boolean));
         }
+        
+        // Load recruiting company
+        if (job.recruitingCompany) {
+          const rc = job.recruitingCompany;
+          setRecruitingCompany({
+            companyName: rc.companyName || '',
+            revenue: rc.revenue || '',
+            numberOfEmployees: rc.numberOfEmployees || '',
+            headquarters: rc.headquarters || '',
+            companyIntroduction: rc.companyIntroduction || '',
+            stockExchangeInfo: rc.stockExchangeInfo || '',
+            investmentCapital: rc.investmentCapital || '',
+            establishedDate: rc.establishedDate || '',
+            services: (rc.services || []).map(s => ({ serviceName: s.serviceName || '', order: s.order || 0 })),
+            businessSectors: (rc.businessSectors || []).map(bs => ({ sectorName: bs.sectorName || '', order: bs.order || 0 }))
+          });
+        }
       }
     } catch (error) {
       console.error('Error loading job data:', error);
@@ -269,16 +334,31 @@ const AdminAddJobPage = () => {
     }
   };
 
+  const handleComparisonOperatorChange = (operator) => {
+    setComparisonOperator(operator);
+    // Clear comparisonValueEnd if not 'between'
+    if (operator !== 'between') {
+      setComparisonValueEnd('');
+    }
+  };
+
+  const [cvField, setCvField] = useState('');
+
   const handleCreateType = async () => {
     if (!newTypeName || !newTypeName.trim()) {
       alert('Vui lòng nhập tên Type');
       return;
     }
     try {
-      const response = await apiService.createType({ typename: newTypeName.trim() });
+      const typeData = {
+        typename: newTypeName.trim(),
+        cvField: cvField || null
+      };
+      const response = await apiService.createType(typeData);
       if (response.success) {
         alert('Tạo Type thành công!');
         setNewTypeName('');
+        setCvField('');
         setShowAddTypeModal(false);
         // Reload types
         await loadTypes();
@@ -291,6 +371,122 @@ const AdminAddJobPage = () => {
     }
   };
 
+  const handleEditType = async () => {
+    if (!editingType || !newTypeName || !newTypeName.trim()) {
+      alert('Vui lòng nhập tên Type');
+      return;
+    }
+    try {
+      const typeData = {
+        typename: newTypeName.trim(),
+        cvField: cvField || null
+      };
+      const response = await apiService.updateType(editingType.id, typeData);
+      if (response.success) {
+        alert('Cập nhật Type thành công!');
+        setNewTypeName('');
+        setCvField('');
+        setEditingType(null);
+        setShowEditTypeModal(false);
+        // Reload types
+        await loadTypes();
+      } else {
+        alert(response.message || 'Có lỗi xảy ra khi cập nhật Type');
+      }
+    } catch (error) {
+      console.error('Error updating type:', error);
+      alert(error.message || 'Có lỗi xảy ra khi cập nhật Type');
+    }
+  };
+
+  const handleDeleteType = async (typeId) => {
+    if (!window.confirm('Bạn có chắc muốn xóa Type này? (Soft delete)')) {
+      return;
+    }
+    try {
+      const response = await apiService.deleteType(typeId);
+      if (response.success) {
+        alert('Xóa Type thành công!');
+        // Reload types
+        await loadTypes();
+      } else {
+        alert(response.message || 'Có lỗi xảy ra khi xóa Type');
+      }
+    } catch (error) {
+      console.error('Error deleting type:', error);
+      alert(error.message || 'Có lỗi xảy ra khi xóa Type');
+    }
+  };
+
+  const handleEditValue = async () => {
+    if (!editingValue || !newValueNames || !newValueNames.trim()) {
+      alert('Vui lòng nhập tên Value');
+      return;
+    }
+    
+    // Validate comparison operator if enabled
+    if (useComparisonOperator) {
+      if (!comparisonOperator) {
+        alert('Vui lòng chọn toán tử so sánh');
+        return;
+      }
+      if (!comparisonValue || !comparisonValue.trim()) {
+        alert('Vui lòng nhập giá trị so sánh');
+        return;
+      }
+      if (comparisonOperator === 'between' && (!comparisonValueEnd || !comparisonValueEnd.trim())) {
+        alert('Vui lòng nhập giá trị kết thúc cho "between"');
+        return;
+      }
+    }
+    
+    try {
+      const valueData = {
+        valuename: newValueNames.trim(),
+        comparisonOperator: useComparisonOperator ? comparisonOperator : null,
+        comparisonValue: useComparisonOperator ? comparisonValue.trim() : null,
+        comparisonValueEnd: (useComparisonOperator && comparisonOperator === 'between') ? comparisonValueEnd.trim() : null
+      };
+      
+      const response = await apiService.updateValue(editingValue.id, valueData);
+      if (response.success) {
+        alert('Cập nhật Value thành công!');
+        await loadValuesForType(editingValue.typeId, true);
+        setNewValueNames('');
+        setEditingValue(null);
+        setUseComparisonOperator(false);
+        setComparisonOperator('');
+        setComparisonValue('');
+        setComparisonValueEnd('');
+        setShowEditValueModal(false);
+      } else {
+        alert(response.message || 'Có lỗi xảy ra khi cập nhật Value');
+      }
+    } catch (error) {
+      console.error('Error updating value:', error);
+      alert(error.message || 'Có lỗi xảy ra khi cập nhật Value');
+    }
+  };
+
+  const handleDeleteValue = async (valueId, typeId) => {
+    if (!window.confirm('Bạn có chắc muốn xóa Value này? (Soft delete)')) {
+      return;
+    }
+    try {
+      const response = await apiService.deleteValue(valueId);
+      if (response.success) {
+        alert('Xóa Value thành công!');
+        // Reload values for the type
+        await loadValuesForType(typeId, true);
+      } else {
+        alert(response.message || 'Có lỗi xảy ra khi xóa Value');
+      }
+    } catch (error) {
+      console.error('Error deleting value:', error);
+      alert(error.message || 'Có lỗi xảy ra khi xóa Value');
+    }
+  };
+
   const handleCreateValue = async () => {
     if (!newValueNames || !newValueNames.trim()) {
       alert('Vui lòng nhập tên Value');
@@ -300,59 +496,114 @@ const AdminAddJobPage = () => {
       alert('Vui lòng chọn Type');
       return;
     }
-    try {
-      const typeId = parseInt(selectedTypeForValue);
-      // Split by newline and filter empty lines
-      const valueNames = newValueNames
-        .split('\n')
-        .map(v => v.trim())
-        .filter(v => v.length > 0);
-      
-      if (valueNames.length === 0) {
-        alert('Vui lòng nhập ít nhất một Value');
+    
+    // Validate comparison operator if enabled
+    if (useComparisonOperator) {
+      if (!comparisonOperator) {
+        alert('Vui lòng chọn toán tử so sánh');
         return;
       }
-
-      // Create all values
-      const createdValues = [];
-      const errors = [];
+      if (!comparisonValue || !comparisonValue.trim()) {
+        alert('Vui lòng nhập giá trị so sánh');
+        return;
+      }
+      if (comparisonOperator === 'between' && (!comparisonValueEnd || !comparisonValueEnd.trim())) {
+        alert('Vui lòng nhập giá trị kết thúc cho "between"');
+        return;
+      }
+      // If using comparison operator, only allow one value
+      if (newValueNames.split('\n').filter(v => v.trim().length > 0).length > 1) {
+        alert('Khi sử dụng điều kiện so sánh, chỉ có thể tạo 1 Value mỗi lần');
+        return;
+      }
+    }
+    
+    try {
+      const typeId = parseInt(selectedTypeForValue);
       
-      for (const valuename of valueNames) {
+      if (useComparisonOperator) {
+        // Create single value with comparison operator
+        const valuename = newValueNames.trim();
         try {
-          const response = await apiService.createValue({ 
+          const valueData = {
             typeId: typeId,
-            valuename: valuename
-          });
+            valuename: valuename,
+            comparisonOperator: comparisonOperator,
+            comparisonValue: comparisonValue.trim(),
+            comparisonValueEnd: comparisonOperator === 'between' ? comparisonValueEnd.trim() : null
+          };
+          
+          const response = await apiService.createValue(valueData);
           if (response.success) {
-            createdValues.push(response.data.value);
+            alert('Đã tạo Value thành công!');
+            await loadValuesForType(typeId, true);
+            setNewValueNames('');
+            setSelectedTypeForValue('');
+            setUseComparisonOperator(false);
+            setComparisonOperator('');
+            setComparisonValue('');
+            setComparisonValueEnd('');
+            setShowAddValueModal(false);
           } else {
-            errors.push(`${valuename}: ${response.message || 'Lỗi không xác định'}`);
+            alert(response.message || 'Có lỗi xảy ra khi tạo Value');
           }
         } catch (error) {
-          errors.push(`${valuename}: ${error.message || 'Lỗi không xác định'}`);
+          console.error('Error creating value:', error);
+          alert(error.message || 'Có lỗi xảy ra khi tạo Value');
         }
-      }
+      } else {
+        // Original logic: create multiple values without comparison operators
+        const valueNames = newValueNames
+          .split('\n')
+          .map(v => v.trim())
+          .filter(v => v.length > 0);
+        
+        if (valueNames.length === 0) {
+          alert('Vui lòng nhập ít nhất một Value');
+          return;
+        }
 
-      // Show results
-      if (createdValues.length > 0) {
-        alert(`Đã tạo thành công ${createdValues.length}/${valueNames.length} Value!`);
-        // Reload values for the selected type
-        await loadValuesForType(typeId);
-        // Update valuesByType state immediately
-        setValuesByType(prev => ({
-          ...prev,
-          [typeId]: [...(prev[typeId] || []), ...createdValues]
-        }));
-      }
-      
-      if (errors.length > 0) {
-        alert(`Có lỗi khi tạo một số Value:\n${errors.join('\n')}`);
-      }
+        // Create all values
+        const createdValues = [];
+        const errors = [];
+        
+        for (const valuename of valueNames) {
+          try {
+            const response = await apiService.createValue({ 
+              typeId: typeId,
+              valuename: valuename
+            });
+            if (response.success) {
+              createdValues.push(response.data.value);
+            } else {
+              errors.push(`${valuename}: ${response.message || 'Lỗi không xác định'}`);
+            }
+          } catch (error) {
+            errors.push(`${valuename}: ${error.message || 'Lỗi không xác định'}`);
+          }
+        }
 
-      if (createdValues.length > 0) {
-        setNewValueNames('');
-        setSelectedTypeForValue('');
-        setShowAddValueModal(false);
+        // Show results
+        if (createdValues.length > 0) {
+          alert(`Đã tạo thành công ${createdValues.length}/${valueNames.length} Value!`);
+          // Reload values for the selected type
+          await loadValuesForType(typeId, true);
+          // Update valuesByType state immediately
+          setValuesByType(prev => ({
+            ...prev,
+            [typeId]: [...(prev[typeId] || []), ...createdValues]
+          }));
+        }
+        
+        if (errors.length > 0) {
+          alert(`Có lỗi khi tạo một số Value:\n${errors.join('\n')}`);
+        }
+
+        if (createdValues.length > 0) {
+          setNewValueNames('');
+          setSelectedTypeForValue('');
+          setShowAddValueModal(false);
+        }
       }
     } catch (error) {
       console.error('Error creating values:', error);
@@ -565,7 +816,26 @@ const AdminAddJobPage = () => {
           isRequired: jv.isRequired || false
         })),
         jobPickupIds: [], // TODO: Add job pickup selection if needed
-        campaignIds: selectedCampaignIds.map(id => parseInt(id))
+        campaignIds: selectedCampaignIds.map(id => parseInt(id)),
+        // Recruiting Company data
+        recruitingCompany: recruitingCompany.companyName ? {
+          companyName: recruitingCompany.companyName || null,
+          revenue: recruitingCompany.revenue || null,
+          numberOfEmployees: recruitingCompany.numberOfEmployees || null,
+          headquarters: recruitingCompany.headquarters || null,
+          companyIntroduction: recruitingCompany.companyIntroduction || null,
+          stockExchangeInfo: recruitingCompany.stockExchangeInfo || null,
+          investmentCapital: recruitingCompany.investmentCapital || null,
+          establishedDate: recruitingCompany.establishedDate || null,
+          services: recruitingCompany.services.filter(s => s.serviceName && s.serviceName.trim()).map(s => ({
+            serviceName: s.serviceName.trim(),
+            order: s.order || 0
+          })),
+          businessSectors: recruitingCompany.businessSectors.filter(bs => bs.sectorName && bs.sectorName.trim()).map(bs => ({
+            sectorName: bs.sectorName.trim(),
+            order: bs.order || 0
+          }))
+        } : null
       };
 
       const response = jobId 
@@ -775,6 +1045,208 @@ const AdminAddJobPage = () => {
             </div>
           </div>
 
+          {/* Recruiting Company Information */}
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
+              <Building2 className="w-4 h-4 text-blue-600" />
+              Thông tin công ty tuyển dụng
+            </h2>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  Tên công ty tuyển dụng
+                </label>
+                <input
+                  type="text"
+                  value={recruitingCompany.companyName}
+                  onChange={(e) => setRecruitingCompany({ ...recruitingCompany, companyName: e.target.value })}
+                  placeholder="VD: Công ty ABC"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                    Doanh thu
+                  </label>
+                  <input
+                    type="text"
+                    value={recruitingCompany.revenue}
+                    onChange={(e) => setRecruitingCompany({ ...recruitingCompany, revenue: e.target.value })}
+                    placeholder="VD: 100 tỷ VND"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                    Số nhân viên
+                  </label>
+                  <input
+                    type="text"
+                    value={recruitingCompany.numberOfEmployees}
+                    onChange={(e) => setRecruitingCompany({ ...recruitingCompany, numberOfEmployees: e.target.value })}
+                    placeholder="VD: 500-1000"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                    Trụ sở tại
+                  </label>
+                  <input
+                    type="text"
+                    value={recruitingCompany.headquarters}
+                    onChange={(e) => setRecruitingCompany({ ...recruitingCompany, headquarters: e.target.value })}
+                    placeholder="VD: Tokyo, Japan"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                    Thành lập
+                  </label>
+                  <input
+                    type="text"
+                    value={recruitingCompany.establishedDate}
+                    onChange={(e) => setRecruitingCompany({ ...recruitingCompany, establishedDate: e.target.value })}
+                    placeholder="VD: 2010"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                    Thông tin sàn chứng khoán
+                  </label>
+                  <input
+                    type="text"
+                    value={recruitingCompany.stockExchangeInfo}
+                    onChange={(e) => setRecruitingCompany({ ...recruitingCompany, stockExchangeInfo: e.target.value })}
+                    placeholder="VD: TSE: 1234"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                    Vốn đầu tư
+                  </label>
+                  <input
+                    type="text"
+                    value={recruitingCompany.investmentCapital}
+                    onChange={(e) => setRecruitingCompany({ ...recruitingCompany, investmentCapital: e.target.value })}
+                    placeholder="VD: 50 tỷ VND"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  Giới thiệu chung về công ty
+                </label>
+                <textarea
+                  value={recruitingCompany.companyIntroduction}
+                  onChange={(e) => setRecruitingCompany({ ...recruitingCompany, companyIntroduction: e.target.value })}
+                  placeholder="Giới thiệu về công ty..."
+                  rows="3"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                />
+              </div>
+              
+              {/* Services */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-semibold text-gray-900">
+                    Dịch vụ cung cấp
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setRecruitingCompany({
+                      ...recruitingCompany,
+                      services: [...recruitingCompany.services, { serviceName: '', order: recruitingCompany.services.length }]
+                    })}
+                    className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Thêm dịch vụ
+                  </button>
+                </div>
+                {recruitingCompany.services.map((service, index) => (
+                  <div key={index} className="mb-2 flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Tên dịch vụ"
+                      value={service.serviceName}
+                      onChange={(e) => {
+                        const newServices = [...recruitingCompany.services];
+                        newServices[index].serviceName = e.target.value;
+                        setRecruitingCompany({ ...recruitingCompany, services: newServices });
+                      }}
+                      className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setRecruitingCompany({
+                        ...recruitingCompany,
+                        services: recruitingCompany.services.filter((_, i) => i !== index)
+                      })}
+                      className="p-1.5 text-red-500 hover:text-red-700"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Business Sectors */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-semibold text-gray-900">
+                    Lĩnh vực kinh doanh
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setRecruitingCompany({
+                      ...recruitingCompany,
+                      businessSectors: [...recruitingCompany.businessSectors, { sectorName: '', order: recruitingCompany.businessSectors.length }]
+                    })}
+                    className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Thêm lĩnh vực
+                  </button>
+                </div>
+                {recruitingCompany.businessSectors.map((sector, index) => (
+                  <div key={index} className="mb-2 flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Tên lĩnh vực kinh doanh"
+                      value={sector.sectorName}
+                      onChange={(e) => {
+                        const newSectors = [...recruitingCompany.businessSectors];
+                        newSectors[index].sectorName = e.target.value;
+                        setRecruitingCompany({ ...recruitingCompany, businessSectors: newSectors });
+                      }}
+                      className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setRecruitingCompany({
+                        ...recruitingCompany,
+                        businessSectors: recruitingCompany.businessSectors.filter((_, i) => i !== index)
+                      })}
+                      className="p-1.5 text-red-500 hover:text-red-700"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* Location */}
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
@@ -782,60 +1254,189 @@ const AdminAddJobPage = () => {
               Địa điểm làm việc
             </h2>
             <div className="space-y-3">
-              {/* Working Locations */}
+              {/* Quick Select: Country and Provinces */}
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  Chọn nhanh địa điểm làm việc
+                </label>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Chọn quốc gia
+                    </label>
+                    <select
+                      value={selectedCountry}
+                      onChange={(e) => {
+                        setSelectedCountry(e.target.value);
+                        setSelectedProvinces([]); // Reset selected provinces when country changes
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    >
+                      <option value="">-- Chọn quốc gia --</option>
+                      <option value="Vietnam">Việt Nam</option>
+                      <option value="Japan">Nhật Bản</option>
+                      <option value="Other">Khác (Nhập tùy chỉnh)</option>
+                    </select>
+                  </div>
+                  
+                  {selectedCountry && selectedCountry !== 'Other' && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-xs font-medium text-gray-700">
+                          Chọn tỉnh/thành phố (có thể chọn nhiều)
+                        </label>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const allProvinces = countryProvincesData[selectedCountry] || [];
+                              setSelectedProvinces(allProvinces);
+                            }}
+                            className="text-[10px] text-blue-600 hover:text-blue-700 font-medium"
+                          >
+                            Chọn tất cả
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedProvinces([])}
+                            className="text-[10px] text-gray-600 hover:text-gray-700 font-medium"
+                          >
+                            Bỏ chọn tất cả
+                          </button>
+                        </div>
+                      </div>
+                      <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-2 bg-white">
+                        <div className="grid grid-cols-2 gap-2">
+                          {(countryProvincesData[selectedCountry] || []).map((province) => (
+                            <label
+                              key={province}
+                              className="flex items-center gap-2 p-1.5 hover:bg-gray-50 rounded cursor-pointer"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedProvinces.includes(province)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedProvinces([...selectedProvinces, province]);
+                                  } else {
+                                    setSelectedProvinces(selectedProvinces.filter(p => p !== province));
+                                  }
+                                }}
+                                className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+                              />
+                              <span className="text-xs text-gray-700">{province}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      {selectedProvinces.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // Add selected provinces to workingLocations
+                            const newLocations = selectedProvinces.map(province => ({
+                              location: province,
+                              country: selectedCountry === 'Vietnam' ? 'Vietnam' : 'Japan'
+                            }));
+                            // Remove duplicates
+                            const existingLocations = workingLocations.map(wl => `${wl.location}_${wl.country}`);
+                            const uniqueNewLocations = newLocations.filter(nl => 
+                              !existingLocations.includes(`${nl.location}_${nl.country}`)
+                            );
+                            setWorkingLocations([...workingLocations, ...uniqueNewLocations]);
+                            setSelectedProvinces([]);
+                            setSelectedCountry('');
+                            alert(`Đã thêm ${uniqueNewLocations.length} địa điểm vào danh sách!`);
+                          }}
+                          className="mt-2 w-full px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                        >
+                          <CheckSquare className="w-3.5 h-3.5" />
+                          Thêm {selectedProvinces.length} địa điểm đã chọn
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  
+                  {selectedCountry === 'Other' && (
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Nhập địa điểm tùy chỉnh
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setWorkingLocations([...workingLocations, { location: '', country: '' }])}
+                        className="w-full px-3 py-2 border-2 border-dashed border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:border-blue-600 hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Thêm địa điểm tùy chỉnh
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Working Locations List */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-xs font-semibold text-gray-900">
-                    Địa điểm làm việc
+                    Danh sách địa điểm đã chọn ({workingLocations.length})
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => setWorkingLocations([...workingLocations, { location: '', country: '' }])}
-                    className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                  >
-                    <Plus className="w-3 h-3" />
-                    Thêm địa điểm
-                  </button>
                 </div>
-                {workingLocations.map((wl, index) => (
-                  <div key={index} className="mb-2 p-2 border border-gray-200 rounded-lg">
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        type="text"
-                        placeholder="Địa điểm (VD: Tokyo)"
-                        value={wl.location}
-                        onChange={(e) => {
-                          const newLocs = [...workingLocations];
-                          newLocs[index].location = e.target.value;
-                          setWorkingLocations(newLocs);
-                        }}
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
-                      />
-                      <div className="flex gap-1">
-                        <input
-                          type="text"
-                          placeholder="Quốc gia (VD: Japan)"
-                          value={wl.country}
-                          onChange={(e) => {
-                            const newLocs = [...workingLocations];
-                            newLocs[index].country = e.target.value;
-                            setWorkingLocations(newLocs);
-                          }}
-                          className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setWorkingLocations(workingLocations.filter((_, i) => i !== index))}
-                          className="p-1.5 text-red-500 hover:text-red-700"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
+                {workingLocations.length > 0 ? (
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {workingLocations.map((wl, index) => {
+                      const isEmpty = !wl.location || !wl.country;
+                      return (
+                        <div key={index} className={`flex items-center gap-2 p-2 border rounded-lg ${isEmpty ? 'border-yellow-300 bg-yellow-50' : 'border-gray-200 bg-gray-50'}`}>
+                          {isEmpty ? (
+                            // Show input fields for empty locations (custom locations)
+                            <div className="flex gap-1 flex-1">
+                              <input
+                                type="text"
+                                placeholder="Địa điểm"
+                                value={wl.location || ''}
+                                onChange={(e) => {
+                                  const newLocs = [...workingLocations];
+                                  newLocs[index].location = e.target.value;
+                                  setWorkingLocations(newLocs);
+                                }}
+                                className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                              />
+                              <input
+                                type="text"
+                                placeholder="Quốc gia"
+                                value={wl.country || ''}
+                                onChange={(e) => {
+                                  const newLocs = [...workingLocations];
+                                  newLocs[index].country = e.target.value;
+                                  setWorkingLocations(newLocs);
+                                }}
+                                className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                              />
+                            </div>
+                          ) : (
+                            // Show read-only display for completed locations
+                            <div className="flex-1">
+                              <div className="text-xs font-medium text-gray-900">{wl.location}</div>
+                              <div className="text-[10px] text-gray-500">{wl.country}</div>
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setWorkingLocations(workingLocations.filter((_, i) => i !== index))}
+                            className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors flex-shrink-0"
+                            title="Xóa"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
-                {workingLocations.length === 0 && (
-                  <p className="text-[10px] text-gray-500">Chưa có địa điểm nào. Nhấn "Thêm địa điểm" để thêm.</p>
+                ) : (
+                  <p className="text-[10px] text-gray-500 text-center py-4 border border-dashed border-gray-300 rounded-lg">
+                    Chưa có địa điểm nào. Chọn quốc gia và tỉnh/thành phố ở trên hoặc thêm địa điểm tùy chỉnh.
+                  </p>
                 )}
               </div>
               
@@ -1402,29 +2003,40 @@ const AdminAddJobPage = () => {
                     className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
                   />
                   <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="text"
-                      placeholder="Loại (VD: technique, education)"
-                      value={req.type}
+                    <select
+                      value={req.type || ''}
                       onChange={(e) => {
                         const newReqs = [...requirements];
                         newReqs[index].type = e.target.value;
                         setRequirements(newReqs);
                       }}
                       className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
-                    />
+                    >
+                      <option value="">Chọn loại</option>
+                      <option value="technique">Kỹ thuật (technique)</option>
+                      <option value="education">Học vấn (education)</option>
+                      <option value="experience">Kinh nghiệm (experience)</option>
+                      <option value="language">Ngôn ngữ (language)</option>
+                      <option value="certification">Chứng chỉ (certification)</option>
+                      <option value="skill">Kỹ năng (skill)</option>
+                      <option value="other">Khác (other)</option>
+                    </select>
                     <div className="flex gap-1">
-                      <input
-                        type="text"
-                        placeholder="Trạng thái (VD: required, optional)"
-                        value={req.status}
+                      <select
+                        value={req.status || ''}
                         onChange={(e) => {
                           const newReqs = [...requirements];
                           newReqs[index].status = e.target.value;
                           setRequirements(newReqs);
                         }}
                         className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
-                      />
+                      >
+                        <option value="">Chọn trạng thái</option>
+                        <option value="required">Bắt buộc (required)</option>
+                        <option value="optional">Tùy chọn (optional)</option>
+                        <option value="preferred">Ưu tiên (preferred)</option>
+                        <option value="nice-to-have">Có thì tốt (nice-to-have)</option>
+                      </select>
                       <button
                         type="button"
                         onClick={() => setRequirements(requirements.filter((_, i) => i !== index))}
@@ -1706,6 +2318,148 @@ const AdminAddJobPage = () => {
             </div>
           </div>
 
+          {/* Manage Types & Values */}
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
+              <Tag className="w-4 h-4 text-blue-600" />
+              Quản lý Type & Value
+            </h2>
+            <div className="space-y-4">
+              {/* Types Management */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-semibold text-gray-900">Types</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddTypeModal(true);
+                      setNewTypeName('');
+                      setCvField('');
+                      setEditingType(null);
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Thêm Type
+                  </button>
+                </div>
+                <div className="space-y-1 max-h-40 overflow-y-auto">
+                  {types.map((type) => (
+                    <div key={type.id} className="flex items-center justify-between p-2 bg-gray-50 rounded border border-gray-200">
+                      <span className="text-xs font-medium text-gray-900">{type.typename}</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                        onClick={() => {
+                          setEditingType(type);
+                          setNewTypeName(type.typename);
+                          setCvField(type.cvField || '');
+                          setShowEditTypeModal(true);
+                        }}
+                          className="text-blue-600 hover:text-blue-800 text-xs px-2 py-1"
+                          title="Sửa"
+                        >
+                          Sửa
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteType(type.id)}
+                          className="text-red-600 hover:text-red-800 text-xs px-2 py-1"
+                          title="Xóa"
+                        >
+                          Xóa
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {types.length === 0 && (
+                    <p className="text-[10px] text-gray-500 text-center py-2">Chưa có Type nào</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Values Management */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-semibold text-gray-900">Values</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddValueModal(true);
+                      setNewValueNames('');
+                      setSelectedTypeForValue('');
+                      setEditingValue(null);
+                      setUseComparisonOperator(false);
+                      setComparisonOperator('');
+                      setComparisonValue('');
+                      setComparisonValueEnd('');
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Thêm Value
+                  </button>
+                </div>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {types.map((type) => {
+                    const typeValues = valuesByType[type.id] || [];
+                    if (typeValues.length === 0) return null;
+                    return (
+                      <div key={type.id} className="border border-gray-200 rounded p-2">
+                        <div className="text-xs font-semibold text-gray-700 mb-1">{type.typename}:</div>
+                        <div className="space-y-1">
+                          {typeValues.map((value) => (
+                            <div key={value.id} className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
+                              <span className="text-xs text-gray-900">
+                                {value.valuename}
+                                {value.comparisonOperator && (
+                                  <span className="text-gray-500 ml-1">
+                                    ({value.comparisonOperator} {value.comparisonValue}
+                                    {value.comparisonOperator === 'between' ? ` - ${value.comparisonValueEnd}` : ''})
+                                  </span>
+                                )}
+                              </span>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingValue(value);
+                                    setNewValueNames(value.valuename);
+                                    setSelectedTypeForValue(value.typeId.toString());
+                                    setUseComparisonOperator(!!value.comparisonOperator);
+                                    setComparisonOperator(value.comparisonOperator || '');
+                                    setComparisonValue(value.comparisonValue || '');
+                                    setComparisonValueEnd(value.comparisonValueEnd || '');
+                                    setShowEditValueModal(true);
+                                  }}
+                                  className="text-blue-600 hover:text-blue-800 text-[10px] px-1.5 py-0.5"
+                                  title="Sửa"
+                                >
+                                  Sửa
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteValue(value.id, value.typeId)}
+                                  className="text-red-600 hover:text-red-800 text-[10px] px-1.5 py-0.5"
+                                  title="Xóa"
+                                >
+                                  Xóa
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {Object.keys(valuesByType).length === 0 && (
+                    <p className="text-[10px] text-gray-500 text-center py-2">Chưa có Value nào</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Job Values (Commission Details) */}
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
@@ -1845,6 +2599,9 @@ const AdminAddJobPage = () => {
                         {valuesByType[jv.typeId]?.map((value) => (
                           <option key={value.id} value={value.id}>
                             {value.valuename}
+                            {value.comparisonOperator && (
+                              ` (${value.comparisonOperator} ${value.comparisonValue}${value.comparisonOperator === 'between' ? ` - ${value.comparisonValueEnd}` : ''})`
+                            )}
                           </option>
                         ))}
                       </select>
@@ -2000,7 +2757,10 @@ const AdminAddJobPage = () => {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-gray-900">Thêm Type mới</h3>
               <button
-                onClick={() => setShowAddTypeModal(false)}
+                onClick={() => {
+                  setShowAddTypeModal(false);
+                  setNewTypeName('');
+                }}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <X className="w-4 h-4" />
@@ -2026,6 +2786,7 @@ const AdminAddJobPage = () => {
                   onClick={() => {
                     setShowAddTypeModal(false);
                     setNewTypeName('');
+                    setCvField('');
                   }}
                   className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors"
                 >
@@ -2044,14 +2805,99 @@ const AdminAddJobPage = () => {
         </div>
       )}
 
+      {/* Modal: Edit Type */}
+      {showEditTypeModal && editingType && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowEditTypeModal(false)}>
+          <div className="bg-white rounded-lg p-4 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-gray-900">Sửa Type</h3>
+              <button
+                onClick={() => {
+                  setShowEditTypeModal(false);
+                  setEditingType(null);
+                  setNewTypeName('');
+                  setCvField('');
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  Tên Type <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={newTypeName}
+                  onChange={(e) => setNewTypeName(e.target.value)}
+                  placeholder="VD: JLPT Level, Experience Years, etc."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  CV Field (Tùy chọn)
+                </label>
+                <select
+                  value={cvField}
+                  onChange={(e) => setCvField(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                >
+                  <option value="">Không so sánh với CV</option>
+                  <option value="jlptLevel">jlptLevel (JLPT Level)</option>
+                  <option value="experienceYears">experienceYears (Số năm kinh nghiệm)</option>
+                  <option value="specialization">specialization (Chuyên ngành)</option>
+                  <option value="qualification">qualification (Bằng cấp)</option>
+                </select>
+                <p className="text-[10px] text-gray-500 mt-1">
+                  Chọn field trong CV mà Type này sẽ so sánh với khi tính hoa hồng
+                </p>
+              </div>
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditTypeModal(false);
+                    setEditingType(null);
+                    setNewTypeName('');
+                    setCvField('');
+                  }}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  onClick={handleEditType}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors"
+                >
+                  Cập nhật Type
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal: Add Value */}
       {showAddValueModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowAddValueModal(false)}>
-          <div className="bg-white rounded-lg p-4 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-lg p-4 w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-gray-900">Thêm Value mới</h3>
               <button
-                onClick={() => setShowAddValueModal(false)}
+                onClick={() => {
+                  setShowAddValueModal(false);
+                  setNewValueNames('');
+                  setSelectedTypeForValue('');
+                  setUseComparisonOperator(false);
+                  setComparisonOperator('');
+                  setComparisonValue('');
+                  setComparisonValueEnd('');
+                }}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <X className="w-4 h-4" />
@@ -2075,22 +2921,122 @@ const AdminAddJobPage = () => {
                   ))}
                 </select>
               </div>
+              
+              {/* Comparison Operator Toggle */}
+              <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                <input
+                  type="checkbox"
+                  checked={useComparisonOperator}
+                  onChange={(e) => {
+                    setUseComparisonOperator(e.target.checked);
+                    if (!e.target.checked) {
+                      setComparisonOperator('');
+                      setComparisonValue('');
+                      setComparisonValueEnd('');
+                    }
+                  }}
+                  className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+                />
+                <label className="text-xs font-semibold text-gray-900">
+                  Sử dụng điều kiện so sánh (&gt;=, &lt;=, &gt;, &lt;, =, between)
+                </label>
+              </div>
+              
+              {useComparisonOperator && (
+                <div className="space-y-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-900 mb-2">
+                      Toán tử so sánh <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={comparisonOperator}
+                      onChange={(e) => handleComparisonOperatorChange(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    >
+                      <option value="">Chọn toán tử</option>
+                      <option value=">=">Lớn hơn hoặc bằng (&gt;=)</option>
+                      <option value="<=">Nhỏ hơn hoặc bằng (&lt;=)</option>
+                      <option value=">">Lớn hơn (&gt;)</option>
+                      <option value="<">Nhỏ hơn (&lt;)</option>
+                      <option value="=">Bằng (=)</option>
+                      <option value="between">Trong khoảng (between)</option>
+                    </select>
+                    <p className="text-[10px] text-gray-500 mt-1">
+                      <strong>Lưu ý:</strong> Với JLPT, số nhỏ hơn = level cao hơn (1=N1 cao nhất, 5=N5 thấp nhất)
+                      <br />
+                      <strong>Ví dụ:</strong> "Từ N2 trở lên" → Dùng <code className="bg-gray-100 px-1 rounded">&gt;=</code> với giá trị <code className="bg-gray-100 px-1 rounded">2</code> (hệ thống sẽ tự động so sánh đúng)
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-900 mb-2">
+                        Giá trị so sánh <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={comparisonValue}
+                        onChange={(e) => setComparisonValue(e.target.value)}
+                        placeholder="VD: 3 (cho N3 hoặc 3 năm)"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      />
+                    </div>
+                    {comparisonOperator === 'between' && (
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-900 mb-2">
+                          Giá trị kết thúc <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={comparisonValueEnd}
+                          onChange={(e) => setComparisonValueEnd(e.target.value)}
+                          placeholder="VD: 5 (cho N5 hoặc 5 năm)"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
               <div>
                 <label className="block text-xs font-semibold text-gray-900 mb-2">
                   Tên Value <span className="text-red-500">*</span>
-                  <span className="text-gray-500 text-[10px] ml-2">(Mỗi dòng là một Value)</span>
+                  {!useComparisonOperator && (
+                    <span className="text-gray-500 text-[10px] ml-2">(Mỗi dòng là một Value)</span>
+                  )}
+                  {useComparisonOperator && (
+                    <span className="text-gray-500 text-[10px] ml-2">(Chỉ 1 Value khi dùng điều kiện so sánh)</span>
+                  )}
                 </label>
-                <textarea
-                  value={newValueNames}
-                  onChange={(e) => setNewValueNames(e.target.value)}
-                  placeholder="VD:&#10;Junior&#10;Senior&#10;Expert"
-                  rows="6"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
-                  autoFocus
-                />
-                <p className="text-[10px] text-gray-500 mt-1">
-                  Nhập nhiều Value, mỗi Value trên một dòng. Hệ thống sẽ tạo tất cả các Value cùng lúc.
-                </p>
+                {useComparisonOperator ? (
+                  <input
+                    type="text"
+                    value={newValueNames}
+                    onChange={(e) => setNewValueNames(e.target.value)}
+                    placeholder="VD: Từ N3 trở lên, Trên 3 năm kinh nghiệm..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    autoFocus
+                  />
+                ) : (
+                  <textarea
+                    value={newValueNames}
+                    onChange={(e) => setNewValueNames(e.target.value)}
+                    placeholder="VD:&#10;Junior&#10;Senior&#10;Expert"
+                    rows="6"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                    autoFocus
+                  />
+                )}
+                {!useComparisonOperator && (
+                  <p className="text-[10px] text-gray-500 mt-1">
+                    Nhập nhiều Value, mỗi Value trên một dòng. Hệ thống sẽ tạo tất cả các Value cùng lúc.
+                  </p>
+                )}
+                {useComparisonOperator && (
+                  <p className="text-[10px] text-gray-500 mt-1">
+                    Ví dụ: "Từ N3 trở lên", "Trên 3 năm kinh nghiệm", "Từ 2 đến 5 năm"
+                  </p>
+                )}
               </div>
               <div className="flex items-center justify-end gap-2">
                 <button
@@ -2099,6 +3045,10 @@ const AdminAddJobPage = () => {
                     setShowAddValueModal(false);
                     setNewValueNames('');
                     setSelectedTypeForValue('');
+                    setUseComparisonOperator(false);
+                    setComparisonOperator('');
+                    setComparisonValue('');
+                    setComparisonValueEnd('');
                   }}
                   className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors"
                 >
@@ -2109,7 +3059,172 @@ const AdminAddJobPage = () => {
                   onClick={handleCreateValue}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors"
                 >
-                  Tạo Value(s)
+                  {useComparisonOperator ? 'Tạo Value' : 'Tạo Value(s)'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Edit Value */}
+      {showEditValueModal && editingValue && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowEditValueModal(false)}>
+          <div className="bg-white rounded-lg p-4 w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-gray-900">Sửa Value</h3>
+              <button
+                onClick={() => {
+                  setShowEditValueModal(false);
+                  setEditingValue(null);
+                  setNewValueNames('');
+                  setSelectedTypeForValue('');
+                  setUseComparisonOperator(false);
+                  setComparisonOperator('');
+                  setComparisonValue('');
+                  setComparisonValueEnd('');
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  Type <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={selectedTypeForValue}
+                  onChange={(e) => setSelectedTypeForValue(e.target.value)}
+                  disabled
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 bg-gray-100"
+                >
+                  <option value="">Chọn Type</option>
+                  {types.map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.typename}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-gray-500 mt-1">Không thể thay đổi Type khi sửa Value</p>
+              </div>
+              
+              {/* Comparison Operator Toggle */}
+              <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                <input
+                  type="checkbox"
+                  checked={useComparisonOperator}
+                  onChange={(e) => {
+                    setUseComparisonOperator(e.target.checked);
+                    if (!e.target.checked) {
+                      setComparisonOperator('');
+                      setComparisonValue('');
+                      setComparisonValueEnd('');
+                    }
+                  }}
+                  className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+                />
+                <label className="text-xs font-semibold text-gray-900">
+                  Sử dụng điều kiện so sánh (&gt;=, &lt;=, &gt;, &lt;, =, between)
+                </label>
+              </div>
+              
+              {useComparisonOperator && (
+                <div className="space-y-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-900 mb-2">
+                      Toán tử so sánh <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={comparisonOperator}
+                      onChange={(e) => handleComparisonOperatorChange(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    >
+                      <option value="">Chọn toán tử</option>
+                      <option value=">=">Lớn hơn hoặc bằng (&gt;=)</option>
+                      <option value="<=">Nhỏ hơn hoặc bằng (&lt;=)</option>
+                      <option value=">">Lớn hơn (&gt;)</option>
+                      <option value="<">Nhỏ hơn (&lt;)</option>
+                      <option value="=">Bằng (=)</option>
+                      <option value="between">Trong khoảng (between)</option>
+                    </select>
+                    <p className="text-[10px] text-gray-500 mt-1">
+                      <strong>Lưu ý:</strong> Với JLPT, số nhỏ hơn = level cao hơn (1=N1 cao nhất, 5=N5 thấp nhất)
+                      <br />
+                      <strong>Ví dụ:</strong> "Từ N2 trở lên" → Dùng <code className="bg-gray-100 px-1 rounded">&gt;=</code> với giá trị <code className="bg-gray-100 px-1 rounded">2</code> (hệ thống sẽ tự động so sánh đúng)
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-900 mb-2">
+                        Giá trị so sánh <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={comparisonValue}
+                        onChange={(e) => setComparisonValue(e.target.value)}
+                        placeholder="VD: 3 (cho N3 hoặc 3 năm)"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      />
+                    </div>
+                    {comparisonOperator === 'between' && (
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-900 mb-2">
+                          Giá trị kết thúc <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={comparisonValueEnd}
+                          onChange={(e) => setComparisonValueEnd(e.target.value)}
+                          placeholder="VD: 5 (cho N5 hoặc 5 năm)"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              <div>
+                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  Tên Value <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={newValueNames}
+                  onChange={(e) => setNewValueNames(e.target.value)}
+                  placeholder="VD: Từ N3 trở lên, Trên 3 năm kinh nghiệm..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  autoFocus
+                />
+                <p className="text-[10px] text-gray-500 mt-1">
+                  Ví dụ: "Từ N3 trở lên", "Trên 3 năm kinh nghiệm", "Từ 2 đến 5 năm"
+                </p>
+              </div>
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditValueModal(false);
+                    setEditingValue(null);
+                    setNewValueNames('');
+                    setSelectedTypeForValue('');
+                    setUseComparisonOperator(false);
+                    setComparisonOperator('');
+                    setComparisonValue('');
+                    setComparisonValueEnd('');
+                  }}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  onClick={handleEditValue}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors"
+                >
+                  Cập nhật Value
                 </button>
               </div>
             </div>

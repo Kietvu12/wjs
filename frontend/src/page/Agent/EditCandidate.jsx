@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import apiService from '../../services/api';
 
 import {
@@ -44,6 +46,12 @@ const EditCandidate = () => {
     // Skills & Certificates
     technicalSkills: '',
     certificates: [],
+    learnedTools: [],
+    experienceTools: [],
+    jlptLevel: '',
+    experienceYears: '',
+    specialization: '',
+    qualification: '',
     // Self Introduction
     careerSummary: '',
     strengths: '',
@@ -60,14 +68,10 @@ const EditCandidate = () => {
     jpResidenceStatus: '',
     visaExpirationDate: '',
     otherCountry: '',
-    passport: false,
-    spouse: false,
+    passport: '',
+    spouse: '',
     currentIncome: '',
     desiredIncome: '',
-    experienceYears: '',
-    jlptLevel: '',
-    specialization: '',
-    qualification: '',
     addressCurrent: '',
     addressOrigin: '',
   });
@@ -94,10 +98,27 @@ const EditCandidate = () => {
       if (response.success && response.data?.cv) {
         const cv = response.data.cv;
         
-        // Parse JSON fields
-        const educations = cv.educations ? (typeof cv.educations === 'string' ? JSON.parse(cv.educations) : cv.educations) : [];
-        const workExperiences = cv.workExperiences ? (typeof cv.workExperiences === 'string' ? JSON.parse(cv.workExperiences) : cv.workExperiences) : [];
-        const certificates = cv.certificates ? (typeof cv.certificates === 'string' ? JSON.parse(cv.certificates) : cv.certificates) : [];
+        // Helper function to safely parse JSON array fields
+        const parseArrayField = (field) => {
+          if (!field) return [];
+          if (Array.isArray(field)) return field;
+          if (typeof field === 'string') {
+            try {
+              const parsed = JSON.parse(field);
+              return Array.isArray(parsed) ? parsed : [];
+            } catch {
+              return [];
+            }
+          }
+          return [];
+        };
+
+        // Parse JSON fields - ensure they are always arrays
+        const educations = parseArrayField(cv.educations);
+        const workExperiences = parseArrayField(cv.workExperiences);
+        const certificates = parseArrayField(cv.certificates);
+        const learnedTools = parseArrayField(cv.learnedTools);
+        const experienceTools = parseArrayField(cv.experienceTools);
 
         setFormData({
           nameKanji: cv.name || cv.nameKanji || '',
@@ -113,6 +134,12 @@ const EditCandidate = () => {
           workExperiences: workExperiences,
           technicalSkills: cv.technicalSkills || '',
           certificates: certificates,
+          learnedTools: learnedTools,
+          experienceTools: experienceTools,
+          jlptLevel: cv.jlptLevel || '',
+          experienceYears: cv.experienceYears || '',
+          specialization: cv.specialization || '',
+          qualification: cv.qualification || '',
           careerSummary: cv.careerSummary || '',
           strengths: cv.strengths || '',
           motivation: cv.motivation || '',
@@ -126,14 +153,10 @@ const EditCandidate = () => {
           jpResidenceStatus: cv.jpResidenceStatus || '',
           visaExpirationDate: cv.visaExpirationDate || '',
           otherCountry: cv.otherCountry || '',
-          passport: cv.passport || false,
-          spouse: cv.spouse || false,
+          passport: cv.passport !== undefined && cv.passport !== null ? (cv.passport === true || cv.passport === '1' || cv.passport === 1 ? '1' : '0') : '',
+          spouse: cv.spouse !== undefined && cv.spouse !== null ? (cv.spouse === true || cv.spouse === '1' || cv.spouse === 1 ? '1' : '0') : '',
           currentIncome: cv.currentIncome || '',
           desiredIncome: cv.desiredIncome || '',
-          experienceYears: cv.experienceYears || '',
-          jlptLevel: cv.jlptLevel || '',
-          specialization: cv.specialization || '',
-          qualification: cv.qualification || '',
           addressCurrent: cv.addressCurrent || cv.address || '',
           addressOrigin: cv.addressOrigin || '',
         });
@@ -154,12 +177,62 @@ const EditCandidate = () => {
     }
   };
 
+  // Helper function to safely parse date
+  const parseDate = (dateString) => {
+    if (!dateString || dateString === '') return null;
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? null : date;
+  };
+
+  // Calculate age from birth date
+  const calculateAge = (birthDate) => {
+    if (!birthDate) return '';
+    const today = new Date();
+    const birth = birthDate instanceof Date ? birthDate : new Date(birthDate);
+    if (isNaN(birth.getTime())) return '';
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age.toString();
+  };
+
+  // Handle date change from DatePicker
+  const handleBirthDateChange = (date) => {
+    if (date) {
+      const dateString = date.toISOString().split('T')[0];
+      const age = calculateAge(date);
+      setFormData(prev => ({
+        ...prev,
+        birthDate: dateString,
+        age: age
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        birthDate: '',
+        age: ''
+      }));
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      };
+      
+      // Auto-calculate age when birthDate changes
+      if (name === 'birthDate' && value) {
+        const age = calculateAge(value);
+        newData.age = age;
+      }
+      
+      return newData;
+    });
   };
 
   // Helper function to merge parsed data with form structure
@@ -175,14 +248,14 @@ const EditCandidate = () => {
       address: parsedData.personal_info?.contact?.address || prev.address,
       phone: parsedData.personal_info?.contact?.phone || prev.phone,
       email: parsedData.personal_info?.contact?.email || prev.email,
-      educations: parsedData.education_history?.length > 0 
+      educations: Array.isArray(parsedData.education_history) && parsedData.education_history.length > 0 
         ? parsedData.education_history.map(edu => ({
             year: edu.year || '',
             month: edu.month || '',
             content: edu.content || ''
           }))
-        : prev.educations,
-      workExperiences: parsedData.employment_history_details?.length > 0
+        : (Array.isArray(prev.educations) ? prev.educations : []),
+      workExperiences: Array.isArray(parsedData.employment_history_details) && parsedData.employment_history_details.length > 0
         ? parsedData.employment_history_details.map(emp => ({
             period: emp.period || '',
             company_name: emp.company_name || '',
@@ -191,15 +264,15 @@ const EditCandidate = () => {
             description: emp.description || '',
             tools_tech: emp.tools_tech || ''
           }))
-        : prev.workExperiences,
+        : (Array.isArray(prev.workExperiences) ? prev.workExperiences : []),
       technicalSkills: parsedData.skills_and_certifications?.technical_skills || prev.technicalSkills,
-      certificates: parsedData.skills_and_certifications?.licenses?.length > 0
+      certificates: Array.isArray(parsedData.skills_and_certifications?.licenses) && parsedData.skills_and_certifications.licenses.length > 0
         ? parsedData.skills_and_certifications.licenses.map(lic => ({
             year: lic.year || '',
             month: lic.month || '',
             name: lic.name || ''
           }))
-        : prev.certificates,
+        : (Array.isArray(prev.certificates) ? prev.certificates : []),
       careerSummary: parsedData.self_promotion?.job_summary || prev.careerSummary,
       strengths: parsedData.self_promotion?.self_pr || prev.strengths,
       motivation: parsedData.self_promotion?.motivation || prev.motivation,
@@ -367,6 +440,47 @@ const EditCandidate = () => {
     }));
   };
 
+  // Tools handlers
+  const handleAddLearnedTool = () => {
+    setFormData(prev => ({
+      ...prev,
+      learnedTools: [...prev.learnedTools, '']
+    }));
+  };
+
+  const updateLearnedTool = (index, value) => {
+    const updated = [...formData.learnedTools];
+    updated[index] = value;
+    setFormData(prev => ({ ...prev, learnedTools: updated }));
+  };
+
+  const removeLearnedTool = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      learnedTools: prev.learnedTools.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleAddExperienceTool = () => {
+    setFormData(prev => ({
+      ...prev,
+      experienceTools: [...prev.experienceTools, '']
+    }));
+  };
+
+  const updateExperienceTool = (index, value) => {
+    const updated = [...formData.experienceTools];
+    updated[index] = value;
+    setFormData(prev => ({ ...prev, experienceTools: updated }));
+  };
+
+  const removeExperienceTool = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      experienceTools: prev.experienceTools.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -393,6 +507,16 @@ const EditCandidate = () => {
       formDataToSend.append('workExperiences', JSON.stringify(formData.workExperiences));
       formDataToSend.append('technicalSkills', formData.technicalSkills);
       formDataToSend.append('certificates', JSON.stringify(formData.certificates));
+      if (formData.learnedTools && formData.learnedTools.length > 0) {
+        formDataToSend.append('learnedTools', JSON.stringify(formData.learnedTools));
+      }
+      if (formData.experienceTools && formData.experienceTools.length > 0) {
+        formDataToSend.append('experienceTools', JSON.stringify(formData.experienceTools));
+      }
+      if (formData.jlptLevel) formDataToSend.append('jlptLevel', formData.jlptLevel);
+      if (formData.experienceYears) formDataToSend.append('experienceYears', formData.experienceYears);
+      if (formData.specialization) formDataToSend.append('specialization', formData.specialization);
+      if (formData.qualification) formDataToSend.append('qualification', formData.qualification);
       formDataToSend.append('careerSummary', formData.careerSummary);
       formDataToSend.append('strengths', formData.strengths);
       formDataToSend.append('motivation', formData.motivation);
@@ -408,8 +532,8 @@ const EditCandidate = () => {
       formDataToSend.append('jpResidenceStatus', formData.jpResidenceStatus);
       formDataToSend.append('visaExpirationDate', formData.visaExpirationDate);
       formDataToSend.append('otherCountry', formData.otherCountry);
-      formDataToSend.append('passport', formData.passport ? '1' : '0');
-      formDataToSend.append('spouse', formData.spouse ? '1' : '0');
+      formDataToSend.append('passport', formData.passport === '1' ? '1' : '0');
+      formDataToSend.append('spouse', formData.spouse === '1' ? '1' : '0');
       formDataToSend.append('experienceYears', formData.experienceYears);
       formDataToSend.append('jlptLevel', formData.jlptLevel);
       formDataToSend.append('specialization', formData.specialization);
@@ -543,14 +667,23 @@ const EditCandidate = () => {
                     Ngày sinh - 生年月日
                   </label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                      type="text"
-                      name="birthDate"
-                      value={formData.birthDate}
-                      onChange={handleInputChange}
-                      placeholder="1990年1月1日"
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 z-10 pointer-events-none" />
+                    <DatePicker
+                      selected={parseDate(formData.birthDate)}
+                      onChange={handleBirthDateChange}
+                      dateFormat="yyyy-MM-dd"
+                      maxDate={new Date()}
+                      placeholderText="Chọn ngày sinh"
                       className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                      showYearDropdown
+                      showMonthDropdown
+                      dropdownMode="select"
+                      yearDropdownItemNumber={100}
+                      scrollableYearDropdown
+                      locale="vi"
+                      isClearable
+                      peekNextMonth
+                      showMonthYearPicker={false}
                     />
                   </div>
                 </div>
@@ -564,7 +697,8 @@ const EditCandidate = () => {
                     value={formData.age}
                     onChange={handleInputChange}
                     placeholder="30"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    readOnly
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-600 cursor-not-allowed"
                   />
                 </div>
                 <div>
@@ -658,6 +792,122 @@ const EditCandidate = () => {
                 </div>
               </div>
 
+              
+              {/* Residence & Visa Information */}
+              <div className="border-t pt-4 mt-4">
+                <h3 className="text-sm font-bold text-gray-700 mb-3">
+                  Thông tin cư trú & Visa (在留情報)
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-900 mb-1">
+                      Địa chỉ gốc - 出身地
+                    </label>
+                    <input
+                      type="text"
+                      name="addressOrigin"
+                      value={formData.addressOrigin}
+                      onChange={handleInputChange}
+                      placeholder="VD: ベトナム ホーチミン市"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-900 mb-1">
+                        Passport - パスポート
+                      </label>
+                      <select
+                        name="passport"
+                        value={formData.passport}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                      >
+                        <option value="">Chọn</option>
+                        <option value="1">Có</option>
+                        <option value="0">Không</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-900 mb-1">
+                        Nơi cư trú hiện tại - 現在の居住地
+                      </label>
+                      <select
+                        name="currentResidence"
+                        value={formData.currentResidence}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                      >
+                        <option value="">Chọn</option>
+                        <option value="1">Nhật Bản</option>
+                        <option value="2">Việt Nam</option>
+                        <option value="3">Khác</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-900 mb-1">
+                        Tình trạng cư trú tại Nhật - 在留資格
+                      </label>
+                      <select
+                        name="jpResidenceStatus"
+                        value={formData.jpResidenceStatus}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                      >
+                        <option value="">Chọn</option>
+                        <option value="1">技術・人文知識・国際業務</option>
+                        <option value="2">特定技能</option>
+                        <option value="3">留学</option>
+                        <option value="4">永住者</option>
+                        <option value="5">日本人の配偶者等</option>
+                        <option value="6">定住者</option>
+                        <option value="7">その他</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-900 mb-1">
+                        Ngày hết hạn Visa - 在留期限
+                      </label>
+                      <DatePicker
+                        selected={parseDate(formData.visaExpirationDate)}
+                        onChange={(date) => {
+                          if (date) {
+                            setFormData(prev => ({
+                              ...prev,
+                              visaExpirationDate: date.toISOString().split('T')[0]
+                            }));
+                          } else {
+                            setFormData(prev => ({
+                              ...prev,
+                              visaExpirationDate: ''
+                            }));
+                          }
+                        }}
+                        dateFormat="yyyy-MM-dd"
+                        placeholderText="Chọn ngày hết hạn"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                        isClearable
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-900 mb-1">
+                      Quốc gia khác - その他の国
+                    </label>
+                    <input
+                      type="text"
+                      name="otherCountry"
+                      value={formData.otherCountry}
+                      onChange={handleInputChange}
+                      placeholder="VD: アメリカ"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Status */}
               <div className="border-t pt-4 mt-4">
                 <label className="block text-xs font-bold text-gray-900 mb-1">
@@ -684,7 +934,7 @@ const EditCandidate = () => {
               Học vấn (学歴)
             </h2>
             <div className="space-y-3">
-              {formData.educations.map((edu, index) => (
+              {(Array.isArray(formData.educations) ? formData.educations : []).map((edu, index) => (
                 <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                   <div className="flex justify-between items-start mb-2">
                     <span className="text-xs font-bold text-gray-500">#{index + 1}</span>
@@ -739,7 +989,7 @@ const EditCandidate = () => {
               Kinh nghiệm làm việc (職歴)
             </h2>
             <div className="space-y-3">
-              {formData.workExperiences.map((emp, index) => (
+              {(Array.isArray(formData.workExperiences) ? formData.workExperiences : []).map((emp, index) => (
                 <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                   <div className="flex justify-between items-start mb-2">
                     <span className="text-xs font-bold text-gray-500">#{index + 1}</span>
@@ -952,6 +1202,71 @@ const EditCandidate = () => {
               Kỹ năng & Chứng chỉ (資格)
             </h2>
             <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                    JLPT Level - 日本語能力試験
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm font-semibold text-gray-600 pointer-events-none">N</span>
+                    <input
+                      type="number"
+                      name="jlptLevel"
+                      value={formData.jlptLevel}
+                      onChange={handleInputChange}
+                      min="1"
+                      max="5"
+                      placeholder="1-5"
+                      className="w-full pl-6 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    />
+                  </div>
+                  <p className="text-[10px] text-gray-500 mt-1">Nhập số từ 1 (N1) đến 5 (N5)</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                    Số năm kinh nghiệm - 経験年数
+                  </label>
+                  <input
+                    type="number"
+                    name="experienceYears"
+                    value={formData.experienceYears}
+                    onChange={handleInputChange}
+                    placeholder="VD: 3"
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                    Chuyên ngành - 専門分野
+                  </label>
+                  <input
+                    type="number"
+                    name="specialization"
+                    value={formData.specialization}
+                    onChange={handleInputChange}
+                    placeholder="ID chuyên ngành"
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                    Bằng cấp - 資格
+                  </label>
+                  <input
+                    type="number"
+                    name="qualification"
+                    value={formData.qualification}
+                    onChange={handleInputChange}
+                    placeholder="ID bằng cấp"
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                  />
+                </div>
+              </div>
               <div>
                 <label className="block text-xs font-bold text-gray-900 mb-1">
                   Kỹ năng kỹ thuật (活かせる経験・知識・技術)
@@ -970,7 +1285,7 @@ const EditCandidate = () => {
                   Chứng chỉ (免許・資格)
                 </label>
                 <div className="space-y-2">
-                  {formData.certificates.map((cert, index) => (
+                  {(Array.isArray(formData.certificates) ? formData.certificates : []).map((cert, index) => (
                     <div key={index} className="flex gap-2">
                       <input
                         type="text"
@@ -1009,6 +1324,72 @@ const EditCandidate = () => {
                   >
                     <Plus className="w-4 h-4" />
                     Thêm chứng chỉ
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-900 mb-2">
+                  Công cụ đã học - 学習したツール
+                </label>
+                <div className="space-y-2">
+                  {formData.learnedTools.map((tool, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={tool}
+                        onChange={(e) => updateLearnedTool(index, e.target.value)}
+                        placeholder="VD: React, Python, Docker..."
+                        className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeLearnedTool(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={handleAddLearnedTool}
+                    className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Thêm công cụ đã học
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-900 mb-2">
+                  Công cụ có kinh nghiệm - 経験のあるツール
+                </label>
+                <div className="space-y-2">
+                  {formData.experienceTools.map((tool, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={tool}
+                        onChange={(e) => updateExperienceTool(index, e.target.value)}
+                        placeholder="VD: AWS, Kubernetes, TypeScript..."
+                        className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeExperienceTool(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={handleAddExperienceTool}
+                    className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Thêm công cụ có kinh nghiệm
                   </button>
                 </div>
               </div>

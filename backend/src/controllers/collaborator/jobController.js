@@ -11,6 +11,7 @@ import {
   JobPickupId,
   Requirement,
   WorkingLocationDetail,
+  SalaryRange,
   SalaryRangeDetail,
   OvertimeAllowanceDetail,
   SmokingPolicy,
@@ -18,7 +19,10 @@ import {
   WorkingHourDetail,
   CompanyBusinessField,
   CompanyOffice,
-  Benefit
+  Benefit,
+  JobRecruitingCompany,
+  JobRecruitingCompanyService,
+  JobRecruitingCompanyBusinessSector
 } from '../../models/index.js';
 import { Op } from 'sequelize';
 import sequelize from '../../config/database.js';
@@ -148,6 +152,27 @@ export const jobController = {
             attributes: ['id', 'name', 'companyCode', 'logo']
           },
           {
+            model: JobRecruitingCompany,
+            as: 'recruitingCompany',
+            required: false,
+            include: [
+              {
+                model: JobRecruitingCompanyService,
+                as: 'services',
+                required: false,
+                attributes: ['id', 'serviceName', 'order'],
+                order: [['order', 'ASC']]
+              },
+              {
+                model: JobRecruitingCompanyBusinessSector,
+                as: 'businessSectors',
+                required: false,
+                attributes: ['id', 'sectorName', 'order'],
+                order: [['order', 'ASC']]
+              }
+            ]
+          },
+          {
             model: JobValue,
             as: 'jobValues',
             required: false,
@@ -181,6 +206,12 @@ export const jobController = {
             as: 'workingLocationDetails',
             required: false,
             attributes: ['id', 'content']
+          },
+          {
+            model: SalaryRange,
+            as: 'salaryRanges',
+            required: false,
+            attributes: ['id', 'salaryRange', 'type']
           },
           {
             model: SalaryRangeDetail,
@@ -306,6 +337,25 @@ export const jobController = {
             ]
           },
           {
+            model: JobRecruitingCompany,
+            as: 'recruitingCompany',
+            required: false,
+            include: [
+              {
+                model: JobRecruitingCompanyService,
+                as: 'services',
+                required: false,
+                order: [['order', 'ASC']]
+              },
+              {
+                model: JobRecruitingCompanyBusinessSector,
+                as: 'businessSectors',
+                required: false,
+                order: [['order', 'ASC']]
+              }
+            ]
+          },
+          {
             model: JobValue,
             as: 'jobValues',
             required: false,
@@ -313,12 +363,14 @@ export const jobController = {
               {
                 model: Type,
                 as: 'type',
-                required: false
+                required: false,
+                attributes: ['id', 'typename']
               },
               {
                 model: Value,
                 as: 'valueRef',
-                required: false
+                required: false,
+                attributes: ['id', 'valuename']
               }
             ]
           },
@@ -340,6 +392,12 @@ export const jobController = {
             as: 'workingLocationDetails',
             required: false,
             attributes: ['id', 'content']
+          },
+          {
+            model: SalaryRange,
+            as: 'salaryRanges',
+            required: false,
+            attributes: ['id', 'salaryRange', 'type']
           },
           {
             model: SalaryRangeDetail,
@@ -492,6 +550,27 @@ export const jobController = {
             as: 'company',
             required: false,
             attributes: ['id', 'name', 'companyCode', 'logo']
+          },
+          {
+            model: JobRecruitingCompany,
+            as: 'recruitingCompany',
+            required: false,
+            include: [
+              {
+                model: JobRecruitingCompanyService,
+                as: 'services',
+                required: false,
+                attributes: ['id', 'serviceName', 'order'],
+                order: [['order', 'ASC']]
+              },
+              {
+                model: JobRecruitingCompanyBusinessSector,
+                as: 'businessSectors',
+                required: false,
+                attributes: ['id', 'sectorName', 'order'],
+                order: [['order', 'ASC']]
+              }
+            ]
           },
           {
             model: JobValue,
@@ -654,6 +733,27 @@ export const jobController = {
             required: false
           },
           {
+            model: JobRecruitingCompany,
+            as: 'recruitingCompany',
+            required: false,
+            include: [
+              {
+                model: JobRecruitingCompanyService,
+                as: 'services',
+                required: false,
+                attributes: ['id', 'serviceName', 'order'],
+                order: [['order', 'ASC']]
+              },
+              {
+                model: JobRecruitingCompanyBusinessSector,
+                as: 'businessSectors',
+                required: false,
+                attributes: ['id', 'sectorName', 'order'],
+                order: [['order', 'ASC']]
+              }
+            ]
+          },
+          {
             model: JobValue,
             as: 'jobValues',
             required: false,
@@ -687,6 +787,12 @@ export const jobController = {
             as: 'workingLocationDetails',
             required: false,
             attributes: ['id', 'content']
+          },
+          {
+            model: SalaryRange,
+            as: 'salaryRanges',
+            required: false,
+            attributes: ['id', 'salaryRange', 'type']
           },
           {
             model: SalaryRangeDetail,

@@ -2,7 +2,8 @@ import {
   Calendar,
   JobApplication,
   Job,
-  Company
+  Company,
+  Collaborator
 } from '../../models/index.js';
 import { Op } from 'sequelize';
 
@@ -110,6 +111,131 @@ export const scheduleController = {
         }
       });
     } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Create calendar event for CTV
+   * POST /api/ctv/calendars
+   */
+  createCalendar: async (req, res, next) => {
+    try {
+      console.log('[CTV Calendar Create] Request body:', JSON.stringify(req.body, null, 2));
+      console.log('[CTV Calendar Create] Collaborator ID:', req.collaborator?.id);
+      
+      const {
+        jobApplicationId,
+        eventType = 1,
+        title,
+        description,
+        startAt,
+        endAt,
+        status = 0
+      } = req.body;
+
+      const collaboratorId = req.collaborator.id;
+
+      // Validate required fields
+      if (!jobApplicationId || !title || !startAt) {
+        console.log('[CTV Calendar Create] Validation failed:', { jobApplicationId, title, startAt });
+        return res.status(400).json({
+          success: false,
+          message: 'ID đơn ứng tuyển, tiêu đề và thời gian bắt đầu là bắt buộc'
+        });
+      }
+
+      // Validate job application exists and belongs to this collaborator
+      const jobApplication = await JobApplication.findOne({
+        where: {
+          id: jobApplicationId,
+          collaboratorId: collaboratorId
+        }
+      });
+
+      if (!jobApplication) {
+        return res.status(404).json({
+          success: false,
+          message: 'Đơn ứng tuyển không tồn tại hoặc không thuộc về bạn'
+        });
+      }
+
+      // Validate dates
+      const start = new Date(startAt);
+      if (endAt) {
+        const end = new Date(endAt);
+        if (end < start) {
+          return res.status(400).json({
+            success: false,
+            message: 'Thời gian kết thúc phải sau thời gian bắt đầu'
+          });
+        }
+      }
+
+      console.log('[CTV Calendar Create] Creating calendar with data:', {
+        jobApplicationId,
+        collaboratorId: collaboratorId,
+        eventType,
+        title,
+        description,
+        startAt: start,
+        endAt: endAt ? new Date(endAt) : null,
+        status
+      });
+
+      const calendar = await Calendar.create({
+        jobApplicationId,
+        adminId: null, // CTV không có adminId
+        collaboratorId: collaboratorId,
+        eventType,
+        title,
+        description,
+        startAt: start,
+        endAt: endAt ? new Date(endAt) : null,
+        status
+      });
+
+      console.log('[CTV Calendar Create] Calendar created successfully:', calendar.id);
+
+      // Tự động cập nhật trạng thái job_application dựa trên eventType
+      if (eventType === 1) {
+        // Phỏng vấn -> Đang xếp lịch phỏng vấn (status = 3)
+        await jobApplication.update({
+          status: 3,
+          interviewDate: start
+        });
+      } else if (eventType === 2) {
+        // Nyusha -> Đã nyusha (status = 8)
+        await jobApplication.update({
+          status: 8,
+          nyushaDate: start
+        });
+      }
+
+      // Reload with relations
+      await calendar.reload({
+        include: [
+          {
+            model: JobApplication,
+            as: 'jobApplication',
+            required: false
+          },
+          {
+            model: Collaborator,
+            as: 'collaborator',
+            required: false
+          }
+        ]
+      });
+
+      res.status(201).json({
+        success: true,
+        message: 'Tạo lịch hẹn thành công',
+        data: { calendar }
+      });
+    } catch (error) {
+      console.error('[CTV Calendar Create] Error:', error);
+      console.error('[CTV Calendar Create] Error stack:', error.stack);
       next(error);
     }
   }

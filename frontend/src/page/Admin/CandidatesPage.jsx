@@ -353,9 +353,7 @@ const AdminCandidatesPage = () => {
                 <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">Tên ứng viên</th>
                 <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">Email</th>
                 <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">Số điện thoại</th>
-                <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">Nguồn</th>
                 <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">CTV</th>
-                <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">Người phụ trách</th>
                 <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">Ngày PV đầu</th>
                 <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">Phase</th>
                 <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">Số tiến cử</th>
@@ -367,13 +365,13 @@ const AdminCandidatesPage = () => {
             <tbody className="divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan="13" className="px-3 py-8 text-center text-xs text-gray-500">
+                  <td colSpan="11" className="px-3 py-8 text-center text-xs text-gray-500">
                     Đang tải dữ liệu...
                   </td>
                 </tr>
               ) : candidates.length === 0 ? (
                 <tr>
-                  <td colSpan="13" className="px-3 py-8 text-center text-xs text-gray-500">
+                  <td colSpan="11" className="px-3 py-8 text-center text-xs text-gray-500">
                     Không có dữ liệu
                   </td>
                 </tr>
@@ -408,16 +406,27 @@ const AdminCandidatesPage = () => {
                           <ExternalLink className="w-2.5 h-2.5" />
                         </button>
                       </td>
-                      <td className="px-3 py-2 text-[11px] text-gray-900 font-medium">{candidate.fullName || '-'}</td>
-                      <td className="px-3 py-2 text-[11px] text-gray-700 flex items-center gap-1">
-                        <Mail className="w-2.5 h-2.5 text-gray-400" />
-                        {candidate.email || '-'}
+                      <td className="px-3 py-2 text-[11px] text-gray-900 font-medium">{candidate.name || candidate.fullName || '-'}</td>
+                      <td className="px-3 py-2 text-[11px] text-gray-700">
+                        {candidate.email && candidate.email.includes('@') ? (
+                          <div className="flex items-center gap-1">
+                            <Mail className="w-2.5 h-2.5 text-gray-400 flex-shrink-0" />
+                            <span className="truncate">{candidate.email}</span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-500">—</span>
+                        )}
                       </td>
-                      <td className="px-3 py-2 text-[11px] text-gray-700 flex items-center gap-1">
-                        <Phone className="w-2.5 h-2.5 text-gray-400" />
-                        {candidate.phone || '-'}
+                      <td className="px-3 py-2 text-[11px] text-gray-700">
+                        {candidate.phone ? (
+                          <div className="flex items-center gap-1">
+                            <Phone className="w-2.5 h-2.5 text-gray-400 flex-shrink-0" />
+                            <span className="truncate">{candidate.phone}</span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-500">—</span>
+                        )}
                       </td>
-                      <td className="px-3 py-2 text-[11px] text-gray-700">{candidate.source || '-'}</td>
                       <td className="px-3 py-2">
                         {candidate.collaborator ? (
                           <button
@@ -430,7 +439,6 @@ const AdminCandidatesPage = () => {
                           <span className="text-[11px] text-gray-500">—</span>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-[11px] text-gray-700">—</td>
                       <td className="px-3 py-2 text-[11px] text-gray-700">{receiveDate}</td>
                       <td className="px-3 py-2">
                         <select className="px-1.5 py-0.5 border border-gray-300 rounded text-[10px] text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-600 w-full">

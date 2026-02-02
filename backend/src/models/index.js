@@ -684,6 +684,10 @@ export const JobApplication = sequelize.define(
       type: DataTypes.BIGINT.UNSIGNED,
       field: 'collaborator_id'
     },
+    adminId: {
+      type: DataTypes.BIGINT.UNSIGNED,
+      field: 'admin_id'
+    },
     title: {
       type: DataTypes.TEXT
     },
@@ -697,6 +701,10 @@ export const JobApplication = sequelize.define(
     monthlySalary: {
       type: DataTypes.DECIMAL(15, 2),
       field: 'monthly_salary'
+    },
+    yearlySalary: {
+      type: DataTypes.DECIMAL(15, 2),
+      field: 'yearly_salary'
     },
     appliedAt: {
       type: DataTypes.DATE,
@@ -2335,6 +2343,12 @@ export const Type = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: false,
       field: 'typename'
+    },
+    cvField: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      field: 'cv_field',
+      comment: 'Tên field trong CV để so sánh (ví dụ: jlptLevel, experienceYears, specialization, qualification)'
     }
   },
   {
@@ -2365,6 +2379,24 @@ export const Value = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: false,
       field: 'valuename'
+    },
+    comparisonOperator: {
+      type: DataTypes.STRING(10),
+      allowNull: true,
+      field: 'comparison_operator',
+      comment: 'Toán tử so sánh: >=, <=, >, <, =, between'
+    },
+    comparisonValue: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      field: 'comparison_value',
+      comment: 'Giá trị để so sánh (ví dụ: 3 cho N3, 3 cho 3 năm)'
+    },
+    comparisonValueEnd: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      field: 'comparison_value_end',
+      comment: 'Giá trị kết thúc cho between (ví dụ: 5 cho "từ 2 đến 5")'
     }
   },
   {
@@ -2574,6 +2606,9 @@ Job.hasMany(JobApplication, { as: 'applications', foreignKey: 'jobId' });
 
 JobApplication.belongsTo(Collaborator, { as: 'collaborator', foreignKey: 'collaboratorId' });
 Collaborator.hasMany(JobApplication, { as: 'jobApplications', foreignKey: 'collaboratorId' });
+
+JobApplication.belongsTo(Admin, { as: 'admin', foreignKey: 'adminId' });
+Admin.hasMany(JobApplication, { as: 'jobApplications', foreignKey: 'adminId' });
 
 JobApplication.belongsTo(CVStorage, { as: 'cv', foreignKey: 'cvCode', targetKey: 'code' });
 CVStorage.hasMany(JobApplication, { as: 'jobApplications', foreignKey: 'cvCode', sourceKey: 'code' });
@@ -2890,5 +2925,152 @@ FavoriteJob.belongsTo(Job, {
 SearchHistory.belongsTo(Collaborator, {
   foreignKey: 'collaboratorId',
   as: 'collaborator'
+});
+
+// Job Recruiting Company (Công ty tuyển dụng thực tế trong JD)
+export const JobRecruitingCompany = sequelize.define(
+  'JobRecruitingCompany',
+  {
+    id: {
+      type: DataTypes.BIGINT.UNSIGNED,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    jobId: {
+      type: DataTypes.BIGINT.UNSIGNED,
+      allowNull: false,
+      field: 'job_id'
+    },
+    companyName: {
+      type: DataTypes.STRING(255),
+      field: 'company_name'
+    },
+    revenue: {
+      type: DataTypes.STRING(255)
+    },
+    numberOfEmployees: {
+      type: DataTypes.STRING(255),
+      field: 'number_of_employees'
+    },
+    headquarters: {
+      type: DataTypes.STRING(255)
+    },
+    companyIntroduction: {
+      type: DataTypes.TEXT,
+      field: 'company_introduction'
+    },
+    stockExchangeInfo: {
+      type: DataTypes.STRING(255),
+      field: 'stock_exchange_info'
+    },
+    investmentCapital: {
+      type: DataTypes.STRING(255),
+      field: 'investment_capital'
+    },
+    establishedDate: {
+      type: DataTypes.STRING(255),
+      field: 'established_date'
+    }
+  },
+  {
+    tableName: 'job_recruiting_companies',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    paranoid: true,
+    deletedAt: 'deleted_at'
+  }
+);
+
+// Job Recruiting Company Service
+export const JobRecruitingCompanyService = sequelize.define(
+  'JobRecruitingCompanyService',
+  {
+    id: {
+      type: DataTypes.BIGINT.UNSIGNED,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    jobRecruitingCompanyId: {
+      type: DataTypes.BIGINT.UNSIGNED,
+      allowNull: false,
+      field: 'job_recruiting_company_id'
+    },
+    serviceName: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      field: 'service_name'
+    },
+    order: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    }
+  },
+  {
+    tableName: 'job_recruiting_company_services',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    paranoid: true,
+    deletedAt: 'deleted_at'
+  }
+);
+
+// Job Recruiting Company Business Sector
+export const JobRecruitingCompanyBusinessSector = sequelize.define(
+  'JobRecruitingCompanyBusinessSector',
+  {
+    id: {
+      type: DataTypes.BIGINT.UNSIGNED,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    jobRecruitingCompanyId: {
+      type: DataTypes.BIGINT.UNSIGNED,
+      allowNull: false,
+      field: 'job_recruiting_company_id'
+    },
+    sectorName: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      field: 'sector_name'
+    },
+    order: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    }
+  },
+  {
+    tableName: 'job_recruiting_company_business_sectors',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    paranoid: true,
+    deletedAt: 'deleted_at'
+  }
+);
+
+// Associations for JobRecruitingCompany
+JobRecruitingCompany.belongsTo(Job, { as: 'job', foreignKey: 'jobId' });
+Job.hasOne(JobRecruitingCompany, { as: 'recruitingCompany', foreignKey: 'jobId' });
+
+JobRecruitingCompany.hasMany(JobRecruitingCompanyService, { 
+  as: 'services', 
+  foreignKey: 'jobRecruitingCompanyId' 
+});
+JobRecruitingCompanyService.belongsTo(JobRecruitingCompany, { 
+  as: 'recruitingCompany', 
+  foreignKey: 'jobRecruitingCompanyId' 
+});
+
+JobRecruitingCompany.hasMany(JobRecruitingCompanyBusinessSector, { 
+  as: 'businessSectors', 
+  foreignKey: 'jobRecruitingCompanyId' 
+});
+JobRecruitingCompanyBusinessSector.belongsTo(JobRecruitingCompany, { 
+  as: 'recruitingCompany', 
+  foreignKey: 'jobRecruitingCompanyId' 
 });
 

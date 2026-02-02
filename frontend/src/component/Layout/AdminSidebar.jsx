@@ -95,7 +95,7 @@ const AdminSidebar = () => {
     },
     { 
       id: 'quan-ly-doanh-nghiep', 
-      label: 'Quản lý doanh nghiệp', 
+      label: 'Quản lý doanh nghiệp nguồn', 
       icon: Building2, 
       path: '/admin/companies' 
     },

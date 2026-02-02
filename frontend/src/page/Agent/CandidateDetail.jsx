@@ -105,11 +105,46 @@ const CandidateDetail = () => {
     return `${income.toLocaleString()}円`;
   };
 
-  const downloadCV = (cvPath) => {
-    if (cvPath) {
+  const downloadCV = async (cvPath) => {
+    if (!cvPath) {
+      alert('Không có file CV để tải xuống');
+      return;
+    }
+
+    try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
-      const fullUrl = cvPath.startsWith('http') ? cvPath : `${baseUrl.replace('/api', '')}/${cvPath}`;
-      window.open(fullUrl, '_blank');
+      let fullUrl;
+      
+      // If path starts with http, use it directly
+      if (cvPath.startsWith('http')) {
+        fullUrl = cvPath;
+      } else {
+        // Remove leading slash if exists and construct URL
+        const cleanPath = cvPath.startsWith('/') ? cvPath.substring(1) : cvPath;
+        const apiBase = baseUrl.replace('/api', '');
+        fullUrl = `${apiBase}/${cleanPath}`;
+      }
+      
+      // Encode URL properly to handle special characters
+      const encodedUrl = encodeURI(fullUrl);
+      
+      // Try to open in new tab
+      const newWindow = window.open(encodedUrl, '_blank');
+      
+      // If popup blocked, try download instead
+      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+        // Fallback: create download link
+        const link = document.createElement('a');
+        link.href = encodedUrl;
+        link.download = cvPath.split('/').pop() || 'cv.pdf';
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      console.error('Error downloading CV:', error);
+      alert('Không thể tải file CV. Vui lòng thử lại sau.');
     }
   };
 
@@ -152,10 +187,25 @@ const CandidateDetail = () => {
     );
   }
 
-  // Parse JSON fields
-  const educations = candidate.educations ? (typeof candidate.educations === 'string' ? JSON.parse(candidate.educations) : candidate.educations) : [];
-  const workExperiences = candidate.workExperiences ? (typeof candidate.workExperiences === 'string' ? JSON.parse(candidate.workExperiences) : candidate.workExperiences) : [];
-  const certificates = candidate.certificates ? (typeof candidate.certificates === 'string' ? JSON.parse(candidate.certificates) : candidate.certificates) : [];
+  // Helper function to safely parse JSON array fields
+  const parseArrayField = (field) => {
+    if (!field) return [];
+    if (Array.isArray(field)) return field;
+    if (typeof field === 'string') {
+      try {
+        const parsed = JSON.parse(field);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  };
+
+  // Parse JSON fields - ensure they are always arrays
+  const educations = parseArrayField(candidate?.educations);
+  const workExperiences = parseArrayField(candidate?.workExperiences);
+  const certificates = parseArrayField(candidate?.certificates);
 
   const tabs = [
     { id: 'personal', label: 'Thông tin cá nhân', icon: User },

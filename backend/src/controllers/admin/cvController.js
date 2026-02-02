@@ -101,9 +101,12 @@ export const cvController = {
         where.collaboratorId = parseInt(collaboratorId);
       }
 
-      // Filter by admin
+      // Filter by admin - default to current admin if not specified
       if (adminId) {
         where.adminId = parseInt(adminId);
+      } else if (req.admin?.id) {
+        // Automatically filter by current admin if no adminId specified
+        where.adminId = req.admin.id;
       }
 
       // Filter by date range
@@ -361,10 +364,28 @@ export const cvController = {
             }
           });
 
+          // Validate collaboratorId if provided - if not exists, set to null silently
+          let collaboratorId = null;
+          if (rawData.collaboratorId) {
+            const collaboratorIdInt = parseInt(rawData.collaboratorId);
+            if (!isNaN(collaboratorIdInt) && collaboratorIdInt > 0) {
+              // Check if collaborator exists
+              const collaborator = await Collaborator.findByPk(collaboratorIdInt);
+              if (collaborator) {
+                collaboratorId = collaboratorIdInt;
+              } else {
+                // If collaborator doesn't exist, silently set to null
+                // This allows creating CV even if CTV ID is incorrect
+                collaboratorId = null;
+                console.warn(`Collaborator ID ${collaboratorIdInt} not found, setting to null for CV creation`);
+              }
+            }
+          }
+
           // Create CV
           const cv = await CVStorage.create({
             code: cvCode,
-            collaboratorId: rawData.collaboratorId ? parseInt(rawData.collaboratorId) : null,
+            collaboratorId: collaboratorId,
             adminId: req.admin.id, // Admin tạo CV
             curriculumVitae: cvFile,
             ...cvData,
@@ -502,6 +523,30 @@ export const cvController = {
               }
             }
             cv.curriculumVitae = path.relative(path.join(__dirname, '../../../'), req.file.path);
+          }
+
+          // Validate collaboratorId if provided - if not exists, set to null silently
+          if (rawData.collaboratorId !== undefined) {
+            if (rawData.collaboratorId) {
+              const collaboratorIdInt = parseInt(rawData.collaboratorId);
+              if (!isNaN(collaboratorIdInt) && collaboratorIdInt > 0) {
+                // Check if collaborator exists
+                const collaborator = await Collaborator.findByPk(collaboratorIdInt);
+                if (collaborator) {
+                  cv.collaboratorId = collaboratorIdInt;
+                } else {
+                  // If collaborator doesn't exist, silently set to null
+                  // This allows updating CV even if CTV ID is incorrect
+                  cv.collaboratorId = null;
+                  console.warn(`Collaborator ID ${collaboratorIdInt} not found, setting to null for CV update`);
+                }
+              } else {
+                cv.collaboratorId = null;
+              }
+            } else {
+              // Empty string or null - set to null
+              cv.collaboratorId = null;
+            }
           }
 
           // Map frontend fields to backend model fields and parse JSON strings

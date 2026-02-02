@@ -134,6 +134,36 @@ const CandidatesPage = () => {
     }
   };
 
+  const getStatusLabel = (status) => {
+    const statusLabels = {
+      1: 'Admin đang xử lý hồ sơ',
+      2: 'Đang tiến cử',
+      3: 'Đang xếp lịch phỏng vấn',
+      4: 'Đang phỏng vấn',
+      5: 'Đang đợi naitei',
+      6: 'Đang thương lượng naitei',
+      7: 'Đang đợi nyusha',
+      8: 'Đã nyusha',
+      9: 'Đang chờ thanh toán với công ty',
+      10: 'Gửi yêu cầu thanh toán',
+      11: 'Đã thanh toán',
+      12: 'Hồ sơ không hợp lệ',
+      15: 'Kết quả trượt',
+      16: 'Hủy giữa chừng',
+      17: 'Không shodaku'
+    };
+    return statusLabels[status] || `Status ${status}`;
+  };
+
+  const getScoutStatusLabel = (status) => {
+    if (status >= 2 && status <= 4) return 'Đang xử lý';
+    if (status >= 5 && status <= 7) return 'Đang đợi';
+    if (status === 8) return 'Đã nhận việc';
+    if (status >= 9 && status <= 11) return 'Đang thanh toán';
+    if (status === 12 || status === 15 || status === 16 || status === 17) return 'Đã kết thúc';
+    return 'Chưa xử lý';
+  };
+
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Filter Section */}
@@ -399,11 +429,31 @@ const CandidatesPage = () => {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <select 
                         value={candidate.status || ''}
-                        className="px-2 py-1 border border-gray-300 rounded text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-600 w-full"
-                        disabled
+                        onChange={async (e) => {
+                          const newStatus = parseInt(e.target.value);
+                          try {
+                            const formData = new FormData();
+                            formData.append('status', newStatus);
+                            const response = await apiService.updateCVStorage(candidate.id, formData);
+                            if (response.success) {
+                              // Cập nhật local state
+                              setCandidates(prev => prev.map(c => 
+                                c.id === candidate.id ? { ...c, status: newStatus } : c
+                              ));
+                            } else {
+                              alert(response.message || 'Có lỗi xảy ra khi cập nhật trạng thái');
+                              e.target.value = candidate.status; // Revert
+                            }
+                          } catch (error) {
+                            console.error('Error updating candidate status:', error);
+                            alert('Có lỗi xảy ra khi cập nhật trạng thái');
+                            e.target.value = candidate.status; // Revert
+                          }
+                        }}
+                        className="px-2 py-1 border border-gray-300 rounded text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-600 w-full cursor-pointer"
                       >
                         <option value="0">{t.draft || 'Draft'}</option>
                         <option value="1">{t.active || 'Active'}</option>
@@ -425,8 +475,31 @@ const CandidatesPage = () => {
                         </button>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-700">—</td>
-                    <td className="px-4 py-3 text-xs text-gray-700">—</td>
+                    <td className="px-4 py-3 text-xs text-gray-700">
+                      {candidate.latestApplicationStatus ? (
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          candidate.latestApplicationStatus >= 2 && candidate.latestApplicationStatus <= 11
+                            ? 'bg-green-100 text-green-800'
+                            : candidate.latestApplicationStatus === 12 || candidate.latestApplicationStatus === 15 || 
+                              candidate.latestApplicationStatus === 16 || candidate.latestApplicationStatus === 17
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {getStatusLabel(candidate.latestApplicationStatus)}
+                        </span>
+                      ) : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-700">
+                      {candidate.latestApplicationStatus ? (
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          candidate.latestApplicationStatus >= 2 && candidate.latestApplicationStatus <= 11
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {getScoutStatusLabel(candidate.latestApplicationStatus)}
+                        </span>
+                      ) : '—'}
+                    </td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-center gap-2">
                         <button 

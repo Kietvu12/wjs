@@ -230,6 +230,9 @@ export const calendarController = {
    */
   createCalendar: async (req, res, next) => {
     try {
+      console.log('[Calendar Create] Request body:', JSON.stringify(req.body, null, 2));
+      console.log('[Calendar Create] Admin ID:', req.admin?.id);
+      
       const {
         jobApplicationId,
         collaboratorId,
@@ -243,6 +246,7 @@ export const calendarController = {
 
       // Validate required fields
       if (!jobApplicationId || !title || !startAt) {
+        console.log('[Calendar Create] Validation failed:', { jobApplicationId, title, startAt });
         return res.status(400).json({
           success: false,
           message: 'ID đơn ứng tuyển, tiêu đề và thời gian bắt đầu là bắt buộc'
@@ -281,6 +285,18 @@ export const calendarController = {
         }
       }
 
+      console.log('[Calendar Create] Creating calendar with data:', {
+        jobApplicationId,
+        adminId: req.admin.id,
+        collaboratorId: collaboratorId || null,
+        eventType,
+        title,
+        description,
+        startAt: start,
+        endAt: endAt ? new Date(endAt) : null,
+        status
+      });
+
       const calendar = await Calendar.create({
         jobApplicationId,
         adminId: req.admin.id,
@@ -292,6 +308,8 @@ export const calendarController = {
         endAt: endAt ? new Date(endAt) : null,
         status
       });
+
+      console.log('[Calendar Create] Calendar created successfully:', calendar.id);
 
       // Tự động cập nhật trạng thái job_application dựa trên eventType
       // eventType = 1 (Phỏng vấn) -> status = 4 (Đang phỏng vấn)
@@ -341,12 +359,16 @@ export const calendarController = {
         description: `Tạo mới lịch hẹn: ${calendar.title}`
       });
 
+      console.log('[Calendar Create] Successfully created calendar:', calendar.id);
+      
       res.status(201).json({
         success: true,
         message: 'Tạo lịch hẹn thành công',
         data: { calendar }
       });
     } catch (error) {
+      console.error('[Calendar Create] Error:', error);
+      console.error('[Calendar Create] Error stack:', error.stack);
       next(error);
     }
   },

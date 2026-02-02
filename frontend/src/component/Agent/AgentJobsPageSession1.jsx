@@ -30,6 +30,29 @@ const mockLocations = [
   'Hiroshima', 'Kobe', 'Chiba', 'Saitama', 'Kanagawa', 'Aichi', 'Hyogo'
 ];
 
+// Dữ liệu quốc gia và tỉnh/thành phố
+const countryProvincesData = {
+  'Vietnam': [
+    'Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ', 'An Giang', 'Bà Rịa - Vũng Tàu',
+    'Bắc Giang', 'Bắc Kạn', 'Bạc Liêu', 'Bắc Ninh', 'Bến Tre', 'Bình Định', 'Bình Dương',
+    'Bình Phước', 'Bình Thuận', 'Cà Mau', 'Cao Bằng', 'Đắk Lắk', 'Đắk Nông', 'Điện Biên',
+    'Đồng Nai', 'Đồng Tháp', 'Gia Lai', 'Hà Giang', 'Hà Nam', 'Hà Tĩnh', 'Hải Dương',
+    'Hậu Giang', 'Hòa Bình', 'Hưng Yên', 'Khánh Hòa', 'Kiên Giang', 'Kon Tum', 'Lai Châu',
+    'Lâm Đồng', 'Lạng Sơn', 'Lào Cai', 'Long An', 'Nam Định', 'Nghệ An', 'Ninh Bình',
+    'Ninh Thuận', 'Phú Thọ', 'Phú Yên', 'Quảng Bình', 'Quảng Nam', 'Quảng Ngãi', 'Quảng Ninh',
+    'Quảng Trị', 'Sóc Trăng', 'Sơn La', 'Tây Ninh', 'Thái Bình', 'Thái Nguyên', 'Thanh Hóa',
+    'Thừa Thiên Huế', 'Tiền Giang', 'Trà Vinh', 'Tuyên Quang', 'Vĩnh Long', 'Vĩnh Phúc', 'Yên Bái'
+  ],
+  'Japan': [
+    'Tokyo', 'Osaka', 'Kyoto', 'Yokohama', 'Nagoya', 'Sapporo', 'Fukuoka', 'Kobe', 'Kawasaki',
+    'Saitama', 'Hiroshima', 'Sendai', 'Chiba', 'Kitakyushu', 'Sakai', 'Niigata', 'Hamamatsu',
+    'Shizuoka', 'Sagamihara', 'Okayama', 'Kumamoto', 'Kagoshima', 'Utsunomiya', 'Hachioji',
+    'Matsuyama', 'Kanazawa', 'Nagano', 'Toyama', 'Gifu', 'Fukushima', 'Mito', 'Akita', 'Aomori',
+    'Morioka', 'Yamagata', 'Fukui', 'Tottori', 'Matsue', 'Kofu', 'Maebashi', 'Takamatsu',
+    'Tokushima', 'Kochi', 'Miyazaki', 'Naha', 'Okinawa'
+  ]
+};
+
 const mockEmploymentTypes = [
   'Nhân viên chính thức',
   'Nhân viên hợp đồng',
@@ -38,14 +61,6 @@ const mockEmploymentTypes = [
   'Ủy thác công việc',
 ];
 
-const mockVisaTypes = [
-  'Kỹ thuật / Nhân văn / Quốc tế',
-  'Kỹ năng đặc định',
-  'Thực tập kỹ năng',
-  'Thường trú nhân',
-  'Vợ/chồng người Nhật',
-  'Định cư',
-];
 
 const mockHighlights = [
   'Chưa có kinh nghiệm OK',
@@ -134,15 +149,13 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
   const [filters, setFilters] = useState({
     keyword: '',
     keywordMode: 'OR',
-    locations: [],
-    businessTypeIds: [], // Loại hình kinh doanh (parentId = null)
-    fieldIds: [], // Lĩnh vực (parentId tham chiếu đến businessType)
-    jobTypeIds: [], // Loại công việc (parentId tham chiếu đến field)
+    locations: [], // Array of { country: string, location: string }
+    fieldIds: [], // Lĩnh vực
+    jobTypeIds: [], // Loại công việc
     age: null,
     salaryMin: '',
     salaryMax: '',
     employmentType: null,
-    visaType: null,
     highlights: [],
     booleans: {
       positionNoExpOk: false,
@@ -153,17 +166,28 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
   });
 
   const [showKeywordMode, setShowKeywordMode] = useState(false);
-  const [showLocationModal, setShowLocationModal] = useState(false);
-  const [showBusinessTypeModal, setShowBusinessTypeModal] = useState(false);
-  const [showFieldModal, setShowFieldModal] = useState(false);
-  const [showJobTypeModal, setShowJobTypeModal] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false); // Show both modals together
+  const [selectedCountries, setSelectedCountries] = useState([]); // Array of selected countries
+
+  // Sync selectedCountries with filters.locations when modal opens
+  useEffect(() => {
+    if (showLocationModal) {
+      const countries = new Set();
+      filters.locations.forEach(loc => {
+        if (loc.country) countries.add(loc.country);
+      });
+      setSelectedCountries(Array.from(countries));
+    }
+  }, [showLocationModal]);
+  const [showFieldJobTypeModal, setShowFieldJobTypeModal] = useState(false); // Dual modal for field and job type
   const [showHighlightModal, setShowHighlightModal] = useState(false);
   const [loadingFields, setLoadingFields] = useState(false);
   const [loadingJobTypes, setLoadingJobTypes] = useState(false);
   const [availableFields, setAvailableFields] = useState([]);
-  const [availableJobTypes, setAvailableJobTypes] = useState([]);
+  const [availableJobTypes, setAvailableJobTypes] = useState([]); // All job types with parentId
+  const [categoryTree, setCategoryTree] = useState([]); // Full category tree for nested display
+  const [selectedFields, setSelectedFields] = useState([]); // Selected fields for dual modal
   const [resultCount, setResultCount] = useState(0);
-  const [businessTypes, setBusinessTypes] = useState([]); // Loại hình kinh doanh
   const [locations, setLocations] = useState([]); // Địa điểm làm việc
   const [loading, setLoading] = useState(false);
   
@@ -174,26 +198,143 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
 
   // Load data on mount
   useEffect(() => {
-    loadBusinessTypes();
+    loadCategoryTree();
     loadLocations();
   }, []);
 
-  // Load business types (Loại hình kinh doanh - parentId = null)
-  const loadBusinessTypes = async () => {
+  // Load category tree (full hierarchy)
+  const loadCategoryTree = async () => {
     try {
-      setLoading(true);
-      const response = await apiService.getJobCategories({ parentId: null, status: 1 });
-      if (response.success && response.data?.categories) {
-        setBusinessTypes(response.data.categories.map(cat => ({
+      setLoadingFields(true);
+      setLoadingJobTypes(true);
+      
+      // Try to get tree structure first (if available)
+      try {
+        const treeResponse = await apiService.getCTVJobCategoryTree();
+        if (treeResponse.success && treeResponse.data?.tree) {
+          const tree = treeResponse.data.tree;
+          setCategoryTree(tree);
+          
+          // Extract fields (categories with parentId = null)
+          const flattenTree = (categories, level = 0) => {
+            let result = [];
+            categories.forEach(cat => {
+              result.push({
+                ...cat,
           id: String(cat.id),
-          name: cat.name
+                level: level,
+                parentId: cat.parentId ? String(cat.parentId) : null
+              });
+              if (cat.children && cat.children.length > 0) {
+                result = result.concat(flattenTree(cat.children, level + 1));
+              }
+            });
+            return result;
+          };
+          
+          const allCategories = flattenTree(tree);
+          const fields = allCategories.filter(cat => !cat.parentId);
+          const jobTypes = allCategories.filter(cat => cat.parentId);
+          
+          setAvailableFields(fields.map(cat => ({
+            id: cat.id,
+            name: cat.name,
+            level: cat.level
         })));
+          
+          setAvailableJobTypes(jobTypes.map(cat => ({
+            id: cat.id,
+            name: cat.name,
+            parentId: cat.parentId,
+            level: cat.level
+          })));
+          
+          return;
+        }
+      } catch (treeError) {
+        console.log('Tree API not available, falling back to flat list');
+      }
+      
+      // Fallback: Load flat list
+      const response = await apiService.getJobCategories({ status: 1 });
+      if (response.success && response.data?.categories) {
+        const allCategories = response.data.categories.map(cat => ({
+          id: String(cat.id),
+          name: cat.name,
+          parentId: cat.parentId ? String(cat.parentId) : null
+        }));
+        
+        const fields = allCategories.filter(cat => !cat.parentId);
+        const jobTypes = allCategories.filter(cat => cat.parentId);
+        
+        setAvailableFields(fields);
+        setAvailableJobTypes(jobTypes);
+        setCategoryTree(fields); // Simple tree structure
       }
     } catch (error) {
-      console.error('Error loading business types:', error);
+      console.error('Error loading category tree:', error);
     } finally {
-      setLoading(false);
+      setLoadingFields(false);
+      setLoadingJobTypes(false);
     }
+  };
+
+  // Helper: Find all descendants of a category (including nested children)
+  const findAllDescendants = (categoryId, tree = categoryTree) => {
+    const result = [];
+    
+    const findInTree = (categories, targetId) => {
+      for (const cat of categories) {
+        if (cat.id === String(targetId) || cat.id === targetId) {
+          // Found the category, add all its descendants
+          const addDescendants = (children) => {
+            children.forEach(child => {
+              result.push(String(child.id));
+              if (child.children && child.children.length > 0) {
+                addDescendants(child.children);
+              }
+            });
+          };
+          if (cat.children && cat.children.length > 0) {
+            addDescendants(cat.children);
+          }
+          return true;
+        }
+        if (cat.children && cat.children.length > 0) {
+          if (findInTree(cat.children, targetId)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+    
+    findInTree(tree, categoryId);
+    return result;
+  };
+
+  // Sync selectedFields with filters.fieldIds when modal opens
+  useEffect(() => {
+    if (showFieldJobTypeModal) {
+      setSelectedFields(filters.fieldIds);
+    }
+  }, [showFieldJobTypeModal]);
+
+  // Get job types for selected fields (including nested descendants)
+  const getJobTypesForSelectedFields = () => {
+    const allDescendantIds = new Set();
+    
+    selectedFields.forEach(fieldId => {
+      // Get direct children
+      const directChildren = availableJobTypes.filter(jt => jt.parentId === fieldId);
+      directChildren.forEach(jt => allDescendantIds.add(jt.id));
+      
+      // Get nested descendants from tree
+      const nestedDescendants = findAllDescendants(fieldId);
+      nestedDescendants.forEach(id => allDescendantIds.add(id));
+    });
+    
+    return availableJobTypes.filter(jt => allDescendantIds.has(jt.id));
   };
 
   // Load locations from jobs (working locations)
@@ -221,81 +362,6 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
     }
   };
 
-  // Fetch fields (Lĩnh vực) when business type changes
-  useEffect(() => {
-    if (filters.businessTypeIds.length > 0) {
-      setLoadingFields(true);
-      fetchFieldsByBusinessTypes(filters.businessTypeIds).then((fields) => {
-        setAvailableFields(fields);
-        setLoadingFields(false);
-        // Reset fieldIds and jobTypeIds when business type changes
-        setFilters(prev => ({ ...prev, fieldIds: [], jobTypeIds: [] }));
-      });
-    } else {
-      setAvailableFields([]);
-      setFilters(prev => ({ ...prev, fieldIds: [], jobTypeIds: [] }));
-    }
-  }, [filters.businessTypeIds]);
-
-  // Fetch job types (Loại công việc) when field changes
-  useEffect(() => {
-    if (filters.fieldIds.length > 0) {
-      setLoadingJobTypes(true);
-      fetchJobTypesByFields(filters.fieldIds).then((jobTypes) => {
-        setAvailableJobTypes(jobTypes);
-        setLoadingJobTypes(false);
-        // Reset jobTypeIds when field changes
-        setFilters(prev => ({ ...prev, jobTypeIds: [] }));
-      });
-    } else {
-      setAvailableJobTypes([]);
-      setFilters(prev => ({ ...prev, jobTypeIds: [] }));
-    }
-  }, [filters.fieldIds]);
-
-  // Fetch fields (Lĩnh vực) from API - children of business types
-  const fetchFieldsByBusinessTypes = async (businessTypeIds) => {
-    try {
-      const allFields = [];
-      for (const businessTypeId of businessTypeIds) {
-        const response = await apiService.getJobCategoryChildren(parseInt(businessTypeId));
-        if (response.success && response.data?.categories) {
-          const fields = response.data.categories.map(cat => ({
-            id: String(cat.id),
-            name: cat.name,
-            parentId: String(cat.parentId || businessTypeId)
-          }));
-          allFields.push(...fields);
-        }
-      }
-      return allFields;
-    } catch (error) {
-      console.error('Error fetching fields:', error);
-      return [];
-    }
-  };
-
-  // Fetch job types (Loại công việc) from API - children of fields
-  const fetchJobTypesByFields = async (fieldIds) => {
-    try {
-      const allJobTypes = [];
-      for (const fieldId of fieldIds) {
-        const response = await apiService.getJobCategoryChildren(parseInt(fieldId));
-        if (response.success && response.data?.categories) {
-          const jobTypes = response.data.categories.map(cat => ({
-            id: String(cat.id),
-            name: cat.name,
-            parentId: String(cat.parentId || fieldId)
-          }));
-          allJobTypes.push(...jobTypes);
-        }
-      }
-      return allJobTypes;
-    } catch (error) {
-      console.error('Error fetching job types:', error);
-      return [];
-    }
-  };
 
   const handleSearch = async () => {
     try {
@@ -311,31 +377,33 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
         params.search = filters.keyword.trim();
       }
 
-      // Category filter - ưu tiên jobTypeIds (Loại công việc), sau đó fieldIds (Lĩnh vực), cuối cùng businessTypeIds (Loại hình kinh doanh)
+      // Category filter - ưu tiên jobTypeIds (Loại công việc), sau đó fieldIds (Lĩnh vực)
+      // Filter theo job_category_id trong bảng jobs
       if (filters.jobTypeIds.length > 0) {
-        // Nếu có nhiều job types, lấy đầu tiên (API chỉ hỗ trợ 1 categoryId)
-        params.categoryId = parseInt(filters.jobTypeIds[0]);
+        // Nếu có nhiều job types, lấy đầu tiên (API chỉ hỗ trợ 1 jobCategoryId)
+        params.jobCategoryId = parseInt(filters.jobTypeIds[0]);
       } else if (filters.fieldIds.length > 0) {
         // Nếu không có job type, dùng field (Lĩnh vực)
-        params.categoryId = parseInt(filters.fieldIds[0]);
-      } else if (filters.businessTypeIds.length > 0) {
-        // Nếu không có field, dùng business type (Loại hình kinh doanh)
-        params.categoryId = parseInt(filters.businessTypeIds[0]);
+        params.jobCategoryId = parseInt(filters.fieldIds[0]);
       }
 
       // Location filter - có thể gửi nhiều location hoặc chỉ lấy đầu tiên
       // API hiện tại chỉ hỗ trợ 1 location, nên lấy đầu tiên
       if (filters.locations.length > 0) {
-        params.location = filters.locations[0];
+        // locations is now array of { country, location }
+        const firstLocation = filters.locations[0];
+        params.location = typeof firstLocation === 'string' 
+          ? firstLocation 
+          : firstLocation.location;
       }
 
-      // Salary filters
+      // Salary filters - range lương
       if (filters.salaryMin) {
-        params.minSalary = String(filters.salaryMin);
+        params.minSalary = parseFloat(filters.salaryMin);
       }
 
       if (filters.salaryMax) {
-        params.maxSalary = String(filters.salaryMax);
+        params.maxSalary = parseFloat(filters.salaryMax);
       }
 
       // Hot jobs filter (nếu có highlight "Hot" hoặc checkbox nào đó)
@@ -379,14 +447,12 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
       keyword: '',
       keywordMode: 'OR',
       locations: [],
-      businessTypeIds: [],
       fieldIds: [],
       jobTypeIds: [],
       age: null,
       salaryMin: '',
       salaryMax: '',
       employmentType: null,
-      visaType: null,
       highlights: [],
       booleans: {
         positionNoExpOk: false,
@@ -397,41 +463,121 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
     });
   };
 
-  const toggleLocation = (location) => {
-    setFilters(prev => ({
-      ...prev,
-      locations: prev.locations.includes(location)
-        ? prev.locations.filter(l => l !== location)
-        : [...prev.locations, location],
-    }));
+  const toggleCountry = (country) => {
+    setSelectedCountries(prev => {
+      if (prev.includes(country)) {
+        // Remove country and all its locations
+        const newCountries = prev.filter(c => c !== country);
+        setFilters(prevFilters => ({
+          ...prevFilters,
+          locations: prevFilters.locations.filter(loc => loc.country !== country)
+        }));
+        return newCountries;
+      } else {
+        // Add country
+        return [...prev, country];
+      }
+    });
   };
 
-  const toggleBusinessType = (businessTypeId) => {
-    setFilters(prev => ({
+  const toggleLocation = (location, country) => {
+    setFilters(prev => {
+      const existingIndex = prev.locations.findIndex(
+        loc => loc.country === country && loc.location === location
+      );
+      
+      if (existingIndex >= 0) {
+        // Remove location
+        return {
       ...prev,
-      businessTypeIds: prev.businessTypeIds.includes(businessTypeId)
-        ? prev.businessTypeIds.filter(id => id !== businessTypeId)
-        : [...prev.businessTypeIds, businessTypeId],
-    }));
+          locations: prev.locations.filter((_, index) => index !== existingIndex)
+        };
+      } else {
+        // Add location
+        return {
+          ...prev,
+          locations: [...prev.locations, { country, location }]
+        };
+      }
+    });
+  };
+
+  // Get all provinces from selected countries
+  const getAvailableProvinces = () => {
+    const allProvinces = [];
+    selectedCountries.forEach(country => {
+      if (countryProvincesData[country]) {
+        countryProvincesData[country].forEach(province => {
+          allProvinces.push({ country, location: province });
+        });
+      }
+    });
+    return allProvinces;
+  };
+
+  const getSelectedLocationsDisplay = () => {
+    if (filters.locations.length === 0) return '';
+    
+    // Group by country
+    const byCountry = {};
+    filters.locations.forEach(loc => {
+      if (!byCountry[loc.country]) {
+        byCountry[loc.country] = [];
+      }
+      byCountry[loc.country].push(loc.location);
+    });
+    
+    // Format: "Vietnam: Hà Nội, Hồ Chí Minh; Japan: Tokyo, Osaka"
+    return Object.entries(byCountry)
+      .map(([country, locations]) => `${country}: ${locations.join(', ')}`)
+      .join('; ');
   };
 
   const toggleField = (fieldId) => {
-    setFilters(prev => ({
-      ...prev,
-      fieldIds: prev.fieldIds.includes(fieldId)
-        ? prev.fieldIds.filter(id => id !== fieldId)
-        : [...prev.fieldIds, fieldId],
-    }));
+    setSelectedFields(prev => {
+      const newFields = prev.includes(fieldId)
+        ? prev.filter(id => id !== fieldId)
+        : [...prev, fieldId];
+      
+      // Update filters.fieldIds
+      setFilters(prevFilters => {
+        // Remove job types that belong to removed fields
+        const newJobTypeIds = prevFilters.jobTypeIds.filter(jtId => {
+          const jobType = availableJobTypes.find(jt => jt.id === jtId);
+          return jobType && newFields.includes(jobType.parentId);
+        });
+        
+        return {
+          ...prevFilters,
+          fieldIds: newFields,
+          jobTypeIds: newJobTypeIds
+        };
+      });
+      
+      return newFields;
+    });
   };
 
   const toggleJobType = (jobTypeId) => {
-    setFilters(prev => ({
+    setFilters(prev => {
+      const existingIndex = prev.jobTypeIds.findIndex(id => id === jobTypeId);
+      
+      if (existingIndex >= 0) {
+        // Remove job type
+        return {
       ...prev,
-      jobTypeIds: prev.jobTypeIds.includes(jobTypeId)
-        ? prev.jobTypeIds.filter(id => id !== jobTypeId)
-        : [...prev.jobTypeIds, jobTypeId],
-    }));
+          jobTypeIds: prev.jobTypeIds.filter((_, index) => index !== existingIndex)
+        };
+      } else {
+        // Add job type
+        return {
+          ...prev,
+          jobTypeIds: [...prev.jobTypeIds, jobTypeId]
+        };
+      }
+    });
   };
+
 
   const toggleHighlight = (highlight) => {
     setFilters(prev => ({
@@ -440,13 +586,6 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
         ? prev.highlights.filter(h => h !== highlight)
         : [...prev.highlights, highlight],
     }));
-  };
-
-  const getSelectedBusinessTypeNames = () => {
-    return filters.businessTypeIds
-      .map(id => businessTypes.find(bt => bt.id === id)?.name)
-      .filter(Boolean)
-      .join(', ');
   };
 
   const getSelectedFieldNames = () => {
@@ -475,7 +614,8 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
     options, 
     selected, 
     onToggle,
-    loading = false 
+    loading = false,
+    isSingleSelect = false
   }) => {
     if (!isOpen) return null;
 
@@ -495,12 +635,43 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
           <div className="p-4 overflow-y-auto max-h-[60vh]">
             {loading ? (
               <div className="text-center py-8 text-gray-500">Loading...</div>
+            ) : options.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                {language === 'vi' ? 'Không có dữ liệu' : language === 'en' ? 'No data' : 'データなし'}
+              </div>
             ) : (
               <div className="space-y-2">
                 {options.map((option) => {
                   const id = typeof option === 'string' ? option : option.id;
                   const name = typeof option === 'string' ? option : option.name;
                   const isSelected = selected.includes(id);
+                  
+                  if (isSingleSelect) {
+                    // Single select: click to select and close
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => {
+                          onToggle(id);
+                          onClose();
+                        }}
+                        className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer text-left transition-colors"
+                      >
+                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          isSelected 
+                            ? 'border-blue-600 bg-blue-600' 
+                            : 'border-gray-300'
+                        }`}>
+                          {isSelected && (
+                            <div className="w-2 h-2 rounded-full bg-white" />
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-900">{name}</span>
+                      </button>
+                    );
+                  }
+                  
+                  // Multi select: checkbox
                   return (
                     <label
                       key={id}
@@ -519,6 +690,7 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
               </div>
             )}
           </div>
+          {!isSingleSelect && (
           <div className="p-4 border-t border-gray-200">
             <button
               onClick={onClose}
@@ -527,6 +699,7 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
               {language === 'vi' ? 'Xác nhận' : language === 'en' ? 'Confirm' : '確認'}
             </button>
           </div>
+          )}
         </div>
       </div>
     );
@@ -617,10 +790,10 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
             <input
               type="text"
               readOnly
-              value={filters.locations.length > 0 ? filters.locations.join(', ') : ''}
+              value={getSelectedLocationsDisplay()}
               placeholder={language === 'vi' ? 'Chọn địa điểm làm việc' : language === 'en' ? 'Select work location' : '勤務地を選択'}
               className={`flex-1 ${compact ? 'px-2 py-1 text-[10px]' : 'px-4 py-2 text-xs'} border border-gray-300 rounded-lg bg-gray-50 cursor-pointer`}
-              onClick={() => setShowLocationModal(true)}
+              onClick={() => setShowCountryModal(true)}
             />
             <button
               onClick={() => setShowLocationModal(true)}
@@ -631,31 +804,10 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
           </div>
         </FilterBlock>
 
-        {/* D. Loại hình kinh doanh */}
-        <FilterBlock icon={Building2} label={language === 'vi' ? 'Loại hình kinh doanh' : language === 'en' ? 'Business Type' : '業種'} compact={compact}>
-          <div className={`flex ${compact ? 'gap-1' : 'gap-2'}`}>
-            <input
-              type="text"
-              readOnly
-              value={getSelectedBusinessTypeNames() || ''}
-              placeholder={language === 'vi' ? 'Chọn loại hình kinh doanh' : language === 'en' ? 'Select business type' : '業種を選択'}
-              className={`flex-1 ${compact ? 'px-2 py-1 text-[10px]' : 'px-4 py-2 text-xs'} border border-gray-300 rounded-lg bg-gray-50 cursor-pointer`}
-              onClick={() => setShowBusinessTypeModal(true)}
-            />
-            <button
-              onClick={() => setShowBusinessTypeModal(true)}
-              className={`${compact ? 'px-1.5 py-1' : 'px-3 py-2'} border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors`}
-            >
-              <Plus className={compact ? "w-3 h-3 text-gray-600" : "w-4 h-4 text-gray-600"} />
-            </button>
-          </div>
-        </FilterBlock>
-
-        {/* E. Lĩnh vực */}
+        {/* D. Lĩnh vực */}
         <FilterBlock 
           icon={Briefcase} 
           label={language === 'vi' ? 'Lĩnh vực' : language === 'en' ? 'Field' : '分野'}
-          helperText={filters.businessTypeIds.length === 0 ? (language === 'vi' ? 'Hãy chọn loại hình kinh doanh trước' : language === 'en' ? 'Please select business type first' : '業種を先に選択してください') : undefined}
           compact={compact}
         >
           <div className={`flex ${compact ? 'gap-1' : 'gap-2'}`}>
@@ -664,18 +816,12 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
               readOnly
               value={getSelectedFieldNames() || ''}
               placeholder={language === 'vi' ? 'Chọn lĩnh vực' : language === 'en' ? 'Select field' : '分野を選択'}
-              disabled={filters.businessTypeIds.length === 0}
-              className={`flex-1 ${compact ? 'px-2 py-1 text-[10px]' : 'px-4 py-2 text-xs'} border border-gray-300 rounded-lg cursor-pointer ${
-                filters.businessTypeIds.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-50'
-              }`}
-              onClick={() => filters.businessTypeIds.length > 0 && setShowFieldModal(true)}
+              className={`flex-1 ${compact ? 'px-2 py-1 text-[10px]' : 'px-4 py-2 text-xs'} border border-gray-300 rounded-lg bg-gray-50 cursor-pointer`}
+              onClick={() => setShowFieldJobTypeModal(true)}
             />
             <button
-              onClick={() => filters.businessTypeIds.length > 0 && setShowFieldModal(true)}
-              disabled={filters.businessTypeIds.length === 0}
-              className={`${compact ? 'px-1.5 py-1' : 'px-3 py-2'} border border-gray-300 rounded-lg transition-colors ${
-                filters.businessTypeIds.length === 0 ? 'bg-gray-100 cursor-not-allowed opacity-50' : 'hover:bg-gray-50'
-              }`}
+              onClick={() => setShowFieldJobTypeModal(true)}
+              className={`${compact ? 'px-1.5 py-1' : 'px-3 py-2'} border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors`}
             >
               <Plus className={compact ? "w-3 h-3 text-gray-600" : "w-4 h-4 text-gray-600"} />
             </button>
@@ -686,7 +832,6 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
         <FilterBlock 
           icon={Briefcase} 
           label={language === 'vi' ? 'Loại công việc' : language === 'en' ? 'Job Type' : '職種'}
-          helperText={filters.fieldIds.length === 0 ? (language === 'vi' ? 'Hãy chọn lĩnh vực trước' : language === 'en' ? 'Please select field first' : '分野を先に選択してください') : undefined}
           compact={compact}
         >
           <div className={`flex ${compact ? 'gap-1' : 'gap-2'}`}>
@@ -695,18 +840,12 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
               readOnly
               value={getSelectedJobTypeNames() || ''}
               placeholder={language === 'vi' ? 'Chọn loại công việc' : language === 'en' ? 'Select job type' : '職種を選択'}
-              disabled={filters.fieldIds.length === 0}
-              className={`flex-1 ${compact ? 'px-2 py-1 text-[10px]' : 'px-4 py-2 text-xs'} border border-gray-300 rounded-lg cursor-pointer ${
-                filters.fieldIds.length === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-50'
-              }`}
-              onClick={() => filters.fieldIds.length > 0 && setShowJobTypeModal(true)}
+              className={`flex-1 ${compact ? 'px-2 py-1 text-[10px]' : 'px-4 py-2 text-xs'} border border-gray-300 rounded-lg bg-gray-50 cursor-pointer`}
+              onClick={() => setShowFieldJobTypeModal(true)}
             />
             <button
-              onClick={() => filters.fieldIds.length > 0 && setShowJobTypeModal(true)}
-              disabled={filters.fieldIds.length === 0}
-              className={`${compact ? 'px-1.5 py-1' : 'px-3 py-2'} border border-gray-300 rounded-lg transition-colors ${
-                filters.fieldIds.length === 0 ? 'bg-gray-100 cursor-not-allowed opacity-50' : 'hover:bg-gray-50'
-              }`}
+              onClick={() => setShowFieldJobTypeModal(true)}
+              className={`${compact ? 'px-1.5 py-1' : 'px-3 py-2'} border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors`}
             >
               <Plus className={compact ? "w-3 h-3 text-gray-600" : "w-4 h-4 text-gray-600"} />
             </button>
@@ -768,20 +907,6 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
           >
             <option value="">{language === 'vi' ? 'Chọn hình thức' : language === 'en' ? 'Select type' : '選択'}</option>
             {mockEmploymentTypes.map((type) => (
-              <option key={type} value={type}>{type}</option>
-            ))}
-          </select>
-        </FilterBlock>
-
-        {/* H. Visa */}
-        <FilterBlock icon={Globe} label={language === 'vi' ? 'Visa' : language === 'en' ? 'Visa' : 'ビザ'} compact={compact}>
-          <select
-            value={filters.visaType || ''}
-            onChange={(e) => setFilters(prev => ({ ...prev, visaType: e.target.value || null }))}
-            className={`w-full ${compact ? 'px-2 py-1 text-[10px]' : 'px-4 py-2 text-xs'} border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-          >
-            <option value="">{language === 'vi' ? 'Chọn loại visa' : language === 'en' ? 'Select visa type' : '選択'}</option>
-            {mockVisaTypes.map((type) => (
               <option key={type} value={type}>{type}</option>
             ))}
           </select>
@@ -907,44 +1032,443 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
       </div>
 
       {/* Modals */}
-      <MultiSelectModal
-        isOpen={showLocationModal}
-        onClose={() => setShowLocationModal(false)}
-        title={language === 'vi' ? 'Chọn địa điểm làm việc' : language === 'en' ? 'Select Work Location' : '勤務地を選択'}
-        options={locations}
-        selected={filters.locations}
-        onToggle={toggleLocation}
-      />
+      {/* Dual Modal: Country and Location Selection */}
+      {showLocationModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center" 
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.1)' }}
+          onClick={() => {
+            setShowLocationModal(false);
+            setSelectedCountries([]);
+          }}
+        >
+          <div 
+            className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[80vh] overflow-hidden flex" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Left Panel: Country Selection */}
+            <div className="w-1/2 border-r border-gray-200 flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <h3 className="text-base font-semibold text-gray-900">
+                  {language === 'vi' ? 'Chọn quốc gia' : language === 'en' ? 'Select Country' : '国を選択'}
+                </h3>
+                <button 
+                  onClick={() => {
+                    setShowLocationModal(false);
+                    setSelectedCountries([]);
+                  }} 
+                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                <div className="space-y-2">
+                  {Object.keys(countryProvincesData).map((country) => {
+                    const isSelected = selectedCountries.includes(country);
+                    return (
+                      <label
+                        key={country}
+                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleCountry(country)}
+                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                        />
+                        <span className="text-xs text-gray-900">{country}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
 
-      <MultiSelectModal
-        isOpen={showBusinessTypeModal}
-        onClose={() => setShowBusinessTypeModal(false)}
-        title={language === 'vi' ? 'Chọn loại hình kinh doanh' : language === 'en' ? 'Select Business Type' : '業種を選択'}
-        options={businessTypes}
-        selected={filters.businessTypeIds}
-        onToggle={toggleBusinessType}
-        loading={loading}
-      />
+            {/* Right Panel: Location Selection */}
+            <div className="w-1/2 flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <h3 className="text-base font-semibold text-gray-900">
+                  {language === 'vi' 
+                    ? 'Chọn địa điểm làm việc' 
+                    : language === 'en' 
+                    ? 'Select Work Location' 
+                    : '勤務地を選択'}
+                </h3>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                {selectedCountries.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 text-sm">
+                    {language === 'vi' 
+                      ? 'Vui lòng chọn quốc gia trước' 
+                      : language === 'en' 
+                      ? 'Please select a country first' 
+                      : 'まず国を選択してください'}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {selectedCountries.map((country) => {
+                      const provinces = countryProvincesData[country] || [];
+                      const selectedProvinces = filters.locations
+                        .filter(loc => loc.country === country)
+                        .map(loc => loc.location);
+                      
+                      return (
+                        <div key={country} className="space-y-2">
+                          <h4 className="text-sm font-medium text-gray-700 mb-2">{country}</h4>
+                          <div className="space-y-1">
+                            {provinces.map((province) => {
+                              const isSelected = selectedProvinces.includes(province);
+                              return (
+                                <label
+                                  key={province}
+                                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => toggleLocation(province, country)}
+                                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                  />
+                                  <span className="text-xs text-gray-900">{province}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+              <div className="p-4 border-t border-gray-200">
+                <button
+                  onClick={() => {
+                    setShowLocationModal(false);
+                    setSelectedCountries([]);
+                  }}
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  {language === 'vi' ? 'Xác nhận' : language === 'en' ? 'Confirm' : '確認'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-      <MultiSelectModal
-        isOpen={showFieldModal}
-        onClose={() => setShowFieldModal(false)}
-        title={language === 'vi' ? 'Chọn lĩnh vực' : language === 'en' ? 'Select Field' : '分野を選択'}
-        options={availableFields}
-        selected={filters.fieldIds}
-        onToggle={toggleField}
-        loading={loadingFields}
-      />
 
-      <MultiSelectModal
-        isOpen={showJobTypeModal}
-        onClose={() => setShowJobTypeModal(false)}
-        title={language === 'vi' ? 'Chọn loại công việc' : language === 'en' ? 'Select Job Type' : '職種を選択'}
-        options={availableJobTypes}
-        selected={filters.jobTypeIds}
-        onToggle={toggleJobType}
-        loading={loadingJobTypes}
-      />
+      {/* Dual Modal: Field and Job Type Selection */}
+      {showFieldJobTypeModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center" 
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.1)' }}
+          onClick={() => {
+            setShowFieldJobTypeModal(false);
+            setSelectedFields([]);
+          }}
+        >
+          <div 
+            className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[80vh] overflow-hidden flex" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Left Panel: Field Selection */}
+            <div className="w-1/2 border-r border-gray-200 flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <h3 className="text-base font-semibold text-gray-900">
+                  {language === 'vi' ? 'Chọn lĩnh vực' : language === 'en' ? 'Select Field' : '分野を選択'}
+                </h3>
+                <button 
+                  onClick={() => {
+                    setShowFieldJobTypeModal(false);
+                    setSelectedFields([]);
+                  }} 
+                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                {loadingFields ? (
+                  <div className="text-center py-8 text-gray-500 text-sm">Loading...</div>
+                ) : (
+                  <div className="space-y-1">
+                    {categoryTree.length > 0 ? (
+                      // Render tree structure with indentation
+                      (() => {
+                        const renderCategoryTree = (categories, level = 0) => {
+                          return categories.map((cat) => {
+                            const catId = String(cat.id);
+                            const isSelected = selectedFields.includes(catId);
+                            const indent = level * 16; // 16px per level
+                            
+                            return (
+                              <div key={catId}>
+                                <label
+                                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
+                                  style={{ paddingLeft: `${8 + indent}px` }}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => toggleField(catId)}
+                                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 flex-shrink-0"
+                                  />
+                                  <span className="text-xs text-gray-900 flex-1">
+                                    {level > 0 && <span className="text-gray-400 mr-1">└─</span>}
+                                    {cat.name}
+                                  </span>
+                                </label>
+                                {cat.children && cat.children.length > 0 && (
+                                  <div className="ml-4">
+                                    {renderCategoryTree(cat.children, level + 1)}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          });
+                        };
+                        return renderCategoryTree(categoryTree);
+                      })()
+                    ) : (
+                      // Fallback: flat list
+                      availableFields.map((field) => {
+                        const isSelected = selectedFields.includes(field.id);
+                        return (
+                          <label
+                            key={field.id}
+                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleField(field.id)}
+                              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                            />
+                            <span className="text-xs text-gray-900">{field.name}</span>
+                          </label>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Right Panel: Job Type Selection */}
+            <div className="w-1/2 flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <h3 className="text-base font-semibold text-gray-900">
+                  {language === 'vi' 
+                    ? 'Chọn loại công việc' 
+                    : language === 'en' 
+                    ? 'Select Job Type' 
+                    : '職種を選択'}
+                </h3>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                {loadingJobTypes ? (
+                  <div className="text-center py-8 text-gray-500 text-sm">Loading...</div>
+                ) : selectedFields.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 text-sm">
+                    {language === 'vi' 
+                      ? 'Vui lòng chọn lĩnh vực trước' 
+                      : language === 'en' 
+                      ? 'Please select a field first' 
+                      : 'まず分野を選択してください'}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {selectedFields.map((fieldId) => {
+                      const field = availableFields.find(f => f.id === fieldId);
+                      if (!field) {
+                        // Try to find in tree
+                        const findInTree = (categories, targetId) => {
+                          for (const cat of categories) {
+                            if (String(cat.id) === String(targetId)) {
+                              return cat;
+                            }
+                            if (cat.children && cat.children.length > 0) {
+                              const found = findInTree(cat.children, targetId);
+                              if (found) return found;
+                            }
+                          }
+                          return null;
+                        };
+                        const foundField = findInTree(categoryTree, fieldId);
+                        if (!foundField) return null;
+                        
+                        // Render nested job types for this field
+                        const renderJobTypesTree = (category, level = 0) => {
+                          if (!category.children || category.children.length === 0) return null;
+                          
+                          return (
+                            <div className="space-y-1" style={{ marginLeft: `${level * 16}px` }}>
+                              {category.children.map((child) => {
+                                const childId = String(child.id);
+                                const isSelected = filters.jobTypeIds.includes(childId);
+                                
+                                return (
+                                  <div key={childId}>
+                                    <label
+                                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        onChange={() => toggleJobType(childId)}
+                                        className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 flex-shrink-0"
+                                      />
+                                      <span className="text-xs text-gray-900">
+                                        {level > 0 && <span className="text-gray-400 mr-1">└─</span>}
+                                        {child.name}
+                                      </span>
+                                    </label>
+                                    {child.children && child.children.length > 0 && (
+                                      <div className="ml-4">
+                                        {renderJobTypesTree(child, level + 1)}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        };
+                        
+                        return (
+                          <div key={fieldId} className="space-y-2">
+                            <h4 className="text-sm font-medium text-gray-700 mb-2">{foundField.name}</h4>
+                            {renderJobTypesTree(foundField)}
+                          </div>
+                        );
+                      }
+                      
+                      // Get all descendants (including nested)
+                      const allDescendantIds = findAllDescendants(fieldId);
+                      const directChildren = availableJobTypes.filter(jt => jt.parentId === fieldId);
+                      const allJobTypesForField = [
+                        ...directChildren,
+                        ...availableJobTypes.filter(jt => allDescendantIds.includes(jt.id) && jt.parentId !== fieldId)
+                      ];
+                      
+                      // Remove duplicates
+                      const uniqueJobTypes = Array.from(
+                        new Map(allJobTypesForField.map(jt => [jt.id, jt])).values()
+                      );
+                      
+                      const selectedJobTypesForField = filters.jobTypeIds.filter(jtId => {
+                        return uniqueJobTypes.some(jt => jt.id === jtId);
+                      });
+                      
+                      // Render with tree structure if available
+                      const findCategoryInTree = (categories, targetId) => {
+                        for (const cat of categories) {
+                          if (String(cat.id) === String(targetId)) {
+                            return cat;
+                          }
+                          if (cat.children && cat.children.length > 0) {
+                            const found = findCategoryInTree(cat.children, targetId);
+                            if (found) return found;
+                          }
+                        }
+                        return null;
+                      };
+                      
+                      const fieldInTree = findCategoryInTree(categoryTree, fieldId);
+                      
+                      if (fieldInTree && fieldInTree.children && fieldInTree.children.length > 0) {
+                        // Render nested structure
+                        const renderNestedJobTypes = (category, level = 0) => {
+                          if (!category.children || category.children.length === 0) return null;
+                          
+                          return (
+                            <div className="space-y-1">
+                              {category.children.map((child) => {
+                                const childId = String(child.id);
+                                const isSelected = filters.jobTypeIds.includes(childId);
+                                
+                                return (
+                                  <div key={childId}>
+                                    <label
+                                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
+                                      style={{ paddingLeft: `${level * 16}px` }}
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        onChange={() => toggleJobType(childId)}
+                                        className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 flex-shrink-0"
+                                      />
+                                      <span className="text-xs text-gray-900">
+                                        {level > 0 && <span className="text-gray-400 mr-1">└─</span>}
+                                        {child.name}
+                                      </span>
+                                    </label>
+                                    {child.children && child.children.length > 0 && (
+                                      <div className="ml-4">
+                                        {renderNestedJobTypes(child, level + 1)}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        };
+                        
+                        return (
+                          <div key={fieldId} className="space-y-2">
+                            <h4 className="text-sm font-medium text-gray-700 mb-2">{field.name}</h4>
+                            {renderNestedJobTypes(fieldInTree)}
+                          </div>
+                        );
+                      }
+                      
+                      // Fallback: flat list
+                      return (
+                        <div key={fieldId} className="space-y-2">
+                          <h4 className="text-sm font-medium text-gray-700 mb-2">{field.name}</h4>
+                          <div className="space-y-1">
+                            {uniqueJobTypes.map((jobType) => {
+                              const isSelected = selectedJobTypesForField.includes(jobType.id);
+                              return (
+                                <label
+                                  key={jobType.id}
+                                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => toggleJobType(jobType.id)}
+                                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                  />
+                                  <span className="text-xs text-gray-900">{jobType.name}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+              <div className="p-4 border-t border-gray-200">
+                <button
+                  onClick={() => {
+                    setShowFieldJobTypeModal(false);
+                    setSelectedFields([]);
+                  }}
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  {language === 'vi' ? 'Xác nhận' : language === 'en' ? 'Confirm' : '確認'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <MultiSelectModal
         isOpen={showHighlightModal}
@@ -1380,4 +1904,5 @@ const SavedListContent = () => {
 };
 
 export default AgentJobsPageSession1;
+
 

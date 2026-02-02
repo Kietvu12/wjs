@@ -22,7 +22,7 @@ import {
 import { useLanguage } from '../../context/LanguageContext';
 import { translations } from '../../translations/translations';
 import apiService from '../../services/api';
-import ChatMessageComponent from '../../component/Chat/ChatMessageComponent';
+import NominationChat from '../../component/Chat/NominationChat';
 import { getJobApplicationStatus } from '../../utils/jobApplicationStatus';
 
 const NominationDetail = () => {
@@ -141,9 +141,9 @@ const NominationDetail = () => {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Column - Candidate Information */}
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Candidate & Job Information */}
+          <div className="lg:col-span-2 space-y-6">
             {/* Candidate Info Card */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-6">
@@ -305,10 +305,7 @@ const NominationDetail = () => {
                 ) : null}
               </div>
             </div>
-          </div>
 
-          {/* Right Column - Job Information */}
-          <div className="space-y-6">
             {/* Job Info Card */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-6">
@@ -389,71 +386,17 @@ const NominationDetail = () => {
                 )}
               </div>
             </div>
+          </div>
 
-            {/* Timeline Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <Clock className="w-6 h-6 text-red-600" />
-                Lịch sử đơn ứng tuyển
-              </h2>
-              <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                    <CheckCircle className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">Đơn đã được tạo</p>
-                    <p className="text-xs text-gray-500">{formatDate(nomination.createdAt || nomination.created_at)}</p>
-                  </div>
-                </div>
-                {nomination.appliedAt || nomination.applied_at ? (
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">Đã gửi đơn ứng tuyển</p>
-                      <p className="text-xs text-gray-500">{formatDate(nomination.appliedAt || nomination.applied_at)}</p>
-                    </div>
-                  </div>
-                ) : null}
-                {nomination.interviewDate || nomination.interview_date ? (
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                      <Calendar className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">Đã phỏng vấn</p>
-                      <p className="text-xs text-gray-500">{formatDate(nomination.interviewDate || nomination.interview_date)}</p>
-                    </div>
-                  </div>
-                ) : null}
-                {nomination.nyushaDate || nomination.nyusha_date ? (
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">Đã nhập công ty</p>
-                      <p className="text-xs text-gray-500">{formatDate(nomination.nyushaDate || nomination.nyusha_date)}</p>
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            {/* Chat Section */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <MessageCircle className="w-6 h-6 text-red-600" />
-                Tin nhắn với Admin
-              </h2>
-              <div className="h-96">
-                <ChatMessageComponent 
-                  jobApplicationId={nomination.id} 
-                  userType="ctv"
-                />
-              </div>
+          {/* Right Column - Chat */}
+          <div className="lg:col-span-1">
+            <div className="h-[calc(100vh-200px)]">
+              <NominationChat 
+                jobApplicationId={nomination.id} 
+                userType="ctv"
+                onScheduleInterview={() => loadNominationDetail()}
+                onScheduleNyusha={() => loadNominationDetail()}
+              />
             </div>
           </div>
         </div>

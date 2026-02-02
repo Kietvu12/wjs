@@ -288,6 +288,28 @@ const apiService = {
     return handleResponse(response);
   },
 
+  createCTVCalendar: async (calendarData) => {
+    console.log('[API Service] createCTVCalendar called with:', calendarData);
+    console.log('[API Service] API_BASE_URL:', API_BASE_URL);
+    console.log('[API Service] URL:', `${API_BASE_URL}/ctv/calendars`);
+    console.log('[API Service] Headers:', getAuthHeaders());
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/ctv/calendars`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(calendarData)
+      });
+      console.log('[API Service] Fetch response received:', response.status, response.statusText);
+      const result = await handleResponse(response);
+      console.log('[API Service] handleResponse result:', result);
+      return result;
+    } catch (error) {
+      console.error('[API Service] Error in createCTVCalendar:', error);
+      throw error;
+    }
+  },
+
   /**
    * Job Pickups API (CTV)
    */
@@ -378,6 +400,18 @@ const apiService = {
   getJobCategories: async (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
     const response = await fetch(`${API_BASE_URL}/ctv/job-categories?${queryString}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  /**
+   * Get job category tree (CTV)
+   * Returns hierarchical tree structure of all categories
+   */
+  getCTVJobCategoryTree: async () => {
+    const response = await fetch(`${API_BASE_URL}/ctv/job-categories/tree`, {
       method: 'GET',
       headers: getAuthHeaders()
     });
@@ -645,6 +679,40 @@ const apiService = {
     return handleResponse(response);
   },
 
+  updateType: async (typeId, typeData) => {
+    const response = await fetch(`${API_BASE_URL}/admin/types/${typeId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(typeData)
+    });
+    return handleResponse(response);
+  },
+
+  deleteType: async (typeId) => {
+    const response = await fetch(`${API_BASE_URL}/admin/types/${typeId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  updateValue: async (valueId, valueData) => {
+    const response = await fetch(`${API_BASE_URL}/admin/values/${valueId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(valueData)
+    });
+    return handleResponse(response);
+  },
+
+  deleteValue: async (valueId) => {
+    const response = await fetch(`${API_BASE_URL}/admin/values/${valueId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
   /**
    * Admin CV (Candidate) APIs
    */
@@ -772,6 +840,14 @@ const apiService = {
   getCollaborators: async (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
     const response = await fetch(`${API_BASE_URL}/admin/collaborators?${queryString}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getCollaboratorById: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/admin/collaborators/${id}`, {
       method: 'GET',
       headers: getAuthHeaders()
     });
@@ -907,12 +983,25 @@ const apiService = {
   },
 
   createAdminCalendar: async (calendarData) => {
-    const response = await fetch(`${API_BASE_URL}/admin/calendars`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(calendarData)
-    });
-    return handleResponse(response);
+    console.log('[API Service] createAdminCalendar called with:', calendarData);
+    console.log('[API Service] API_BASE_URL:', API_BASE_URL);
+    console.log('[API Service] URL:', `${API_BASE_URL}/admin/calendars`);
+    console.log('[API Service] Headers:', getAuthHeaders());
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/calendars`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(calendarData)
+      });
+      console.log('[API Service] Fetch response received:', response.status, response.statusText);
+      const result = await handleResponse(response);
+      console.log('[API Service] handleResponse result:', result);
+      return result;
+    } catch (error) {
+      console.error('[API Service] Error in createAdminCalendar:', error);
+      throw error;
+    }
   },
 
   updateAdminCalendar: async (id, calendarData) => {

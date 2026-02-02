@@ -23,6 +23,7 @@ import Dashboard from './page/Admin/Dashboard';
 import CollaboratorsPage from './page/Admin/CollaboratorsPage';
 import AddCollaboratorPage from './page/Admin/AddCollaboratorPage';
 import CollaboratorRankingPage from './page/Admin/CollaboratorRankingPage';
+import AdminCollaboratorDetailPage from './page/Admin/AdminCollaboratorDetailPage';
 import AdminCandidatesPage from './page/Admin/CandidatesPage';
 import AdminAddCandidatePage from './page/Admin/AddCandidatePage';
 import AdminCandidateDetailPage from './page/Admin/AdminCandidateDetailPage';
@@ -31,6 +32,7 @@ import AdminAddJobPage from './page/Admin/AddJobPage';
 import AdminJobDetailPage from './page/Admin/AdminJobDetailPage';
 import AdminNominationsPage from './page/Admin/NominationsPage';
 import AdminAddNominationPage from './page/Admin/AddNominationPage';
+import AdminNominationPage from './page/Admin/AdminNominationPage';
 import AdminNominationDetailPage from './page/Admin/AdminNominationDetailPage';
 import PaymentsPage from './page/Admin/PaymentsPage';
 import CompaniesPage from './page/Admin/CompaniesPage';
@@ -112,6 +114,7 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="collaborators" element={<CollaboratorsPage />} />
             <Route path="collaborators/new" element={<AddCollaboratorPage />} />
+            <Route path="collaborators/:collaboratorId" element={<AdminCollaboratorDetailPage />} />
             <Route path="collaborators/ranking" element={<CollaboratorRankingPage />} />
             <Route path="candidates" element={<AdminCandidatesPage />} />
             <Route path="candidates/create" element={<AdminAddCandidatePage />} />
@@ -121,6 +124,7 @@ function App() {
             <Route path="jobs/create" element={<AdminAddJobPage />} />
             <Route path="jobs/:jobId" element={<AdminJobDetailPage />} />
             <Route path="jobs/:jobId/edit" element={<AdminAddJobPage />} />
+            <Route path="jobs/:jobId/nominate" element={<AdminNominationPage />} />
             <Route path="nominations" element={<AdminNominationsPage />} />
             <Route path="nominations/create" element={<AdminAddNominationPage />} />
             <Route path="nominations/:nominationId" element={<AdminNominationDetailPage />} />

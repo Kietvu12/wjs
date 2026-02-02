@@ -21,7 +21,10 @@ import {
   JobApplication,
   JobCampaign,
   Campaign,
-  ActionLog
+  ActionLog,
+  JobRecruitingCompany,
+  JobRecruitingCompanyService,
+  JobRecruitingCompanyBusinessSector
 } from '../../models/index.js';
 import { Op } from 'sequelize';
 import sequelize from '../../config/database.js';
@@ -138,6 +141,27 @@ export const jobController = {
             attributes: ['id', 'name', 'companyCode', 'logo']
           },
           {
+            model: JobRecruitingCompany,
+            as: 'recruitingCompany',
+            required: false,
+            include: [
+              {
+                model: JobRecruitingCompanyService,
+                as: 'services',
+                required: false,
+                attributes: ['id', 'serviceName', 'order'],
+                order: [['order', 'ASC']]
+              },
+              {
+                model: JobRecruitingCompanyBusinessSector,
+                as: 'businessSectors',
+                required: false,
+                attributes: ['id', 'sectorName', 'order'],
+                order: [['order', 'ASC']]
+              }
+            ]
+          },
+          {
             model: JobValue,
             as: 'jobValues',
             required: false,
@@ -224,6 +248,25 @@ export const jobController = {
             model: Company,
             as: 'company',
             required: false
+          },
+          {
+            model: JobRecruitingCompany,
+            as: 'recruitingCompany',
+            required: false,
+            include: [
+              {
+                model: JobRecruitingCompanyService,
+                as: 'services',
+                required: false,
+                order: [['order', 'ASC']]
+              },
+              {
+                model: JobRecruitingCompanyBusinessSector,
+                as: 'businessSectors',
+                required: false,
+                order: [['order', 'ASC']]
+              }
+            ]
           },
           {
             model: WorkingLocation,
@@ -394,7 +437,9 @@ export const jobController = {
         workingHourDetails = [],
         jobValues = [],
         jobPickupIds = [],
-        campaignIds = []
+        campaignIds = [],
+        // Recruiting company data
+        recruitingCompany
       } = req.body;
 
       // Validate required fields
@@ -671,6 +716,50 @@ export const jobController = {
           );
         }
 
+        // Create recruiting company if provided
+        if (recruitingCompany) {
+          const recruitingCompanyData = {
+            jobId: job.id,
+            companyName: recruitingCompany.companyName || null,
+            revenue: recruitingCompany.revenue || null,
+            numberOfEmployees: recruitingCompany.numberOfEmployees || null,
+            headquarters: recruitingCompany.headquarters || null,
+            companyIntroduction: recruitingCompany.companyIntroduction || null,
+            stockExchangeInfo: recruitingCompany.stockExchangeInfo || null,
+            investmentCapital: recruitingCompany.investmentCapital || null,
+            establishedDate: recruitingCompany.establishedDate || null
+          };
+
+          const createdRecruitingCompany = await JobRecruitingCompany.create(
+            recruitingCompanyData,
+            { transaction }
+          );
+
+          // Create services if provided
+          if (recruitingCompany.services && Array.isArray(recruitingCompany.services) && recruitingCompany.services.length > 0) {
+            await JobRecruitingCompanyService.bulkCreate(
+              recruitingCompany.services.map((service, index) => ({
+                jobRecruitingCompanyId: createdRecruitingCompany.id,
+                serviceName: typeof service === 'string' ? service : service.serviceName || service.name,
+                order: typeof service === 'object' && service.order !== undefined ? service.order : index
+              })),
+              { transaction }
+            );
+          }
+
+          // Create business sectors if provided
+          if (recruitingCompany.businessSectors && Array.isArray(recruitingCompany.businessSectors) && recruitingCompany.businessSectors.length > 0) {
+            await JobRecruitingCompanyBusinessSector.bulkCreate(
+              recruitingCompany.businessSectors.map((sector, index) => ({
+                jobRecruitingCompanyId: createdRecruitingCompany.id,
+                sectorName: typeof sector === 'string' ? sector : sector.sectorName || sector.name,
+                order: typeof sector === 'object' && sector.order !== undefined ? sector.order : index
+              })),
+              { transaction }
+            );
+          }
+        }
+
         await transaction.commit();
 
         // Reload with all relations
@@ -685,6 +774,25 @@ export const jobController = {
               model: Company,
               as: 'company',
               required: false
+            },
+            {
+              model: JobRecruitingCompany,
+              as: 'recruitingCompany',
+              required: false,
+              include: [
+                {
+                  model: JobRecruitingCompanyService,
+                  as: 'services',
+                  required: false,
+                  order: [['order', 'ASC']]
+                },
+                {
+                  model: JobRecruitingCompanyBusinessSector,
+                  as: 'businessSectors',
+                  required: false,
+                  order: [['order', 'ASC']]
+                }
+              ]
             },
             {
               model: WorkingLocation,
@@ -764,6 +872,7 @@ export const jobController = {
         jobValues,
         jobPickupIds,
         campaignIds,
+        recruitingCompany,
         ...jobFields
       } = updateData;
 
@@ -958,18 +1067,71 @@ export const jobController = {
         }
 
         if (jobValues !== undefined) {
-          await JobValue.destroy({ where: { jobId: job.id }, transaction });
+          // Xóa tất cả job values hiện tại
+          await JobValue.destroy({ 
+            where: { jobId: job.id }, 
+            transaction,
+            force: true // Hard delete để tránh conflict với soft delete
+          });
+          
           if (jobValues.length > 0) {
-            await JobValue.bulkCreate(
-              jobValues.map(jv => ({
+            // Loại bỏ duplicate entries dựa trên (typeId, valueId)
+            // Giữ lại entry cuối cùng nếu có duplicate
+            const uniqueJobValuesMap = new Map();
+            
+            for (const jv of jobValues) {
+              // Validate required fields
+              if (!jv.typeId || !jv.valueId) {
+                console.warn(`[Job Update] Bỏ qua job value thiếu typeId hoặc valueId:`, jv);
+                continue;
+              }
+              
+              const key = `${jv.typeId}_${jv.valueId}`;
+              // Nếu đã có, ghi đè bằng entry mới (giữ entry cuối cùng)
+              uniqueJobValuesMap.set(key, {
                 jobId: job.id,
-                typeId: jv.typeId,
-                valueId: jv.valueId,
-                value: jv.value,
+                typeId: parseInt(jv.typeId),
+                valueId: parseInt(jv.valueId),
+                value: jv.value || null,
                 isRequired: jv.isRequired || false
-              })),
-              { transaction }
-            );
+              });
+            }
+            
+            const uniqueJobValues = Array.from(uniqueJobValuesMap.values());
+            
+            if (uniqueJobValues.length > 0) {
+              try {
+                await JobValue.bulkCreate(uniqueJobValues, { 
+                  transaction,
+                  ignoreDuplicates: false // Không ignore để phát hiện lỗi
+                });
+              } catch (createError) {
+                // Nếu vẫn có lỗi duplicate, thử tạo từng cái một
+                if (createError.name === 'SequelizeUniqueConstraintError' || createError.message.includes('Duplicate entry')) {
+                  console.warn('[Job Update] Bulk create failed, trying individual creates:', createError.message);
+                  // Xóa lại và tạo từng cái một
+                  await JobValue.destroy({ 
+                    where: { jobId: job.id }, 
+                    transaction,
+                    force: true
+                  });
+                  
+                  for (const jv of uniqueJobValues) {
+                    try {
+                      await JobValue.create(jv, { transaction });
+                    } catch (individualError) {
+                      // Nếu vẫn duplicate, bỏ qua (có thể đã được tạo trong transaction)
+                      if (individualError.name !== 'SequelizeUniqueConstraintError' && !individualError.message.includes('Duplicate entry')) {
+                        throw individualError;
+                      }
+                      console.warn(`[Job Update] Bỏ qua duplicate job value: typeId=${jv.typeId}, valueId=${jv.valueId}`);
+                    }
+                  }
+                } else {
+                  throw createError;
+                }
+              }
+            }
           }
         }
 
@@ -991,17 +1153,22 @@ export const jobController = {
           // Delete existing associations
           await JobCampaign.destroy({
             where: { jobId: job.id },
-            transaction
+            transaction,
+            force: true // Hard delete để tránh conflict
           });
+          
           // Create new associations if campaignIds provided
           if (campaignIds.length > 0) {
-          // Validate that all campaignIds exist
-          const campaigns = await Campaign.findAll({
-            where: { id: { [Op.in]: campaignIds } },
-            transaction
-          });
+            // Loại bỏ duplicate campaignIds
+            const uniqueCampaignIds = [...new Set(campaignIds.map(id => parseInt(id)))];
+            
+            // Validate that all campaignIds exist
+            const campaigns = await Campaign.findAll({
+              where: { id: { [Op.in]: uniqueCampaignIds } },
+              transaction
+            });
 
-            if (campaigns.length !== campaignIds.length) {
+            if (campaigns.length !== uniqueCampaignIds.length) {
               await transaction.rollback();
               return res.status(400).json({
                 success: false,
@@ -1009,14 +1176,142 @@ export const jobController = {
               });
             }
 
-            // Create JobCampaign records
-            await JobCampaign.bulkCreate(
-              campaignIds.map(campaignId => ({
-                campaignId: parseInt(campaignId),
-                jobId: job.id
-              })),
-              { transaction }
-            );
+            // Kiểm tra xem các associations đã tồn tại chưa (trong transaction)
+            const existingAssociations = await JobCampaign.findAll({
+              where: {
+                jobId: job.id,
+                campaignId: { [Op.in]: uniqueCampaignIds }
+              },
+              transaction
+            });
+
+            const existingCampaignIds = new Set(existingAssociations.map(a => a.campaignId));
+            const newCampaignIds = uniqueCampaignIds.filter(id => !existingCampaignIds.has(id));
+
+            // Chỉ tạo các associations mới
+            if (newCampaignIds.length > 0) {
+              try {
+                await JobCampaign.bulkCreate(
+                  newCampaignIds.map(campaignId => ({
+                    campaignId: campaignId,
+                    jobId: job.id
+                  })),
+                  { 
+                    transaction,
+                    ignoreDuplicates: true // Ignore duplicates để tránh lỗi
+                  }
+                );
+              } catch (createError) {
+                // Nếu vẫn có lỗi duplicate, thử tạo từng cái một
+                if (createError.name === 'SequelizeUniqueConstraintError' || createError.message.includes('Duplicate entry')) {
+                  console.warn('[Job Update] Bulk create job_campaigns failed, trying individual creates:', createError.message);
+                  
+                  for (const campaignId of newCampaignIds) {
+                    try {
+                      await JobCampaign.create({
+                        campaignId: campaignId,
+                        jobId: job.id
+                      }, { transaction });
+                    } catch (individualError) {
+                      // Nếu vẫn duplicate, bỏ qua (có thể đã được tạo trong transaction)
+                      if (individualError.name !== 'SequelizeUniqueConstraintError' && !individualError.message.includes('Duplicate entry')) {
+                        throw individualError;
+                      }
+                      console.warn(`[Job Update] Bỏ qua duplicate job_campaign: campaignId=${campaignId}, jobId=${job.id}`);
+                    }
+                  }
+                } else {
+                  throw createError;
+                }
+              }
+            }
+          }
+        }
+
+        // Update recruiting company if provided
+        if (recruitingCompany !== undefined) {
+          // Find existing recruiting company
+          let existingRecruitingCompany = await JobRecruitingCompany.findOne({
+            where: { jobId: job.id },
+            transaction
+          });
+
+          if (recruitingCompany === null || (typeof recruitingCompany === 'object' && Object.keys(recruitingCompany).length === 0)) {
+            // Delete if null or empty object
+            if (existingRecruitingCompany) {
+              await JobRecruitingCompanyService.destroy({
+                where: { jobRecruitingCompanyId: existingRecruitingCompany.id },
+                transaction
+              });
+              await JobRecruitingCompanyBusinessSector.destroy({
+                where: { jobRecruitingCompanyId: existingRecruitingCompany.id },
+                transaction
+              });
+              await existingRecruitingCompany.destroy({ transaction });
+            }
+          } else {
+            // Update or create
+            if (existingRecruitingCompany) {
+              // Update existing
+              existingRecruitingCompany.companyName = recruitingCompany.companyName !== undefined ? recruitingCompany.companyName : existingRecruitingCompany.companyName;
+              existingRecruitingCompany.revenue = recruitingCompany.revenue !== undefined ? recruitingCompany.revenue : existingRecruitingCompany.revenue;
+              existingRecruitingCompany.numberOfEmployees = recruitingCompany.numberOfEmployees !== undefined ? recruitingCompany.numberOfEmployees : existingRecruitingCompany.numberOfEmployees;
+              existingRecruitingCompany.headquarters = recruitingCompany.headquarters !== undefined ? recruitingCompany.headquarters : existingRecruitingCompany.headquarters;
+              existingRecruitingCompany.companyIntroduction = recruitingCompany.companyIntroduction !== undefined ? recruitingCompany.companyIntroduction : existingRecruitingCompany.companyIntroduction;
+              existingRecruitingCompany.stockExchangeInfo = recruitingCompany.stockExchangeInfo !== undefined ? recruitingCompany.stockExchangeInfo : existingRecruitingCompany.stockExchangeInfo;
+              existingRecruitingCompany.investmentCapital = recruitingCompany.investmentCapital !== undefined ? recruitingCompany.investmentCapital : existingRecruitingCompany.investmentCapital;
+              existingRecruitingCompany.establishedDate = recruitingCompany.establishedDate !== undefined ? recruitingCompany.establishedDate : existingRecruitingCompany.establishedDate;
+              await existingRecruitingCompany.save({ transaction });
+            } else {
+              // Create new
+              existingRecruitingCompany = await JobRecruitingCompany.create({
+                jobId: job.id,
+                companyName: recruitingCompany.companyName || null,
+                revenue: recruitingCompany.revenue || null,
+                numberOfEmployees: recruitingCompany.numberOfEmployees || null,
+                headquarters: recruitingCompany.headquarters || null,
+                companyIntroduction: recruitingCompany.companyIntroduction || null,
+                stockExchangeInfo: recruitingCompany.stockExchangeInfo || null,
+                investmentCapital: recruitingCompany.investmentCapital || null,
+                establishedDate: recruitingCompany.establishedDate || null
+              }, { transaction });
+            }
+
+            // Update services
+            if (recruitingCompany.services !== undefined) {
+              await JobRecruitingCompanyService.destroy({
+                where: { jobRecruitingCompanyId: existingRecruitingCompany.id },
+                transaction
+              });
+              if (Array.isArray(recruitingCompany.services) && recruitingCompany.services.length > 0) {
+                await JobRecruitingCompanyService.bulkCreate(
+                  recruitingCompany.services.map((service, index) => ({
+                    jobRecruitingCompanyId: existingRecruitingCompany.id,
+                    serviceName: typeof service === 'string' ? service : service.serviceName || service.name,
+                    order: typeof service === 'object' && service.order !== undefined ? service.order : index
+                  })),
+                  { transaction }
+                );
+              }
+            }
+
+            // Update business sectors
+            if (recruitingCompany.businessSectors !== undefined) {
+              await JobRecruitingCompanyBusinessSector.destroy({
+                where: { jobRecruitingCompanyId: existingRecruitingCompany.id },
+                transaction
+              });
+              if (Array.isArray(recruitingCompany.businessSectors) && recruitingCompany.businessSectors.length > 0) {
+                await JobRecruitingCompanyBusinessSector.bulkCreate(
+                  recruitingCompany.businessSectors.map((sector, index) => ({
+                    jobRecruitingCompanyId: existingRecruitingCompany.id,
+                    sectorName: typeof sector === 'string' ? sector : sector.sectorName || sector.name,
+                    order: typeof sector === 'object' && sector.order !== undefined ? sector.order : index
+                  })),
+                  { transaction }
+                );
+              }
+            }
           }
         }
 
@@ -1034,6 +1329,25 @@ export const jobController = {
               model: Company,
               as: 'company',
               required: false
+            },
+            {
+              model: JobRecruitingCompany,
+              as: 'recruitingCompany',
+              required: false,
+              include: [
+                {
+                  model: JobRecruitingCompanyService,
+                  as: 'services',
+                  required: false,
+                  order: [['order', 'ASC']]
+                },
+                {
+                  model: JobRecruitingCompanyBusinessSector,
+                  as: 'businessSectors',
+                  required: false,
+                  order: [['order', 'ASC']]
+                }
+              ]
             },
             {
               model: WorkingLocation,

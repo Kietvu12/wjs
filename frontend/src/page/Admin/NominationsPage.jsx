@@ -26,7 +26,6 @@ import {
   Plus,
   Send,
 } from 'lucide-react';
-import ChatBox from '../../component/Chat/ChatBox';
 
 
 const AdminNominationsPage = () => {
@@ -46,8 +45,6 @@ const AdminNominationsPage = () => {
     limit: 20,
     totalPages: 0
   });
-  const [showChatBox, setShowChatBox] = useState(false);
-  const [selectedJobApplicationId, setSelectedJobApplicationId] = useState(null);
 
   useEffect(() => {
     loadNominations();
@@ -495,6 +492,7 @@ const AdminNominationsPage = () => {
                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Job</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Công ty</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">CTV</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Admin</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Trạng thái</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Ngày tiến cử</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Ngày PV</th>
@@ -506,13 +504,13 @@ const AdminNominationsPage = () => {
             <tbody className="divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan="12" className="px-3 py-8 text-center text-xs text-gray-500">
+                  <td colSpan="13" className="px-3 py-8 text-center text-xs text-gray-500">
                     Đang tải dữ liệu...
                   </td>
                 </tr>
               ) : nominations.length === 0 ? (
                 <tr>
-                  <td colSpan="12" className="px-3 py-8 text-center text-xs text-gray-500">
+                  <td colSpan="13" className="px-3 py-8 text-center text-xs text-gray-500">
                     Không có dữ liệu
                   </td>
                 </tr>
@@ -561,7 +559,7 @@ const AdminNominationsPage = () => {
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-1.5">
                           <div className="w-7 h-7 bg-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-[10px]">
-                            {(nomination.name || nomination.cv?.fullName || '?').charAt(0).toUpperCase()}
+                            {(nomination.cv?.name || nomination.name || '?').charAt(0).toUpperCase()}
                           </div>
                           <div>
                             {nomination.cvId ? (
@@ -569,11 +567,11 @@ const AdminNominationsPage = () => {
                                 onClick={() => navigate(`/admin/candidates/${nomination.cvId}`)}
                                 className="text-xs font-semibold text-gray-900 hover:text-blue-600"
                               >
-                                {nomination.name || nomination.cv?.fullName || '-'}
+                                {nomination.cv?.name || nomination.name || '-'}
                               </button>
                             ) : (
                               <span className="text-xs font-semibold text-gray-900">
-                                {nomination.name || '-'}
+                                {nomination.cv?.name || nomination.name || '-'}
                               </span>
                             )}
                             {nomination.cv?.code && (
@@ -609,6 +607,18 @@ const AdminNominationsPage = () => {
                           >
                             {nomination.collaborator?.code || nomination.collaborator?.name || '-'}
                           </button>
+                        ) : (
+                          <span className="text-xs text-gray-500">—</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2">
+                        {nomination.adminId ? (
+                          <div className="flex items-center gap-1.5">
+                            <User className="w-3 h-3 text-gray-400" />
+                            <span className="text-xs font-medium text-gray-900">
+                              {nomination.admin?.name || nomination.admin?.email || '-'}
+                            </span>
+                          </div>
                         ) : (
                           <span className="text-xs text-gray-500">—</span>
                         )}
@@ -652,16 +662,6 @@ const AdminNominationsPage = () => {
                             <Eye className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => {
-                              setSelectedJobApplicationId(nomination.id);
-                              setShowChatBox(true);
-                            }}
-                            className="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50 transition-colors"
-                            title="Gửi tin nhắn"
-                          >
-                            <Send className="w-3.5 h-3.5" />
-                          </button>
-                          <button
                             onClick={() => navigate(`/admin/nominations/${nomination.id}/edit`)}
                             className="text-gray-600 hover:text-gray-800 p-1 rounded hover:bg-gray-100 transition-colors"
                             title="Chỉnh sửa"
@@ -686,17 +686,6 @@ const AdminNominationsPage = () => {
         </div>
       </div>
 
-      {/* Chat Box */}
-      {showChatBox && (
-        <ChatBox
-          userType="admin"
-          initialJobApplicationId={selectedJobApplicationId}
-          onClose={() => {
-            setShowChatBox(false);
-            setSelectedJobApplicationId(null);
-          }}
-        />
-      )}
     </div>
   );
 };

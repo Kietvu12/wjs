@@ -166,13 +166,36 @@ export const valueController = {
    */
   createValue: async (req, res, next) => {
     try {
-      const { typeId, valuename } = req.body;
+      const { typeId, valuename, comparisonOperator, comparisonValue, comparisonValueEnd } = req.body;
 
       if (!typeId || !valuename) {
         return res.status(400).json({
           success: false,
           message: 'Loại setting và tên giá trị là bắt buộc'
         });
+      }
+
+      // Validate comparison operator if provided
+      if (comparisonOperator) {
+        const validOperators = ['>=', '<=', '>', '<', '=', 'between'];
+        if (!validOperators.includes(comparisonOperator)) {
+          return res.status(400).json({
+            success: false,
+            message: `Toán tử so sánh không hợp lệ. Chỉ chấp nhận: ${validOperators.join(', ')}`
+          });
+        }
+        if (!comparisonValue || !comparisonValue.trim()) {
+          return res.status(400).json({
+            success: false,
+            message: 'Giá trị so sánh là bắt buộc khi có toán tử so sánh'
+          });
+        }
+        if (comparisonOperator === 'between' && (!comparisonValueEnd || !comparisonValueEnd.trim())) {
+          return res.status(400).json({
+            success: false,
+            message: 'Giá trị kết thúc là bắt buộc cho toán tử "between"'
+          });
+        }
       }
 
       // Check if type exists
@@ -195,7 +218,15 @@ export const valueController = {
         });
       }
 
-      const value = await Value.create({ typeId, valuename });
+      const valueData = {
+        typeId,
+        valuename,
+        comparisonOperator: comparisonOperator || null,
+        comparisonValue: comparisonValue ? comparisonValue.trim() : null,
+        comparisonValueEnd: (comparisonOperator === 'between' && comparisonValueEnd) ? comparisonValueEnd.trim() : null
+      };
+
+      const value = await Value.create(valueData);
 
       // Reload with type
       await value.reload({
@@ -235,7 +266,7 @@ export const valueController = {
   updateValue: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const { typeId, valuename } = req.body;
+      const { typeId, valuename, comparisonOperator, comparisonValue, comparisonValueEnd } = req.body;
 
       const value = await Value.findByPk(id);
       if (!value) {
@@ -246,6 +277,31 @@ export const valueController = {
       }
 
       const oldData = value.toJSON();
+
+      // Validate comparison operator if provided
+      if (comparisonOperator !== undefined) {
+        if (comparisonOperator) {
+          const validOperators = ['>=', '<=', '>', '<', '=', 'between'];
+          if (!validOperators.includes(comparisonOperator)) {
+            return res.status(400).json({
+              success: false,
+              message: `Toán tử so sánh không hợp lệ. Chỉ chấp nhận: ${validOperators.join(', ')}`
+            });
+          }
+          if (!comparisonValue || !comparisonValue.trim()) {
+            return res.status(400).json({
+              success: false,
+              message: 'Giá trị so sánh là bắt buộc khi có toán tử so sánh'
+            });
+          }
+          if (comparisonOperator === 'between' && (!comparisonValueEnd || !comparisonValueEnd.trim())) {
+            return res.status(400).json({
+              success: false,
+              message: 'Giá trị kết thúc là bắt buộc cho toán tử "between"'
+            });
+          }
+        }
+      }
 
       // Check if type exists (if typeId is being changed)
       if (typeId && typeId !== value.typeId) {
@@ -277,6 +333,15 @@ export const valueController = {
       }
       if (valuename !== undefined) {
         value.valuename = valuename;
+      }
+      if (comparisonOperator !== undefined) {
+        value.comparisonOperator = comparisonOperator || null;
+      }
+      if (comparisonValue !== undefined) {
+        value.comparisonValue = comparisonValue ? comparisonValue.trim() : null;
+      }
+      if (comparisonValueEnd !== undefined) {
+        value.comparisonValueEnd = (value.comparisonOperator === 'between' && comparisonValueEnd) ? comparisonValueEnd.trim() : null;
       }
 
       await value.save();

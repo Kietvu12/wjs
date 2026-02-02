@@ -24,7 +24,7 @@ import {
   UserCircle,
 } from 'lucide-react';
 import apiService from '../../services/api';
-import ChatMessageComponent from '../../component/Chat/ChatMessageComponent';
+import NominationChat from '../../component/Chat/NominationChat';
 import { getJobApplicationStatus } from '../../utils/jobApplicationStatus';
 
 const AdminNominationDetailPage = () => {
@@ -187,9 +187,9 @@ const AdminNominationDetailPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        {/* Left Column */}
-        <div className="space-y-3">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        {/* Left Column - Candidate & Job Info */}
+        <div className="lg:col-span-2 space-y-3">
           {/* Nomination Information */}
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
@@ -342,10 +342,7 @@ const AdminNominationDetailPage = () => {
               </div>
             )}
           </div>
-        </div>
 
-        {/* Right Column */}
-        <div className="space-y-3">
           {/* Job Information */}
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
@@ -425,19 +422,18 @@ const AdminNominationDetailPage = () => {
               </div>
             </div>
           )}
+        </div>
 
-          {/* Chat Section */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <FileText className="w-4 h-4 text-blue-600" />
-              Tin nhắn
-            </h2>
-            <div className="h-96">
-              <ChatMessageComponent 
-                jobApplicationId={nomination.id} 
-                userType="admin"
-              />
-            </div>
+        {/* Right Column - Chat */}
+        <div className="lg:col-span-1">
+          <div className="h-[calc(100vh-200px)]">
+            <NominationChat 
+              jobApplicationId={nomination.id} 
+              userType="admin"
+              collaboratorId={nomination.collaboratorId}
+              onScheduleInterview={() => loadNominationDetail()}
+              onScheduleNyusha={() => loadNominationDetail()}
+            />
           </div>
         </div>
       </div>

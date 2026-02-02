@@ -383,6 +383,48 @@ const JobsDetail = () => {
             </div>
           )}
 
+          {/* Commission Table / Bảng giá trị hoa hồng */}
+          {job.jobValues && job.jobValues.length > 0 && (
+            <div className="space-y-4">
+              <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                <DollarSign className="w-6 h-6" />
+                Bảng giá trị hoa hồng
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-300">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">Type</th>
+                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">Value</th>
+                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">Job Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {job.jobValues.map((jobValue, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="border border-gray-300 px-4 py-3 text-gray-700">
+                          {jobValue.type?.typename || 'N/A'}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-3 text-gray-700">
+                          {jobValue.valueRef?.valuename || 'N/A'}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-3 text-gray-700">
+                          {jobValue.value !== null && jobValue.value !== undefined ? (
+                            job.jobCommissionType === 'percent' ? (
+                              `${parseFloat(jobValue.value).toLocaleString('vi-VN')}%`
+                            ) : (
+                              `${parseFloat(jobValue.value).toLocaleString('vi-VN')} triệu`
+                            )
+                          ) : 'N/A'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           {/* Working Location Details */}
           {workingLocations.length > 0 && (
             <div className="space-y-4">
@@ -547,10 +589,74 @@ const JobsDetail = () => {
             </button>
           </div>
 
+          {/* Recruiting Company Information */}
+          {job.recruitingCompany && (
+            <div className="pt-6 border-t border-gray-100">
+              <div className="text-sm text-gray-500 mb-3">Công ty tuyển dụng</div>
+              <div className="space-y-3">
+                {job.recruitingCompany.companyName && (
+                  <div className="font-semibold text-gray-900">{job.recruitingCompany.companyName}</div>
+                )}
+                <div className="space-y-2 text-sm text-gray-600">
+                  {job.recruitingCompany.revenue && (
+                    <div>
+                      <span className="font-medium">Doanh thu:</span> {job.recruitingCompany.revenue}
+                    </div>
+                  )}
+                  {job.recruitingCompany.numberOfEmployees && (
+                    <div>
+                      <span className="font-medium">Số nhân viên:</span> {job.recruitingCompany.numberOfEmployees}
+                    </div>
+                  )}
+                  {job.recruitingCompany.headquarters && (
+                    <div>
+                      <span className="font-medium">Trụ sở:</span> {job.recruitingCompany.headquarters}
+                    </div>
+                  )}
+                  {job.recruitingCompany.establishedDate && (
+                    <div>
+                      <span className="font-medium">Thành lập:</span> {job.recruitingCompany.establishedDate}
+                    </div>
+                  )}
+                </div>
+                {job.recruitingCompany.companyIntroduction && (
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {stripHtml(job.recruitingCompany.companyIntroduction).substring(0, 150)}
+                    {stripHtml(job.recruitingCompany.companyIntroduction).length > 150 ? '...' : ''}
+                  </p>
+                )}
+                {job.recruitingCompany.services && job.recruitingCompany.services.length > 0 && (
+                  <div>
+                    <div className="text-xs font-medium text-gray-500 mb-2">Dịch vụ:</div>
+                    <div className="flex flex-wrap gap-1">
+                      {job.recruitingCompany.services.map((service, index) => (
+                        <span key={index} className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs">
+                          {service.serviceName}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {job.recruitingCompany.businessSectors && job.recruitingCompany.businessSectors.length > 0 && (
+                  <div>
+                    <div className="text-xs font-medium text-gray-500 mb-2">Lĩnh vực:</div>
+                    <div className="flex flex-wrap gap-1">
+                      {job.recruitingCompany.businessSectors.map((sector, index) => (
+                        <span key={index} className="px-2 py-1 bg-green-50 text-green-700 rounded text-xs">
+                          {sector.sectorName}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Job posted by */}
           {job.company && (
             <div className="pt-6 border-t border-gray-100">
-              <div className="text-sm text-gray-500 mb-3">Job posted by</div>
+              <div className="text-sm text-gray-500 mb-3">Công ty nguồn (Job posted by)</div>
               <div className="flex items-start gap-3">
                 {job.company.logo ? (
                   <img

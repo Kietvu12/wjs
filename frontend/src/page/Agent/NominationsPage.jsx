@@ -23,7 +23,6 @@ import {
   AlertCircle,
   Send,
 } from 'lucide-react';
-import ChatBox from '../../component/Chat/ChatBox';
 
 
 const NominationsPage = () => {
@@ -44,8 +43,6 @@ const NominationsPage = () => {
     limit: 20,
     totalPages: 1
   });
-  const [showChatBox, setShowChatBox] = useState(false);
-  const [selectedJobApplicationId, setSelectedJobApplicationId] = useState(null);
 
   // Map status từ số sang object (sử dụng utility function)
   const mapStatus = (status) => {
@@ -514,16 +511,6 @@ const NominationsPage = () => {
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button
-                        onClick={() => {
-                          setSelectedJobApplicationId(nomination.id);
-                          setShowChatBox(true);
-                        }}
-                        className="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50 transition-colors"
-                        title="Gửi tin nhắn"
-                      >
-                        <Send className="w-4 h-4" />
-                      </button>
                       <button className="text-gray-600 hover:text-gray-800 p-1 rounded hover:bg-gray-100 transition-colors">
                         <MoreVertical className="w-4 h-4" />
                       </button>
@@ -537,17 +524,6 @@ const NominationsPage = () => {
         </div>
       </div>
 
-      {/* Chat Box */}
-      {showChatBox && (
-        <ChatBox
-          userType="ctv"
-          initialJobApplicationId={selectedJobApplicationId}
-          onClose={() => {
-            setShowChatBox(false);
-            setSelectedJobApplicationId(null);
-          }}
-        />
-      )}
     </div>
   );
 };

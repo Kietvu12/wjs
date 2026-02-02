@@ -769,7 +769,7 @@ const AdminJobsPage = () => {
                       {/* Company Commission */}
                       <div className="bg-red-50 border-2 border-red-300 rounded-lg p-3">
                         <div className="text-[10px] font-medium text-red-800 mb-1">
-                          Công ty bạn
+                          Có thể nhận
                         </div>
                         <div className="text-sm font-bold text-red-900">
                           {commission.company}
