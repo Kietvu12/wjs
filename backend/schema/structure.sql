@@ -1305,6 +1305,34 @@ CREATE TABLE `working_locations` (
   CONSTRAINT `fk_working_locations_job` FOREIGN KEY (`job_id`) REFERENCES `jobs` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1129 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `collaborator_assignments`
+--
+
+DROP TABLE IF EXISTS `collaborator_assignments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `collaborator_assignments` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `collaborator_id` bigint(20) unsigned NOT NULL COMMENT 'ID CTV được phân công',
+  `admin_id` bigint(20) unsigned NOT NULL COMMENT 'ID AdminBackOffice được phân công chăm sóc',
+  `assigned_by` bigint(20) unsigned NOT NULL COMMENT 'ID Super Admin thực hiện phân công',
+  `notes` text DEFAULT NULL COMMENT 'Ghi chú về phân công',
+  `status` tinyint(4) NOT NULL DEFAULT 1 COMMENT '1: active, 0: inactive',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_active_assignment` (`collaborator_id`, `admin_id`, `status`, `deleted_at`),
+  KEY `fk_collaborator_assignments_collaborator` (`collaborator_id`),
+  KEY `fk_collaborator_assignments_admin` (`admin_id`),
+  KEY `fk_collaborator_assignments_assigned_by` (`assigned_by`),
+  CONSTRAINT `fk_collaborator_assignments_collaborator` FOREIGN KEY (`collaborator_id`) REFERENCES `collaborators` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_collaborator_assignments_admin` FOREIGN KEY (`admin_id`) REFERENCES `admins` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_collaborator_assignments_assigned_by` FOREIGN KEY (`assigned_by`) REFERENCES `admins` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

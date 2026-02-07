@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Edit, Building2, Briefcase, UserPlus, MapPin, DollarSign, Settings, User, Search, CheckCircle } from 'lucide-react';
 import apiService from '../../services/api';
 
 const AdminJobDetailPage = () => {
   const { jobId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,10 +15,55 @@ const AdminJobDetailPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCandidateId, setSelectedCandidateId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [adminProfile, setAdminProfile] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
   useEffect(() => {
+    // Save referrer to sessionStorage when entering this page
+    // Priority: location.state > existing sessionStorage > document.referrer
+    console.log('JobDetailPage useEffect:', {
+      locationState: location.state,
+      existingReferrer: sessionStorage.getItem('jobDetailReferrer'),
+      documentReferrer: document.referrer
+    });
+    
+    if (location.state?.from === 'group-jobs') {
+      sessionStorage.setItem('jobDetailReferrer', '/admin/group-jobs');
+      console.log('Set referrer from location.state to /admin/group-jobs');
+    } else {
+      const existingReferrer = sessionStorage.getItem('jobDetailReferrer');
+      if (!existingReferrer) {
+        // Only set from referrer if not already set
+        const referrer = document.referrer || '';
+        if (referrer.includes('/admin/group-jobs')) {
+          sessionStorage.setItem('jobDetailReferrer', '/admin/group-jobs');
+          console.log('Set referrer from document.referrer to /admin/group-jobs');
+        } else if (referrer.includes('/admin/jobs') && !referrer.includes('/admin/jobs/')) {
+          sessionStorage.setItem('jobDetailReferrer', '/admin/jobs');
+          console.log('Set referrer from document.referrer to /admin/jobs');
+        }
+      } else {
+        console.log('Using existing referrer:', existingReferrer);
+      }
+    }
+    
     loadJobDetail();
-  }, [jobId]);
+    loadAdminProfile();
+  }, [jobId, location.state]);
+
+  const loadAdminProfile = async () => {
+    try {
+      setLoadingProfile(true);
+      const response = await apiService.getAdminProfile();
+      if (response.success && response.data?.admin) {
+        setAdminProfile(response.data.admin);
+      }
+    } catch (error) {
+      console.error('Error loading admin profile:', error);
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
 
   const loadJobDetail = async () => {
     try {
@@ -54,12 +100,17 @@ const AdminJobDetailPage = () => {
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={() => navigate('/admin/jobs')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Quay lại danh sách việc làm
-          </button>
+          {!loadingProfile && isSuperAdminOrBackOffice() && (
+            <button
+              onClick={() => {
+                const backUrl = getBackUrl();
+                navigate(backUrl);
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Quay lại danh sách việc làm
+            </button>
+          )}
         </div>
       </div>
     );
@@ -155,6 +206,33 @@ const AdminJobDetailPage = () => {
     return types[type] || 'Không xác định';
   };
 
+  // Helper function to check if admin is SuperAdmin or AdminBackOffice
+  const isSuperAdminOrBackOffice = () => {
+    return adminProfile?.role === 1 || adminProfile?.role === 2;
+  };
+
+  // Helper function to determine where to navigate back to
+  const getBackUrl = () => {
+    // Priority 1: Check location.state
+    if (location.state?.from === 'group-jobs') {
+      return '/admin/group-jobs';
+    }
+    
+    // Priority 2: Check sessionStorage
+    const referrer = sessionStorage.getItem('jobDetailReferrer');
+    if (referrer === '/admin/group-jobs') {
+      return '/admin/group-jobs';
+    }
+    
+    // Priority 3: Check admin role (if profile is loaded)
+    if (adminProfile?.role === 3) {
+      return '/admin/group-jobs';
+    }
+    
+    // Default: go to regular jobs page
+    return '/admin/jobs';
+  };
+
   return (
     <div className="flex gap-8 h-full overflow-hidden bg-white">
       {/* Main Content - Left Column */}
@@ -162,13 +240,23 @@ const AdminJobDetailPage = () => {
         <div className="w-full max-w-none py-8 px-8 space-y-8">
           {/* Header */}
           <div className="mb-8">
+          {!loadingProfile && isSuperAdminOrBackOffice() && (
             <button
-              onClick={() => navigate('/admin/jobs')}
+              onClick={() => {
+                const backUrl = getBackUrl();
+                console.log('Navigating back to:', backUrl, {
+                  locationState: location.state,
+                  sessionStorage: sessionStorage.getItem('jobDetailReferrer'),
+                  adminRole: adminProfile?.role
+                });
+                navigate(backUrl);
+              }}
               className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Quay lại</span>
             </button>
+          )}
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-4">{job.title}</h1>
@@ -183,13 +271,17 @@ const AdminJobDetailPage = () => {
                   </span>
                 </div>
               </div>
-              <button
-                onClick={() => navigate(`/admin/jobs/${jobId}/edit`)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5"
-              >
-                <Edit className="w-3.5 h-3.5" />
-                Chỉnh sửa
-              </button>
+              {/* Only show edit button for Super Admin and Admin Backoffice, not for Admin CA Team */}
+              {/* Wait for profile to load before showing/hiding button */}
+              {!loadingProfile && isSuperAdminOrBackOffice() && (
+                <button
+                  onClick={() => navigate(`/admin/jobs/${jobId}/edit`)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                  Chỉnh sửa
+                </button>
+              )}
             </div>
           </div>
 

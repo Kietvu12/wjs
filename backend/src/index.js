@@ -51,6 +51,7 @@ app.get('/health', (req, res) => {
 import adminRoutes from './routes/adminRoutes.js';
 import groupRoutes from './routes/groupRoutes.js';
 import collaboratorRoutes from './routes/collaboratorRoutes.js';
+import collaboratorAssignmentRoutes from './routes/collaboratorAssignmentRoutes.js';
 import cvRoutes from './routes/cvRoutes.js';
 import cvStorageRoutes from './routes/cvStorageRoutes.js';
 import jobCategoryRoutes from './routes/jobCategoryRoutes.js';
@@ -87,6 +88,7 @@ import ctvMessageRoutes from './routes/ctvMessageRoutes.js';
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/groups', groupRoutes);
 app.use('/api/admin/collaborators', collaboratorRoutes);
+app.use('/api/admin/collaborator-assignments', collaboratorAssignmentRoutes);
 app.use('/api/admin/cvs', cvRoutes);
 app.use('/api/admin/cv-storages', cvStorageRoutes);
 app.use('/api/admin/job-categories', jobCategoryRoutes);

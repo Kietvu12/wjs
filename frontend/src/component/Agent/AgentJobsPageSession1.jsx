@@ -83,26 +83,28 @@ const HeaderNavigationButtons = ({
   if (compact) {
     return (
       <div className="mb-2">
-        <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-0">
           <button
             onClick={onSearchHistoryClick}
-            className="flex items-center gap-1.5 px-2 py-1.5 transition-colors justify-start border border-gray-300 rounded text-[10px] hover:bg-gray-50"
+            className="flex items-center gap-1.5 px-2 py-1.5 transition-colors justify-center text-xs hover:bg-gray-50"
           >
-            <Clock className="w-3 h-3 text-orange-500" />
+            <Clock className="w-4 h-4 text-orange-500" />
             <span className="font-medium text-blue-900 truncate">Lịch sử</span>
           </button>
+          <span className="text-gray-300 text-xs">|</span>
           <button
             onClick={onSavedCriteriaClick}
-            className="flex items-center gap-1.5 px-2 py-1.5 transition-colors justify-start border border-gray-300 rounded text-[10px] hover:bg-gray-50"
+            className="flex items-center gap-1.5 px-2 py-1.5 transition-colors justify-center text-xs hover:bg-gray-50"
           >
-            <Bookmark className="w-3 h-3 text-blue-400" />
+            <Bookmark className="w-4 h-4 text-blue-400" />
             <span className="font-medium text-blue-900 truncate">Tiêu chí đã lưu</span>
           </button>
+          <span className="text-gray-300 text-xs">|</span>
           <button
             onClick={onSavedListClick}
-            className="flex items-center gap-1.5 px-2 py-1.5 transition-colors justify-start border border-gray-300 rounded text-[10px] hover:bg-gray-50"
+            className="flex items-center gap-1.5 px-2 py-1.5 transition-colors justify-center text-xs hover:bg-gray-50"
           >
-            <Heart className="w-3 h-3 text-red-500" />
+            <Heart className="w-4 h-4 text-red-500" />
             <span className="font-medium text-blue-900 truncate">Danh sách (61)</span>
           </button>
         </div>
@@ -115,21 +117,23 @@ const HeaderNavigationButtons = ({
       <div className="flex items-center gap-0">
         <button
           onClick={onSearchHistoryClick}
-          className="flex items-center gap-2 px-4 py-2 transition-colors flex-1 justify-center border-r border-gray-300"
+          className="flex items-center gap-2 px-4 py-2 transition-colors justify-center hover:bg-gray-50"
         >
           <Clock className="w-5 h-5 text-orange-500" />
           <span className="text-xs font-medium text-blue-900 whitespace-nowrap">Lịch sử tìm kiếm</span>
         </button>
+        <span className="text-gray-300 text-sm">|</span>
         <button
           onClick={onSavedCriteriaClick}
-          className="flex items-center gap-2 px-4 py-2 transition-colors flex-1 justify-center border-r border-gray-300"
+          className="flex items-center gap-2 px-4 py-2 transition-colors justify-center hover:bg-gray-50"
         >
           <Bookmark className="w-5 h-5 text-blue-400" />
           <span className="text-xs font-medium text-blue-900 whitespace-nowrap">Tiêu chí tìm kiếm đã lưu</span>
         </button>
+        <span className="text-gray-300 text-sm">|</span>
         <button
           onClick={onSavedListClick}
-          className="flex items-center gap-2 px-4 py-2 transition-colors flex-1 justify-center"
+          className="flex items-center gap-2 px-4 py-2 transition-colors justify-center hover:bg-gray-50"
         >
           <Heart className="w-5 h-5 text-red-500" />
           <span className="text-xs font-medium text-blue-900 whitespace-nowrap">
@@ -256,23 +260,36 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
       }
       
       // Fallback: Load flat list
-      const response = await apiService.getJobCategories({ status: 1 });
-      if (response.success && response.data?.categories) {
-        const allCategories = response.data.categories.map(cat => ({
-          id: String(cat.id),
-          name: cat.name,
-          parentId: cat.parentId ? String(cat.parentId) : null
-        }));
-        
-        const fields = allCategories.filter(cat => !cat.parentId);
-        const jobTypes = allCategories.filter(cat => cat.parentId);
-        
-        setAvailableFields(fields);
-        setAvailableJobTypes(jobTypes);
-        setCategoryTree(fields); // Simple tree structure
+      try {
+        const response = await apiService.getJobCategories({ status: 1 });
+        if (response.success && response.data?.categories) {
+          const allCategories = response.data.categories.map(cat => ({
+            id: String(cat.id),
+            name: cat.name,
+            parentId: cat.parentId ? String(cat.parentId) : null
+          }));
+          
+          const fields = allCategories.filter(cat => !cat.parentId);
+          const jobTypes = allCategories.filter(cat => cat.parentId);
+          
+          setAvailableFields(fields);
+          setAvailableJobTypes(jobTypes);
+          setCategoryTree(fields); // Simple tree structure
+        }
+      } catch (categoryError) {
+        // If 403 Forbidden or other error, just continue without categories
+        // This allows the component to work for users without category access
+        console.log('Cannot load job categories (may not have permission):', categoryError);
+        setAvailableFields([]);
+        setAvailableJobTypes([]);
+        setCategoryTree([]);
       }
     } catch (error) {
       console.error('Error loading category tree:', error);
+      // Set empty arrays to allow component to continue working
+      setAvailableFields([]);
+      setAvailableJobTypes([]);
+      setCategoryTree([]);
     } finally {
       setLoadingFields(false);
       setLoadingJobTypes(false);
@@ -341,7 +358,9 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
   const loadLocations = async () => {
     try {
       // Load jobs to extract unique locations
-      const response = await apiService.getCTVJobs({ limit: 1000, status: 1 });
+      const response = useAdminAPI 
+        ? await apiService.getAdminJobs({ limit: 1000, status: 1 })
+        : await apiService.getCTVJobs({ limit: 1000, status: 1 });
       if (response.success && response.data?.jobs) {
         const locationSet = new Set();
         response.data.jobs.forEach(job => {
@@ -413,7 +432,9 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
       params.sortBy = 'created_at';
       params.sortOrder = 'DESC';
 
-      const response = await apiService.getCTVJobs(params);
+      const response = useAdminAPI 
+        ? await apiService.getAdminJobs(params)
+        : await apiService.getCTVJobs(params);
       if (response.success && response.data) {
         setResultCount(response.data.pagination?.total || 0);
         // Pass filters and results to parent
@@ -713,51 +734,78 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
     helperText,
     compact = false
   }) => (
-    <div className={`flex ${compact ? 'gap-1.5' : 'gap-2'} min-w-0`}>
+    <div className={`flex ${compact ? 'gap-1.5 sm:gap-2' : 'gap-2 sm:gap-3'} min-w-0`}>
       <div className="flex-shrink-0 pt-0.5">
-        <Icon className={compact ? "w-3 h-3 text-gray-600" : "w-4 h-4 text-gray-600"} />
+        <Icon className={compact ? "w-4 h-4 sm:w-5 sm:h-5 text-gray-600" : "w-5 h-5 text-gray-600"} />
       </div>
       <div className={`flex-1 ${compact ? 'space-y-0.5' : 'space-y-1'} min-w-0`}>
-        <label className={compact ? "text-[10px] font-medium text-gray-700" : "text-xs font-medium text-gray-700"}>{label}</label>
+        <label className={compact ? "text-xs sm:text-sm font-medium text-gray-700" : "text-sm font-medium text-gray-700"}>{label}</label>
         {children}
         {helperText && (
-          <p className={compact ? "text-[10px] text-gray-500" : "text-xs text-gray-500"}>{helperText}</p>
+          <p className={compact ? "text-xs text-gray-500" : "text-sm text-gray-500"}>{helperText}</p>
         )}
       </div>
     </div>
   );
 
   return (
-    <div className={compact ? "w-full" : "w-full md:w-[600px]"}>
-      {/* Header Navigation */}
-      <HeaderNavigationButtons
-        onSearchHistoryClick={() => setShowSearchHistoryModal(true)}
-        onSavedCriteriaClick={() => setShowSavedCriteriaModal(true)}
-        onSavedListClick={() => setShowSavedListModal(true)}
-        compact={compact}
-      />
+    <>
+      {/* Custom Scrollbar Styles */}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+        /* Firefox */
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+      `}</style>
+      <div className={`${compact ? "w-full h-full lg:h-full flex flex-col" : "w-full sm:w-[400px] md:w-[500px] h-full flex flex-col"}`}>
+        {/* Header Navigation */}
+        <div className="flex-shrink-0 mb-1 sm:mb-2">
+          <HeaderNavigationButtons
+            onSearchHistoryClick={() => setShowSearchHistoryModal(true)}
+            onSavedCriteriaClick={() => setShowSavedCriteriaModal(true)}
+            onSavedListClick={() => setShowSavedListModal(true)}
+            compact={compact}
+          />
+        </div>
 
-      <div className={`bg-white ${compact ? 'rounded-lg' : 'rounded-2xl'} border border-gray-200 ${compact ? 'p-2' : 'p-4'} ${compact ? 'space-y-1.5' : 'space-y-2.5'}`}>
-        {/* A. Freeword / Keyword */}
+      <div className={`flex-1 flex flex-col bg-white ${compact ? 'rounded-lg' : 'rounded-2xl'} border border-gray-200 overflow-hidden min-h-0`}>
+        {/* Scrollable Form Content */}
+        <div className={`flex-1 overflow-y-auto ${compact ? 'p-2 sm:p-3' : 'p-3 sm:p-4 md:p-5'} ${compact ? 'space-y-2 sm:space-y-2.5' : 'space-y-3 sm:space-y-4'} custom-scrollbar min-h-0`}>
+          {/* A. Freeword / Keyword */}
         <FilterBlock icon={Search} label={language === 'vi' ? 'Từ khóa' : language === 'en' ? 'Keyword' : 'フリーワード'} compact={compact}>
           <div className="relative">
             <div className={`absolute ${compact ? 'left-2' : 'left-3'} top-1/2 -translate-y-1/2 z-10`}>
               <div className="relative">
                 <button
                   onClick={() => setShowKeywordMode(!showKeywordMode)}
-                  className={`flex items-center gap-0.5 ${compact ? 'px-1.5 py-0.5' : 'px-2 py-1'} ${compact ? 'text-[10px]' : 'text-xs'} font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors`}
+                  className={`flex items-center gap-0.5 ${compact ? 'px-2 py-1 sm:px-2.5 sm:py-1.5' : 'px-3 py-1.5'} ${compact ? 'text-xs sm:text-sm' : 'text-sm'} font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors`}
                 >
                   {filters.keywordMode}
-                  <ChevronDown className={compact ? "w-2.5 h-2.5" : "w-3 h-3"} />
+                  <ChevronDown className={compact ? "w-3 h-3 sm:w-3.5 sm:h-3.5" : "w-4 h-4"} />
                 </button>
                 {showKeywordMode && (
-                  <div className={`absolute top-full mt-1 left-0 bg-white border border-gray-200 rounded-lg shadow-lg z-20 ${compact ? 'min-w-[60px]' : 'min-w-[80px]'}`}>
+                  <div className={`absolute top-full mt-1 left-0 bg-white border border-gray-200 rounded-lg shadow-lg z-20 ${compact ? 'min-w-[70px] sm:min-w-[80px]' : 'min-w-[90px]'}`}>
                     <button
                       onClick={() => {
                         setFilters(prev => ({ ...prev, keywordMode: 'OR' }));
                         setShowKeywordMode(false);
                       }}
-                      className={`w-full ${compact ? 'px-2 py-1 text-[10px]' : 'px-3 py-2 text-xs'} text-left hover:bg-gray-50`}
+                      className={`w-full ${compact ? 'px-3 py-1.5 text-xs sm:text-sm' : 'px-4 py-2 text-sm'} text-left hover:bg-gray-50`}
                     >
                       OR
                     </button>
@@ -766,7 +814,7 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
                         setFilters(prev => ({ ...prev, keywordMode: 'AND' }));
                         setShowKeywordMode(false);
                       }}
-                      className={`w-full ${compact ? 'px-2 py-1 text-[10px]' : 'px-3 py-2 text-xs'} text-left hover:bg-gray-50`}
+                      className={`w-full ${compact ? 'px-3 py-1.5 text-xs sm:text-sm' : 'px-4 py-2 text-sm'} text-left hover:bg-gray-50`}
                     >
                       AND
                     </button>
@@ -779,27 +827,27 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
               value={filters.keyword}
               onChange={(e) => setFilters(prev => ({ ...prev, keyword: e.target.value }))}
               placeholder={language === 'vi' ? 'ID, tên job, nội dung công việc…' : language === 'en' ? 'ID, job name, job description…' : 'ID、求人名、業務内容…'}
-              className={`w-full ${compact ? 'pl-16 pr-2 py-1 text-[10px]' : 'pl-20 pr-4 py-2 text-xs'} border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+              className={`w-full ${compact ? 'pl-20 sm:pl-22 pr-3 sm:pr-4 py-2 sm:py-2.5 text-xs sm:text-sm' : 'pl-24 pr-5 py-3 text-sm'} border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
             />
           </div>
         </FilterBlock>
 
         {/* B. Địa điểm làm việc */}
         <FilterBlock icon={MapPin} label={language === 'vi' ? 'Địa điểm làm việc' : language === 'en' ? 'Work Location' : '勤務地'} compact={compact}>
-          <div className={`flex ${compact ? 'gap-1' : 'gap-2'}`}>
+          <div className={`flex ${compact ? 'gap-1 sm:gap-1.5' : 'gap-2'} items-center`}>
             <input
               type="text"
               readOnly
               value={getSelectedLocationsDisplay()}
               placeholder={language === 'vi' ? 'Chọn địa điểm làm việc' : language === 'en' ? 'Select work location' : '勤務地を選択'}
-              className={`flex-1 ${compact ? 'px-2 py-1 text-[10px]' : 'px-4 py-2 text-xs'} border border-gray-300 rounded-lg bg-gray-50 cursor-pointer`}
+              className={`flex-1 ${compact ? 'px-3 sm:px-3.5 py-2 sm:py-2.5 text-xs sm:text-sm' : 'px-5 py-3 text-sm'} border border-gray-300 rounded-lg bg-gray-50 cursor-pointer`}
               onClick={() => setShowCountryModal(true)}
             />
             <button
               onClick={() => setShowLocationModal(true)}
-              className={`${compact ? 'px-1.5 py-1' : 'px-3 py-2'} border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors`}
+              className={`${compact ? 'px-2 sm:px-2.5 py-2 sm:py-2.5' : 'px-4 py-3'} border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex-shrink-0`}
             >
-              <Plus className={compact ? "w-3 h-3 text-gray-600" : "w-4 h-4 text-gray-600"} />
+              <Plus className={compact ? "w-4 h-4 sm:w-5 sm:h-5 text-gray-600" : "w-5 h-5 text-gray-600"} />
             </button>
           </div>
         </FilterBlock>
@@ -810,20 +858,20 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
           label={language === 'vi' ? 'Lĩnh vực' : language === 'en' ? 'Field' : '分野'}
           compact={compact}
         >
-          <div className={`flex ${compact ? 'gap-1' : 'gap-2'}`}>
+          <div className={`flex ${compact ? 'gap-1 sm:gap-1.5' : 'gap-2'} items-center`}>
             <input
               type="text"
               readOnly
               value={getSelectedFieldNames() || ''}
               placeholder={language === 'vi' ? 'Chọn lĩnh vực' : language === 'en' ? 'Select field' : '分野を選択'}
-              className={`flex-1 ${compact ? 'px-2 py-1 text-[10px]' : 'px-4 py-2 text-xs'} border border-gray-300 rounded-lg bg-gray-50 cursor-pointer`}
+              className={`flex-1 ${compact ? 'px-3 sm:px-3.5 py-2 sm:py-2.5 text-xs sm:text-sm' : 'px-5 py-3 text-sm'} border border-gray-300 rounded-lg bg-gray-50 cursor-pointer`}
               onClick={() => setShowFieldJobTypeModal(true)}
             />
             <button
               onClick={() => setShowFieldJobTypeModal(true)}
-              className={`${compact ? 'px-1.5 py-1' : 'px-3 py-2'} border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors`}
+              className={`${compact ? 'px-2 sm:px-2.5 py-2 sm:py-2.5' : 'px-4 py-3'} border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex-shrink-0`}
             >
-              <Plus className={compact ? "w-3 h-3 text-gray-600" : "w-4 h-4 text-gray-600"} />
+              <Plus className={compact ? "w-4 h-4 sm:w-5 sm:h-5 text-gray-600" : "w-5 h-5 text-gray-600"} />
             </button>
           </div>
         </FilterBlock>
@@ -834,31 +882,31 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
           label={language === 'vi' ? 'Loại công việc' : language === 'en' ? 'Job Type' : '職種'}
           compact={compact}
         >
-          <div className={`flex ${compact ? 'gap-1' : 'gap-2'}`}>
+          <div className={`flex ${compact ? 'gap-1 sm:gap-1.5' : 'gap-2'} items-center`}>
             <input
               type="text"
               readOnly
               value={getSelectedJobTypeNames() || ''}
               placeholder={language === 'vi' ? 'Chọn loại công việc' : language === 'en' ? 'Select job type' : '職種を選択'}
-              className={`flex-1 ${compact ? 'px-2 py-1 text-[10px]' : 'px-4 py-2 text-xs'} border border-gray-300 rounded-lg bg-gray-50 cursor-pointer`}
+              className={`flex-1 ${compact ? 'px-3 sm:px-3.5 py-2 sm:py-2.5 text-xs sm:text-sm' : 'px-5 py-3 text-sm'} border border-gray-300 rounded-lg bg-gray-50 cursor-pointer`}
               onClick={() => setShowFieldJobTypeModal(true)}
             />
             <button
               onClick={() => setShowFieldJobTypeModal(true)}
-              className={`${compact ? 'px-1.5 py-1' : 'px-3 py-2'} border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors`}
+              className={`${compact ? 'px-2 sm:px-2.5 py-2 sm:py-2.5' : 'px-4 py-3'} border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex-shrink-0`}
             >
-              <Plus className={compact ? "w-3 h-3 text-gray-600" : "w-4 h-4 text-gray-600"} />
+              <Plus className={compact ? "w-4 h-4 sm:w-5 sm:h-5 text-gray-600" : "w-5 h-5 text-gray-600"} />
             </button>
           </div>
         </FilterBlock>
 
         {/* E. Tuổi */}
         <FilterBlock icon={Calendar} label={language === 'vi' ? 'Tuổi' : language === 'en' ? 'Age' : '年齢'} compact={compact}>
-          <div className={`flex items-center ${compact ? 'gap-1' : 'gap-2'}`}>
+          <div className={`flex items-center ${compact ? 'gap-1 sm:gap-1.5' : 'gap-2'} flex-wrap`}>
             <select
               value={filters.age || ''}
               onChange={(e) => setFilters(prev => ({ ...prev, age: e.target.value || null }))}
-              className={`flex-1 ${compact ? 'px-2 py-1 text-[10px]' : 'px-4 py-2 text-xs'} border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+              className={`flex-1 min-w-0 ${compact ? 'px-3 sm:px-3.5 py-2 sm:py-2.5 text-xs sm:text-sm' : 'px-5 py-3 text-sm'} border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
             >
               <option value="">{language === 'vi' ? 'Chọn tuổi' : language === 'en' ? 'Select age' : '選択'}</option>
               <option value="18">18</option>
@@ -868,7 +916,7 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
               <option value="35">35</option>
               <option value="40">40</option>
             </select>
-            <span className={compact ? "text-[10px] text-gray-500 whitespace-nowrap" : "text-xs text-gray-500 whitespace-nowrap"}>
+            <span className={compact ? "text-xs sm:text-sm text-gray-500 whitespace-nowrap flex-shrink-0" : "text-sm text-gray-500 whitespace-nowrap flex-shrink-0"}>
               {language === 'vi' ? 'tuổi có thể ứng tuyển' : language === 'en' ? 'years old' : '歳で応募可能'}
             </span>
           </div>
@@ -876,23 +924,23 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
 
         {/* F. Range lương */}
         <FilterBlock icon={DollarSign} label={language === 'vi' ? 'Range lương' : language === 'en' ? 'Salary Range' : '給与範囲'} compact={compact}>
-          <div className={`flex items-center ${compact ? 'gap-1' : 'gap-2'} min-w-0 overflow-x-auto`}>
+          <div className={`flex items-center ${compact ? 'gap-1 sm:gap-1.5' : 'gap-2'} min-w-0 flex-wrap`}>
             <input
               type="number"
               value={filters.salaryMin}
               onChange={(e) => setFilters(prev => ({ ...prev, salaryMin: e.target.value ? Number(e.target.value) : '' }))}
               placeholder={language === 'vi' ? 'Từ' : language === 'en' ? 'From' : 'から'}
-              className={`flex-1 min-w-0 ${compact ? 'px-2 py-1 text-[10px]' : 'px-4 py-2 text-xs'} border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+              className={`flex-1 min-w-[60px] ${compact ? 'px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm' : 'px-5 py-3 text-sm'} border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
             />
-            <span className="text-gray-500 flex-shrink-0">{compact ? '~' : '~'}</span>
+            <span className="text-gray-500 flex-shrink-0 text-sm">{compact ? '~' : '~'}</span>
             <input
               type="number"
               value={filters.salaryMax}
               onChange={(e) => setFilters(prev => ({ ...prev, salaryMax: e.target.value ? Number(e.target.value) : '' }))}
               placeholder={language === 'vi' ? 'Đến' : language === 'en' ? 'To' : 'まで'}
-              className={`flex-1 min-w-0 ${compact ? 'px-2 py-1 text-[10px]' : 'px-4 py-2 text-xs'} border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+              className={`flex-1 min-w-[60px] ${compact ? 'px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm' : 'px-5 py-3 text-sm'} border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
             />
-            <span className={compact ? "text-[10px] text-gray-500 whitespace-nowrap flex-shrink-0" : "text-xs text-gray-500 whitespace-nowrap flex-shrink-0"}>
+            <span className={compact ? "text-xs sm:text-sm text-gray-500 whitespace-nowrap flex-shrink-0" : "text-sm text-gray-500 whitespace-nowrap flex-shrink-0"}>
               {language === 'vi' ? 'triệu' : language === 'en' ? 'million' : '万円'}
             </span>
           </div>
@@ -903,7 +951,7 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
           <select
             value={filters.employmentType || ''}
             onChange={(e) => setFilters(prev => ({ ...prev, employmentType: e.target.value || null }))}
-            className={`w-full ${compact ? 'px-2 py-1 text-[10px]' : 'px-4 py-2 text-xs'} border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+            className={`w-full ${compact ? 'px-3 sm:px-3.5 py-2 sm:py-2.5 text-xs sm:text-sm' : 'px-5 py-3 text-sm'} border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
           >
             <option value="">{language === 'vi' ? 'Chọn hình thức' : language === 'en' ? 'Select type' : '選択'}</option>
             {mockEmploymentTypes.map((type) => (
@@ -914,28 +962,28 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
 
         {/* I. Điểm nổi bật */}
         <FilterBlock icon={Star} label={language === 'vi' ? 'Điểm nổi bật của job' : language === 'en' ? 'Job Highlights' : '求人の特徴'} compact={compact}>
-          <div className={`flex ${compact ? 'gap-1' : 'gap-2'}`}>
+          <div className={`flex ${compact ? 'gap-1 sm:gap-1.5' : 'gap-2'} items-center`}>
             <input
               type="text"
               readOnly
               value={getSelectedHighlightsNames() || ''}
               placeholder={language === 'vi' ? 'Chọn điểm nổi bật' : language === 'en' ? 'Select highlights' : '特徴を選択'}
-              className={`flex-1 ${compact ? 'px-2 py-1 text-[10px]' : 'px-4 py-2 text-xs'} border border-gray-300 rounded-lg bg-gray-50 cursor-pointer`}
+              className={`flex-1 ${compact ? 'px-3 sm:px-3.5 py-2 sm:py-2.5 text-xs sm:text-sm' : 'px-5 py-3 text-sm'} border border-gray-300 rounded-lg bg-gray-50 cursor-pointer`}
               onClick={() => setShowHighlightModal(true)}
             />
             <button
               onClick={() => setShowHighlightModal(true)}
-              className={`${compact ? 'px-1.5 py-1' : 'px-3 py-2'} border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors`}
+              className={`${compact ? 'px-2 sm:px-2.5 py-2 sm:py-2.5' : 'px-4 py-3'} border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex-shrink-0`}
             >
-              <Plus className={compact ? "w-3 h-3 text-gray-600" : "w-4 h-4 text-gray-600"} />
+              <Plus className={compact ? "w-4 h-4 sm:w-5 sm:h-5 text-gray-600" : "w-5 h-5 text-gray-600"} />
             </button>
           </div>
         </FilterBlock>
 
         {/* J. Nhóm checkbox Yes/No */}
         <FilterBlock icon={CheckSquare} label={language === 'vi' ? 'Điều kiện' : language === 'en' ? 'Conditions' : '条件'} compact={compact}>
-          <div className={`grid grid-cols-2 ${compact ? 'gap-1' : 'gap-2'}`}>
-            <label className={`flex items-center ${compact ? 'gap-1 p-1' : 'gap-1.5 p-1.5'} rounded-lg hover:bg-gray-50 cursor-pointer`}>
+          <div className={`grid grid-cols-1 sm:grid-cols-2 ${compact ? 'gap-1.5 sm:gap-2' : 'gap-2 sm:gap-3'}`}>
+            <label className={`flex items-start ${compact ? 'gap-1.5 sm:gap-2 p-1.5 sm:p-2' : 'gap-2 p-2'} rounded-lg hover:bg-gray-50 cursor-pointer`}>
               <input
                 type="checkbox"
                 checked={filters.booleans.positionNoExpOk}
@@ -943,13 +991,13 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
                   ...prev,
                   booleans: { ...prev.booleans, positionNoExpOk: e.target.checked }
                 }))}
-                className={compact ? "w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" : "w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"}
+                className={`mt-0.5 ${compact ? "w-4 h-4 sm:w-5 sm:h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 flex-shrink-0" : "w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 flex-shrink-0"}`}
               />
-              <span className={compact ? "text-[10px] text-gray-700" : "text-xs text-gray-700"}>
+              <span className={compact ? "text-xs sm:text-sm text-gray-700 leading-tight" : "text-sm text-gray-700 leading-tight"}>
                 {language === 'vi' ? 'Chưa kinh nghiệm vị trí OK' : language === 'en' ? 'No position exp OK' : '未経験職種OK'}
               </span>
             </label>
-            <label className={`flex items-center ${compact ? 'gap-1 p-1' : 'gap-1.5 p-1.5'} rounded-lg hover:bg-gray-50 cursor-pointer`}>
+            <label className={`flex items-start ${compact ? 'gap-1.5 sm:gap-2 p-1.5 sm:p-2' : 'gap-2 p-2'} rounded-lg hover:bg-gray-50 cursor-pointer`}>
               <input
                 type="checkbox"
                 checked={filters.booleans.industryNoExpOk}
@@ -957,13 +1005,13 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
                   ...prev,
                   booleans: { ...prev.booleans, industryNoExpOk: e.target.checked }
                 }))}
-                className={compact ? "w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" : "w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"}
+                className={`mt-0.5 ${compact ? "w-4 h-4 sm:w-5 sm:h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 flex-shrink-0" : "w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 flex-shrink-0"}`}
               />
-              <span className={compact ? "text-[10px] text-gray-700" : "text-xs text-gray-700"}>
+              <span className={compact ? "text-xs sm:text-sm text-gray-700 leading-tight" : "text-sm text-gray-700 leading-tight"}>
                 {language === 'vi' ? 'Chưa kinh nghiệm ngành OK' : language === 'en' ? 'No industry exp OK' : '未経験業種OK'}
               </span>
             </label>
-            <label className={`flex items-center ${compact ? 'gap-1 p-1' : 'gap-1.5 p-1.5'} rounded-lg hover:bg-gray-50 cursor-pointer`}>
+            <label className={`flex items-start ${compact ? 'gap-1.5 sm:gap-2 p-1.5 sm:p-2' : 'gap-2 p-2'} rounded-lg hover:bg-gray-50 cursor-pointer`}>
               <input
                 type="checkbox"
                 checked={filters.booleans.weekendOff}
@@ -971,13 +1019,13 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
                   ...prev,
                   booleans: { ...prev.booleans, weekendOff: e.target.checked }
                 }))}
-                className={compact ? "w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" : "w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"}
+                className={`mt-0.5 ${compact ? "w-4 h-4 sm:w-5 sm:h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 flex-shrink-0" : "w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 flex-shrink-0"}`}
               />
-              <span className={compact ? "text-[10px] text-gray-700" : "text-xs text-gray-700"}>
+              <span className={compact ? "text-xs sm:text-sm text-gray-700 leading-tight" : "text-sm text-gray-700 leading-tight"}>
                 {language === 'vi' ? 'Nghỉ T7-CN' : language === 'en' ? 'Weekend off' : '土日祝休み'}
               </span>
             </label>
-            <label className={`flex items-center ${compact ? 'gap-1 p-1' : 'gap-1.5 p-1.5'} rounded-lg hover:bg-gray-50 cursor-pointer`}>
+            <label className={`flex items-start ${compact ? 'gap-1.5 sm:gap-2 p-1.5 sm:p-2' : 'gap-2 p-2'} rounded-lg hover:bg-gray-50 cursor-pointer`}>
               <input
                 type="checkbox"
                 checked={filters.booleans.noExpOk}
@@ -985,49 +1033,52 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
                   ...prev,
                   booleans: { ...prev.booleans, noExpOk: e.target.checked }
                 }))}
-                className={compact ? "w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" : "w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"}
+                className={`mt-0.5 ${compact ? "w-4 h-4 sm:w-5 sm:h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 flex-shrink-0" : "w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 flex-shrink-0"}`}
               />
-              <span className={compact ? "text-[10px] text-gray-700" : "text-xs text-gray-700"}>
+              <span className={compact ? "text-xs sm:text-sm text-gray-700 leading-tight" : "text-sm text-gray-700 leading-tight"}>
                 {language === 'vi' ? 'Hoàn toàn chưa kinh nghiệm OK' : language === 'en' ? 'No experience OK' : '完全未経験OK'}
               </span>
             </label>
           </div>
         </FilterBlock>
+        </div>
 
-        {/* Buttons Row */}
-        <div className={compact ? "space-y-0.5" : "space-y-1"}>
-          <div className={`flex ${compact ? 'gap-1' : 'gap-2'}`}>
-            <button
-              onClick={handleClearAll}
-              className={`flex-1 ${compact ? 'py-1 px-2 text-[10px]' : 'py-1.5 px-4 text-xs'} font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors`}
-            >
-              {language === 'vi' ? 'Xóa tất cả' : language === 'en' ? 'Clear All' : 'すべてクリア'}
-            </button>
-            <button
-              onClick={handleSearch}
-              disabled={loading}
-              className={`flex-1 ${compact ? 'h-8' : 'h-11'} bg-yellow-400 hover:bg-yellow-500 rounded-lg flex items-center justify-center ${compact ? 'gap-1' : 'gap-2'} transition-colors shadow-md ${
-                loading ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              {loading ? (
-                <RotateCw className={compact ? "w-3 h-3 text-gray-900 animate-spin" : "w-4 h-4 text-gray-900 animate-spin"} />
-              ) : (
-                <Search className={compact ? "w-3 h-3 text-gray-900" : "w-4 h-4 text-gray-900"} />
-              )}
-              <span className={compact ? "text-[10px] font-semibold text-gray-900" : "text-sm font-semibold text-gray-900"}>
-                {language === 'vi' ? 'Tìm kiếm' : language === 'en' ? 'Search' : '検索'}
-              </span>
-            </button>
+        {/* Fixed Buttons Row */}
+        <div className={`flex-shrink-0 border-t border-gray-200 bg-white ${compact ? 'p-2 sm:p-3' : 'p-4 sm:p-5'} ${compact ? 'rounded-b-lg' : 'rounded-b-2xl'}`}>
+          <div className={`${compact ? "space-y-1.5 sm:space-y-2" : "space-y-2"}`}>
+            <div className={`flex ${compact ? 'gap-1.5 sm:gap-2' : 'gap-2'} flex-col sm:flex-row`}>
+              <button
+                onClick={handleClearAll}
+                className={`flex-1 ${compact ? 'py-2 sm:py-2.5 px-3 sm:px-4 text-xs sm:text-sm' : 'py-3 px-5 text-sm'} font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors`}
+              >
+                {language === 'vi' ? 'Xóa tất cả' : language === 'en' ? 'Clear All' : 'すべてクリア'}
+              </button>
+              <button
+                onClick={handleSearch}
+                disabled={loading}
+                className={`flex-1 ${compact ? 'h-10 sm:h-11' : 'h-12'} bg-red-600 hover:bg-red-700 rounded-lg flex items-center justify-center ${compact ? 'gap-1.5 sm:gap-2' : 'gap-2'} transition-colors shadow-md ${
+                  loading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                {loading ? (
+                  <RotateCw className={compact ? "w-4 h-4 sm:w-5 sm:h-5 text-white animate-spin" : "w-5 h-5 text-white animate-spin"} />
+                ) : (
+                  <Search className={compact ? "w-4 h-4 sm:w-5 sm:h-5 text-white" : "w-5 h-5 text-white"} />
+                )}
+                <span className={compact ? "text-xs sm:text-sm font-semibold text-white" : "text-base font-semibold text-white"}>
+                  {language === 'vi' ? 'Tìm kiếm' : language === 'en' ? 'Search' : '検索'}
+                </span>
+              </button>
+            </div>
+            <p className={`text-center ${compact ? 'text-xs sm:text-sm' : 'text-sm'} text-gray-600`}>
+              {language === 'vi' 
+                ? `Tìm kiếm ${resultCount.toLocaleString('vi-VN')} kết quả`
+                : language === 'en'
+                ? `Search ${resultCount.toLocaleString()} results`
+                : `${resultCount.toLocaleString('ja-JP')} 件を検索`
+              }
+            </p>
           </div>
-          <p className={`text-center ${compact ? 'text-[10px]' : 'text-xs'} text-gray-600`}>
-            {language === 'vi' 
-              ? `Tìm kiếm ${resultCount.toLocaleString('vi-VN')} kết quả`
-              : language === 'en'
-              ? `Search ${resultCount.toLocaleString()} results`
-              : `${resultCount.toLocaleString('ja-JP')} 件を検索`
-            }
-          </p>
         </div>
       </div>
 
@@ -1437,7 +1488,8 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
       >
         <SavedListContent />
       </SlideInModal>
-    </div>
+      </div>
+    </>
   );
 };
 

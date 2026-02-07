@@ -493,6 +493,7 @@ const AdminNominationsPage = () => {
                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Công ty</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">CTV</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Admin</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Admin phụ trách</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Trạng thái</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Ngày tiến cử</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Ngày PV</th>
@@ -504,13 +505,13 @@ const AdminNominationsPage = () => {
             <tbody className="divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan="13" className="px-3 py-8 text-center text-xs text-gray-500">
+                  <td colSpan="14" className="px-3 py-8 text-center text-xs text-gray-500">
                     Đang tải dữ liệu...
                   </td>
                 </tr>
               ) : nominations.length === 0 ? (
                 <tr>
-                  <td colSpan="13" className="px-3 py-8 text-center text-xs text-gray-500">
+                  <td colSpan="14" className="px-3 py-8 text-center text-xs text-gray-500">
                     Không có dữ liệu
                   </td>
                 </tr>
@@ -605,7 +606,7 @@ const AdminNominationsPage = () => {
                             onClick={() => navigate(`/admin/collaborators/${nomination.collaboratorId}`)}
                             className="text-xs font-medium text-blue-600 hover:text-blue-800"
                           >
-                            {nomination.collaborator?.code || nomination.collaborator?.name || '-'}
+                            {nomination.collaborator?.name || nomination.collaborator?.code || '-'}
                           </button>
                         ) : (
                           <span className="text-xs text-gray-500">—</span>
@@ -617,6 +618,18 @@ const AdminNominationsPage = () => {
                             <User className="w-3 h-3 text-gray-400" />
                             <span className="text-xs font-medium text-gray-900">
                               {nomination.admin?.name || nomination.admin?.email || '-'}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-500">—</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2">
+                        {nomination.adminResponsibleId ? (
+                          <div className="flex items-center gap-1.5">
+                            <User className="w-3 h-3 text-blue-400" />
+                            <span className="text-xs font-medium text-blue-900">
+                              {nomination.adminResponsible?.name || nomination.adminResponsible?.email || '-'}
                             </span>
                           </div>
                         ) : (

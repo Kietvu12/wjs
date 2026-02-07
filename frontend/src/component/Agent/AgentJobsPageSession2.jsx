@@ -10,13 +10,17 @@ import {
   CheckCircle,
   ChevronLeft,
   ChevronRight,
+  Download,
+  Heart,
+  UserPlus,
+  ChevronDown,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import apiService from '../../services/api';
 
 
-const AgentJobsPageSession2 = ({ jobs: propJobs, filters, showAllJobs = false, enablePagination = false }) => {
+const AgentJobsPageSession2 = ({ jobs: propJobs, filters, showAllJobs = false, enablePagination = false, useAdminAPI = false }) => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
@@ -27,20 +31,22 @@ const AgentJobsPageSession2 = ({ jobs: propJobs, filters, showAllJobs = false, e
   const [ctvProfile, setCtvProfile] = useState(null);
   const limit = showAllJobs ? 10 : 3; // Show 10 jobs per page if showAllJobs, otherwise 3
 
-  // Load CTV profile to get rank level
+  // Load CTV profile to get rank level (only for CTV users)
   useEffect(() => {
-    const loadCTVProfile = async () => {
-      try {
-        const response = await apiService.getCTVProfile();
-        if (response.success && response.data) {
-          setCtvProfile(response.data.collaborator || response.data);
+    if (!useAdminAPI) {
+      const loadCTVProfile = async () => {
+        try {
+          const response = await apiService.getCTVProfile();
+          if (response.success && response.data) {
+            setCtvProfile(response.data.collaborator || response.data);
+          }
+        } catch (error) {
+          console.error('Error loading CTV profile:', error);
         }
-      } catch (error) {
-        console.error('Error loading CTV profile:', error);
-      }
-    };
-    loadCTVProfile();
-  }, []);
+      };
+      loadCTVProfile();
+    }
+  }, [useAdminAPI]);
 
   // Load initial jobs on mount (only if no propJobs and no filters)
   useEffect(() => {
@@ -143,7 +149,10 @@ const AgentJobsPageSession2 = ({ jobs: propJobs, filters, showAllJobs = false, e
       params.sortBy = 'created_at';
       params.sortOrder = 'DESC';
       
-      const response = await apiService.getCTVJobs(params);
+      // Use getAdminJobs for admin users, getCTVJobs for CTV users
+      const response = useAdminAPI 
+        ? await apiService.getAdminJobs(params)
+        : await apiService.getCTVJobs(params);
       if (response.success && response.data) {
         setJobs(response.data.jobs || []);
         if (response.data.pagination) {
@@ -555,6 +564,19 @@ const mockJobs = [
     const educationRequirements = requirements
       .filter(req => req.type === 'education')
       .map(req => stripHtml(req.content || ''));
+    
+    // Get application conditions (requirements with type 'application' or all requirements combined)
+    const applicationRequirements = requirements
+      .filter(req => req.type === 'application')
+      .map(req => stripHtml(req.content || ''));
+    
+    // If no application type, combine technique and education as application conditions
+    const applicationConditions = applicationRequirements.length > 0 
+      ? applicationRequirements 
+      : [...techniqueRequirements, ...educationRequirements];
+
+    // Get job content (description)
+    const jobContent = stripHtml(job.description || job.jobContent || '');
 
     // Get working location details
     const workingLocationDetails = job.workingLocationDetails || [];
@@ -569,6 +591,31 @@ const mockJobs = [
       .map(detail => stripHtml(detail.content || ''))
       .filter(Boolean)
       .join(', ') || stripHtml(job.estimatedSalary || '');
+    
+    // Get additional info
+    const ageRange = job.ageRange || job.age || '';
+    const nationality = job.nationality || '';
+    const gender = job.gender || '';
+    const educationLevel = job.educationLevel || '';
+    const category = job.category?.name || '';
+    
+    // Format dates
+    const formatDate = (dateString) => {
+      if (!dateString) return '';
+      try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('vi-VN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+      } catch (error) {
+        return '';
+      }
+    };
+    
+    const updatedAt = formatDate(job.updatedAt);
+    const publishedAt = formatDate(job.publishedAt || job.createdAt);
 
     return {
       id: String(job.id),
@@ -577,185 +624,81 @@ const mockJobs = [
       title: job.title || '',
       company: job.company?.name || '',
       recruitingCompany: job.recruitingCompany,
+      category,
       techniqueRequirements,
       educationRequirements,
+      applicationConditions,
+      jobContent,
       location: locationText,
       salary: salaryText,
       commission: commissionText,
+      ageRange,
+      nationality,
+      gender,
+      educationLevel,
+      updatedAt,
+      publishedAt,
     };
   };
 
   const displayJobs = jobs.length > 0 ? jobs.map(formatJob) : [];
 
   return (
-    <div className="w-full h-full flex flex-col py-6">
-      {/* Header */}
-      <div className="mb-6 flex-shrink-0">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">{t.headerTitle}</h1>
-        <div className="flex flex-wrap gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors text-sm font-medium">
-            {t.viewSkilledJobs}
-            <ArrowRight className="w-4 h-4" />
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors text-sm font-medium">
-            {t.viewNoExpJobs}
-            <ArrowRight className="w-4 h-4" />
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors text-sm font-medium">
-            {t.companyInfo}
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* Job Listings with Scroll */}
-      <div className="flex-1 overflow-y-auto pr-2 min-h-0 relative">
-        {loading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-gray-500">Đang tải...</div>
-          </div>
-        ) : displayJobs.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <p className="text-gray-500 text-lg mb-2">Không tìm thấy công việc nào</p>
-              <p className="text-gray-400 text-sm">Vui lòng thử lại với bộ lọc khác</p>
-            </div>
-          </div>
-        ) : (
-        <div className="space-y-4 sm:space-y-6 pb-20">
-            {displayJobs.map((job) => (
-            <div
-              key={job.id}
-              onClick={() => navigate(`/agent/jobs/${job.id}`)}
-              className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-            >
-              <div className="flex flex-col sm:flex-row gap-4">
-                {/* Main Content */}
-                <div className="flex-1 space-y-3 sm:space-y-4">
-                  {/* Tags */}
-                  {job.tags && job.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {job.tags.map((tag, index) => (
-                        <span
-                          key={index}
-                          className={`px-3 py-1 rounded-full text-xs font-medium border ${getTagColorClass(tag.color)}`}
-                        >
-                          {tag.label}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Job Title */}
-                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 leading-snug">
-                    {job.title}
-                  </h2>
-
-                  {/* Company Name */}
-                  <div className="flex items-start gap-2">
-                    <Building2 className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                    <div className="text-sm text-gray-700">
-                      <span className="font-medium">{t.hiringCompany}:</span> {
-                        job.recruitingCompany?.companyName || job.company || 'N/A'
-                      }
-                    </div>
-                  </div>
-
-                  {/* Yêu cầu tuyển dụng (Technique) */}
-                  {job.techniqueRequirements && job.techniqueRequirements.length > 0 && (
-                    <div className="flex items-start gap-2">
-                      <Briefcase className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                      <div className="flex-1">
-                        <div className="text-xs font-medium text-gray-500 mb-1">Yêu cầu tuyển dụng:</div>
-                        <div className="text-sm text-gray-700 space-y-1">
-                          {job.techniqueRequirements.map((req, index) => (
-                            <div key={index} className="flex items-start gap-2">
-                              <span className="text-gray-400 flex-shrink-0">•</span>
-                              <span className="whitespace-pre-line">{req}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Học vấn (Education) */}
-                  {job.educationRequirements && job.educationRequirements.length > 0 && (
-                    <div className="flex items-start gap-2">
-                      <Users className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                      <div className="flex-1">
-                        <div className="text-xs font-medium text-gray-500 mb-1">Học vấn:</div>
-                        <div className="text-sm text-gray-700 space-y-1">
-                          {job.educationRequirements.map((req, index) => (
-                            <div key={index} className="flex items-start gap-2">
-                              <span className="text-gray-400 flex-shrink-0">•</span>
-                              <span className="whitespace-pre-line">{req}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Địa chỉ làm việc */}
-                  {job.location && (
-                    <div className="flex items-start gap-2">
-                      <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                      <div className="flex-1">
-                        <div className="text-xs font-medium text-gray-500 mb-1">Địa chỉ làm việc:</div>
-                        <div className="text-sm text-gray-700 whitespace-pre-line">{job.location}</div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Range lương */}
-                  {job.salary && (
-                    <div className="flex items-start gap-2">
-                      <DollarSign className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                      <div className="flex-1">
-                        <div className="text-xs font-medium text-gray-500 mb-1">Mức lương:</div>
-                        <div className="text-sm text-gray-700 whitespace-pre-line">{job.salary}</div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Commission Section */}
-                {job.commission && (
-                  <div className="w-full sm:w-48 flex-shrink-0">
-                    <div className="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-300 rounded-lg p-4">
-                      <div className="text-xs font-medium text-red-800 mb-2 uppercase tracking-wide">
-                        {t.companyCommission || 'Hoa hồng'}
-                      </div>
-                      <div className="text-xl sm:text-2xl font-bold text-red-900">
-                        {job.commission}
-                      </div>
-                    </div>
-                  </div>
-                )}
+    <>
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbd5e0;
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #a0aec0;
+        }
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e0 #f1f1f1;
+        }
+      `}</style>
+      <div className="w-full h-full flex flex-col py-2 sm:py-2">
+        {/* Job Listings with Scroll */}
+        <div className="flex-1 overflow-y-auto pr-1 sm:pr-2 min-h-0 relative">
+        {/* Pagination - Show at top if showAllJobs and enablePagination */}
+        {showAllJobs && enablePagination && (
+          <div className="sticky top-0 z-10 mb-4 bg-white rounded-lg shadow-sm p-2 sm:p-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
+              <div className="text-xs sm:text-sm text-gray-600 w-full sm:w-auto">
+                {language === 'vi' 
+                  ? `Hiển thị ${jobs.length} / ${totalJobs} công việc`
+                  : language === 'en'
+                  ? `Showing ${jobs.length} / ${totalJobs} jobs`
+                  : `${jobs.length} / ${totalJobs} 件を表示`
+                }
               </div>
-            </div>
-          ))}
-        </div>
-        )}
-        
-        {/* Footer - Show pagination if showAllJobs, otherwise show viewMore button */}
-        {showAllJobs && enablePagination ? (
-          <div className="sticky bottom-4 z-10 mt-6">
-            <div className="flex items-center justify-between bg-white rounded-lg shadow-lg p-4 border border-gray-200">
-              <div className="text-sm text-gray-600">
-                {t.showing} {jobs.length} {t.of} {totalJobs} {t.jobs}
-              </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 w-full sm:w-auto justify-center sm:justify-end">
+                <button
+                  onClick={() => handlePageChange(1)}
+                  disabled={currentPage === 1 || loading}
+                  className="flex items-center justify-center w-8 h-8 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title={language === 'vi' ? 'Trang đầu' : language === 'en' ? 'First page' : '最初のページ'}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-4 h-4 -ml-2" />
+                </button>
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1 || loading}
-                  className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center w-8 h-8 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title={language === 'vi' ? 'Trang trước' : language === 'en' ? 'Previous page' : '前のページ'}
                 >
                   <ChevronLeft className="w-4 h-4" />
-                  {t.previous}
                 </button>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                     let pageNum;
                     if (totalPages <= 5) {
@@ -772,11 +715,11 @@ const mockJobs = [
                         key={pageNum}
                         onClick={() => handlePageChange(pageNum)}
                         disabled={loading}
-                        className={`px-3 py-2 text-sm font-medium rounded-lg ${
+                        className={`w-8 h-8 text-xs font-medium rounded-lg ${
                           currentPage === pageNum
                             ? 'bg-blue-600 text-white'
-                            : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                            : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
+                        } disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
                       >
                         {pageNum}
                       </button>
@@ -786,26 +729,335 @@ const mockJobs = [
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages || loading}
-                  className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center w-8 h-8 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title={language === 'vi' ? 'Trang sau' : language === 'en' ? 'Next page' : '次のページ'}
                 >
-                  {t.next}
                   <ChevronRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={currentPage === totalPages || loading}
+                  className="flex items-center justify-center w-8 h-8 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title={language === 'vi' ? 'Trang cuối' : language === 'en' ? 'Last page' : '最後のページ'}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4 -ml-2" />
                 </button>
               </div>
             </div>
           </div>
+        )}
+
+        {loading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-gray-500">Đang tải...</div>
+          </div>
+        ) : displayJobs.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <p className="text-gray-500 text-lg mb-2">Không tìm thấy công việc nào</p>
+              <p className="text-gray-400 text-sm">Vui lòng thử lại với bộ lọc khác</p>
+            </div>
+          </div>
         ) : (
+        <div className={`space-y-3 sm:space-y-4 md:space-y-6 ${showAllJobs && enablePagination ? '' : 'pb-20'}`}>
+            {displayJobs.map((job) => (
+            <div
+              key={job.id}
+              onClick={() => {
+                // Save referrer to sessionStorage for reliable back navigation
+                if (useAdminAPI) {
+                  // Check if we're on group-jobs page
+                  const currentPath = window.location.pathname;
+                  console.log('Current path when clicking job:', currentPath);
+                  if (currentPath.includes('/admin/group-jobs')) {
+                    sessionStorage.setItem('jobDetailReferrer', '/admin/group-jobs');
+                    console.log('Set referrer to /admin/group-jobs');
+                  } else {
+                    sessionStorage.setItem('jobDetailReferrer', '/admin/jobs');
+                    console.log('Set referrer to /admin/jobs');
+                  }
+                }
+                // Pass state to indicate where user came from
+                const fromPage = useAdminAPI 
+                  ? (window.location.pathname.includes('/admin/group-jobs') ? 'group-jobs' : 'jobs')
+                  : 'agent-jobs';
+                navigate(useAdminAPI ? `/admin/jobs/${job.id}` : `/agent/jobs/${job.id}`, {
+                  state: { from: fromPage }
+                });
+              }}
+              className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 md:p-5 lg:p-6 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
+            >
+              <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 lg:gap-6">
+                {/* Main Content - Left Column */}
+                <div className="flex-1 flex flex-col space-y-4 min-w-0">
+                  {/* Header Section */}
+                  <div className="space-y-3 pb-2 border-b border-gray-100">
+                    {/* Job Code */}
+                    <div className="text-xs sm:text-xs text-gray-500 font-medium">
+                      {language === 'vi' ? 'ID công việc' : language === 'en' ? 'Job ID' : '求人ID'}: <span className="text-gray-700">{job.jobCode}</span>
+                    </div>
+                    
+                    {/* Tags */}
+                    {job.tags && job.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                        {job.tags.map((tag, index) => (
+                          <span
+                            key={index}
+                            className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium border ${getTagColorClass(tag.color)}`}
+                          >
+                            {tag.label}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Job Title */}
+                    <h2 className="text-base sm:text-lg md:text-xl font-bold text-blue-600 leading-tight pr-2">
+                      {job.title}
+                    </h2>
+
+                    {/* Category and Company */}
+                    <div className="space-y-1.5 sm:space-y-2">
+                      {job.category && (
+                        <div className="text-xs sm:text-sm text-gray-700">
+                          <span className="font-semibold text-gray-600">{language === 'vi' ? 'Phân loại công việc' : language === 'en' ? 'Job Category' : '職種分類'}:</span>
+                          <span className="ml-1 sm:ml-2 break-words">{job.category}</span>
+                        </div>
+                      )}
+
+                      {/* Company Name */}
+                      <div className="flex items-start gap-1.5 sm:gap-2">
+                        <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-xs sm:text-sm text-gray-700">
+                          <span className="font-semibold text-gray-600">{t.hiringCompany}:</span>
+                          <span className="ml-1 sm:ml-2 break-words">{job.recruitingCompany?.companyName || job.company || 'N/A'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Scrollable Sections Container */}
+                  <div className="grid grid-cols-1 gap-4">
+                    {/* Nội dung công việc - Scrollable */}
+                    {job.jobContent && (
+                      <div className="flex flex-col h-40 sm:h-48 md:h-52 border border-gray-200 rounded-lg bg-gray-50/50">
+                        <div className="px-3 sm:px-4 pt-2 sm:pt-3 pb-2 border-b border-gray-200 bg-white rounded-t-lg flex-shrink-0">
+                          <div className="text-xs sm:text-sm font-semibold text-gray-800">
+                            {language === 'vi' ? 'Nội dung công việc' : language === 'en' ? 'Job Content' : '仕事内容'}
+                          </div>
+                        </div>
+                        <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 leading-relaxed whitespace-pre-line custom-scrollbar min-h-0">
+                          {job.jobContent}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Điều kiện ứng tuyển - Scrollable */}
+                    {job.applicationConditions && job.applicationConditions.length > 0 && (
+                      <div className="flex flex-col h-40 sm:h-48 md:h-52 border border-gray-200 rounded-lg bg-gray-50/50">
+                        <div className="px-3 sm:px-4 pt-2 sm:pt-3 pb-2 border-b border-gray-200 bg-white rounded-t-lg flex-shrink-0">
+                          <div className="text-xs sm:text-sm font-semibold text-gray-800">
+                            {language === 'vi' ? 'Điều kiện ứng tuyển' : language === 'en' ? 'Application Conditions' : '応募条件'}
+                          </div>
+                        </div>
+                        <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 space-y-2 custom-scrollbar min-h-0">
+                          {job.applicationConditions.map((condition, index) => (
+                            <div key={index} className="flex items-start gap-2 sm:gap-2.5">
+                              <span className="text-blue-500 flex-shrink-0 mt-0.5 font-bold">•</span>
+                              <span className="whitespace-pre-line leading-relaxed">{condition}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Side Panel - Right Column */}
+                <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 space-y-3 sm:space-y-4">
+                  {/* Commission Section */}
+                  {job.commission && (
+                    <div className="bg-gradient-to-br from-red-50 via-red-50 to-red-100 border-2 border-red-300 rounded-lg p-3 sm:p-4 md:p-5 shadow-sm">
+                      <div className="text-xs font-semibold text-red-800 mb-2 sm:mb-3 uppercase tracking-wider">
+                        {t.companyCommission || 'Hoa hồng'}
+                      </div>
+                      <div className="text-xl sm:text-2xl md:text-3xl font-bold text-red-900 leading-tight">
+                        {job.commission}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Quick Info Panel */}
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 sm:p-4 md:p-5 shadow-sm">
+                    <div className="text-sm sm:text-base font-bold text-gray-800 mb-3 sm:mb-4 pb-2 border-b border-gray-300">
+                      {language === 'vi' ? 'Thông tin nhanh' : language === 'en' ? 'Quick Info' : 'クイック情報'}
+                    </div>
+                    
+                    <div className="space-y-3 sm:space-y-4">
+                      {/* Thu nhập hàng năm */}
+                      {job.salary && (
+                        <div className="pb-2 sm:pb-3 border-b border-gray-200 last:border-0">
+                          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 sm:mb-1.5">
+                            {language === 'vi' ? 'Thu nhập hàng năm' : language === 'en' ? 'Annual income' : '年収'}
+                          </div>
+                          <div className="text-xs sm:text-sm text-gray-900 font-semibold leading-relaxed break-words">{job.salary}</div>
+                        </div>
+                      )}
+
+                      {/* Tuổi */}
+                      {job.ageRange && (
+                        <div className="pb-2 sm:pb-3 border-b border-gray-200 last:border-0">
+                          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 sm:mb-1.5">
+                            {language === 'vi' ? 'Tuổi' : language === 'en' ? 'Age' : '年齢'}
+                          </div>
+                          <div className="text-xs sm:text-sm text-gray-900 font-semibold break-words">{job.ageRange}</div>
+                        </div>
+                      )}
+
+                      {/* Quốc tịch */}
+                      {job.nationality && (
+                        <div className="pb-2 sm:pb-3 border-b border-gray-200 last:border-0">
+                          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 sm:mb-1.5">
+                            {language === 'vi' ? 'Quốc tịch' : language === 'en' ? 'Nationality' : '国籍'}
+                          </div>
+                          <div className="text-xs sm:text-sm text-gray-900 font-semibold break-words">{job.nationality}</div>
+                        </div>
+                      )}
+
+                      {/* Giới tính */}
+                      {job.gender && (
+                        <div className="pb-2 sm:pb-3 border-b border-gray-200 last:border-0">
+                          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 sm:mb-1.5">
+                            {language === 'vi' ? 'Giới tính' : language === 'en' ? 'Gender' : '性別'}
+                          </div>
+                          <div className="text-xs sm:text-sm text-gray-900 font-semibold break-words">{job.gender}</div>
+                        </div>
+                      )}
+
+                      {/* Trình độ học vấn */}
+                      {job.educationLevel && (
+                        <div className="pb-2 sm:pb-3 border-b border-gray-200 last:border-0">
+                          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 sm:mb-1.5">
+                            {language === 'vi' ? 'Trình độ học vấn' : language === 'en' ? 'Education level' : '学歴'}
+                          </div>
+                          <div className="text-xs sm:text-sm text-gray-900 font-semibold break-words">{job.educationLevel}</div>
+                        </div>
+                      )}
+
+                      {/* Địa chỉ làm việc */}
+                      {job.location && (
+                        <div className="pb-2 sm:pb-3 border-b border-gray-200 last:border-0">
+                          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 sm:mb-1.5">
+                            {language === 'vi' ? 'Nơi làm việc' : language === 'en' ? 'Work locations' : '勤務地'}
+                          </div>
+                          <div className="text-xs sm:text-sm text-gray-900 font-semibold leading-relaxed whitespace-pre-line break-words">{job.location}</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer Section - Dates and Action Buttons */}
+              <div className="flex flex-col gap-3 sm:gap-4 pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-gray-200">
+                {/* Date Information - Left Side */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+                  {job.updatedAt && (
+                    <>
+                      <div className="flex items-center gap-1.5 sm:gap-2">
+                        <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
+                        <span className="break-words">
+                          {language === 'vi' ? 'Ngày cập nhật' : language === 'en' ? 'Update date' : '更新日'}: {job.updatedAt}
+                        </span>
+                      </div>
+                      {job.publishedAt && (
+                        <>
+                          <div className="hidden sm:block h-4 w-px bg-gray-300"></div>
+                          <div className="flex items-center gap-1.5 sm:gap-2">
+                            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
+                            <span className="break-words">
+                              {language === 'vi' ? 'Ngày xuất bản' : language === 'en' ? 'Publication date' : '公開日'}: {job.publishedAt}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
+                  {!job.updatedAt && job.publishedAt && (
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
+                      <span className="break-words">
+                        {language === 'vi' ? 'Ngày xuất bản' : language === 'en' ? 'Publication date' : '公開日'}: {job.publishedAt}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Buttons - Right Side */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                  {/* Download Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // TODO: Implement download functionality
+                      console.log('Download job:', job.id);
+                    }}
+                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 border border-blue-400 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors text-xs sm:text-sm font-medium"
+                  >
+                    <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <span className="hidden sm:inline">{language === 'vi' ? 'Tải xuống' : language === 'en' ? 'Download' : 'ダウンロード'}</span>
+                    <span className="sm:hidden">{language === 'vi' ? 'Tải' : language === 'en' ? 'Download' : 'ダウンロード'}</span>
+                    <ChevronDown className="w-3 h-3 flex-shrink-0" />
+                  </button>
+
+                  {/* Save Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // TODO: Implement save functionality
+                      console.log('Save job:', job.id);
+                    }}
+                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 border border-blue-400 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors text-xs sm:text-sm font-medium"
+                  >
+                    <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <span>{language === 'vi' ? 'Giữ gìn' : language === 'en' ? 'Save' : '保存'}</span>
+                  </button>
+
+                  {/* Suggest Candidate Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // TODO: Implement suggest candidate functionality
+                      console.log('Suggest candidate for job:', job.id);
+                    }}
+                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 rounded-lg transition-colors text-xs sm:text-sm font-medium"
+                  >
+                    <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <span className="hidden sm:inline">{language === 'vi' ? 'Đề xuất một ứng cử viên' : language === 'en' ? 'Suggest a candidate' : '候補者を提案'}</span>
+                    <span className="sm:hidden">{language === 'vi' ? 'Đề xuất' : language === 'en' ? 'Suggest' : '提案'}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        )}
+        
+        {/* Footer - Show viewMore button if not pagination */}
+        {!showAllJobs || !enablePagination ? (
           <div className="sticky bottom-4 text-center z-10 mt-4">
             <button 
-              onClick={() => navigate('/agent/jobs')}
+              onClick={() => navigate(useAdminAPI ? '/admin/jobs' : '/agent/jobs')}
               className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold text-lg shadow-2xl"
             >
               {t.viewMore}
             </button>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
+    </>
   );
 };
 

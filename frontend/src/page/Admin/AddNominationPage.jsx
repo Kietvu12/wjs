@@ -27,6 +27,10 @@ import {
   Trash2,
   Edit,
   ChevronRight,
+  ChevronLeft,
+  ChevronsLeft,
+  ChevronsRight,
+  Check,
 } from 'lucide-react';
 
 
@@ -36,6 +40,7 @@ const AdminAddNominationPage = () => {
   const [searchParams] = useSearchParams();
   const jobIdFromQuery = searchParams.get('jobId');
   const jobId = jobIdFromParams || jobIdFromQuery;
+  const [adminProfile, setAdminProfile] = useState(null);
   const [formData, setFormData] = useState({
     // Basic Information
     candidateId: '',
@@ -66,10 +71,16 @@ const AdminAddNominationPage = () => {
   const [jobSearch, setJobSearch] = useState('');
   const [collaboratorSearch, setCollaboratorSearch] = useState('');
   const [showCandidateDropdown, setShowCandidateDropdown] = useState(false);
-  const [showJobDropdown, setShowJobDropdown] = useState(false);
   const [showCollaboratorDropdown, setShowCollaboratorDropdown] = useState(false);
   const [candidates, setCandidates] = useState([]);
   const [jobs, setJobs] = useState([]);
+  const [jobsPagination, setJobsPagination] = useState({
+    currentPage: 1,
+    itemsPerPage: 10,
+    total: 0,
+    totalPages: 0
+  });
+  const [jobsLoading, setJobsLoading] = useState(false);
   const [collaborators, setCollaborators] = useState([]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -131,9 +142,43 @@ const AdminAddNominationPage = () => {
   const API_BASE_URL = 'https://unboiled-nonprescriptive-hiedi.ngrok-free.dev';
 
   useEffect(() => {
-    loadCandidates();
-    loadJobs();
-    loadCollaborators();
+    // Load admin profile to check role
+    const loadAdminProfile = async () => {
+      try {
+        const response = await apiService.getAdminProfile();
+        if (response.success && response.data?.admin) {
+          setAdminProfile(response.data.admin);
+        }
+      } catch (error) {
+        console.error('Error loading admin profile:', error);
+      }
+    };
+    loadAdminProfile();
+  }, []);
+
+  // Load collaborators when adminProfile is available
+  useEffect(() => {
+    if (adminProfile !== null) {
+      loadCollaborators();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adminProfile]);
+
+  // Load candidates when collaborator is selected
+  useEffect(() => {
+    if (formData.collaboratorId) {
+      console.log('[useEffect] Collaborator selected, loading candidates for:', formData.collaboratorId);
+      loadCandidates(formData.collaboratorId);
+    } else {
+      // Reset candidates when no collaborator selected
+      console.log('[useEffect] No collaborator selected, resetting candidates');
+      setCandidates([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.collaboratorId]);
+
+  useEffect(() => {
+    loadJobs(1, jobSearch);
     if (nominationId) {
       loadNominationData();
     } else if (jobId) {
@@ -330,43 +375,111 @@ const AdminAddNominationPage = () => {
     }
   };
 
-  const loadCandidates = async () => {
+  const loadCandidates = async (collaboratorId = null) => {
     try {
-      const response = await apiService.getAdminCVs({ limit: 100 });
+      const params = { limit: 100 };
+      
+      // Nếu đã chọn CTV, chỉ load CV của CTV đó
+      if (collaboratorId) {
+        params.collaboratorId = parseInt(collaboratorId);
+      }
+      
+      console.log('[loadCandidates] Loading candidates with params:', params);
+      const response = await apiService.getAdminCVs(params);
       if (response.success && response.data) {
-        setCandidates(response.data.cvs || []);
+        const cvs = response.data.cvs || [];
+        console.log('[loadCandidates] Loaded candidates:', cvs.length);
+        setCandidates(cvs);
+      } else {
+        console.log('[loadCandidates] No candidates found or error:', response);
+        setCandidates([]);
       }
     } catch (error) {
       console.error('Error loading candidates:', error);
+      setCandidates([]);
     }
   };
 
-  const loadJobs = async () => {
+  const loadJobs = async (page = 1, search = '') => {
     try {
-      const response = await apiService.getAdminJobs({ limit: 100, status: 1 }); // Only published jobs
+      setJobsLoading(true);
+      const limit = jobsPagination.itemsPerPage || 10; // Default to 10 if not set
+      const params = {
+        page: parseInt(page) || 1,
+        limit: parseInt(limit) || 10,
+        status: 1, // Only published jobs
+        sortBy: 'created_at',
+        sortOrder: 'DESC'
+      };
+      
+      if (search && search.trim()) {
+        params.search = search.trim();
+      }
+      
+      console.log('[loadJobs] Loading jobs with params:', params);
+      const response = await apiService.getAdminJobs(params);
       if (response.success && response.data) {
-        setJobs(response.data.jobs || []);
+        const jobs = response.data.jobs || [];
+        const pagination = response.data.pagination || {};
+        console.log('[loadJobs] Loaded jobs:', jobs.length, 'Pagination:', pagination);
+        
+        setJobs(jobs);
+        setJobsPagination(prev => ({
+          ...prev,
+          currentPage: pagination.page || page,
+          total: pagination.total || 0,
+          totalPages: pagination.totalPages || 0,
+          itemsPerPage: pagination.limit || limit
+        }));
+      } else {
+        console.log('[loadJobs] No jobs found or error:', response);
+        setJobs([]);
       }
     } catch (error) {
       console.error('Error loading jobs:', error);
+      setJobs([]);
+    } finally {
+      setJobsLoading(false);
     }
+  };
+
+  const handleJobSearch = () => {
+    const newPage = 1;
+    setJobsPagination(prev => ({ ...prev, currentPage: newPage }));
+    loadJobs(newPage, jobSearch);
   };
 
   const loadCollaborators = async () => {
     try {
-      // Load CTV nội bộ - filter theo status active và có thể thêm filter khác nếu cần
-      const response = await apiService.getCollaborators({ 
-        limit: 100,
-        status: 1 // Chỉ lấy CTV active
-      });
-      if (response.success && response.data) {
-        // Filter CTV nội bộ - có thể filter theo organizationType hoặc các tiêu chí khác
-        // Hiện tại filter theo status active, có thể thêm filter organizationType = 'internal' nếu có
-        const internalCollaborators = (response.data.collaborators || []).filter(c => {
-          // Chỉ lấy CTV active (status = 1)
-          return c.status === 1;
+      // Check if user is AdminBackOffice (role = 2)
+      const isAdminBackOffice = adminProfile?.role === 2;
+      
+      if (isAdminBackOffice) {
+        // AdminBackOffice: chỉ load CTV được phân công cho mình
+        const response = await apiService.getMyAssignedCollaborators({ 
+          limit: 100,
+          status: 1 // Chỉ lấy assignment active
         });
-        setCollaborators(internalCollaborators);
+        if (response.success && response.data) {
+          // Extract collaborators from assignments
+          const assignedCollaborators = (response.data.assignments || [])
+            .map(assignment => assignment.collaborator)
+            .filter(c => c && c.status === 1); // Filter active CTV
+          setCollaborators(assignedCollaborators);
+        }
+      } else {
+        // Super Admin: load tất cả CTV
+        const response = await apiService.getCollaborators({ 
+          limit: 100,
+          status: 1 // Chỉ lấy CTV active
+        });
+        if (response.success && response.data) {
+          const internalCollaborators = (response.data.collaborators || []).filter(c => {
+            // Chỉ lấy CTV active (status = 1)
+            return c.status === 1;
+          });
+          setCollaborators(internalCollaborators);
+        }
       }
     } catch (error) {
       console.error('Error loading collaborators:', error);
@@ -697,7 +810,6 @@ const AdminAddNominationPage = () => {
       }));
       setSelectedJob(fullJob);
       setJobSearch(job.title);
-      setShowJobDropdown(false);
       // Clear errors
       if (errors.jobId) {
         setErrors(prev => ({ ...prev, jobId: '' }));
@@ -712,7 +824,6 @@ const AdminAddNominationPage = () => {
       }));
       setSelectedJob(job);
       setJobSearch(job.title);
-      setShowJobDropdown(false);
     }
   };
 
@@ -721,9 +832,22 @@ const AdminAddNominationPage = () => {
       ...prev,
       collaboratorId: collaborator.id,
       collaboratorName: collaborator.name,
+      // Reset candidate selection khi chọn CTV mới
+      candidateId: '',
+      candidateName: '',
+      name: '',
+      email: '',
+      phone: '',
+      birthDate: '',
+      gender: '',
     }));
     setCollaboratorSearch(collaborator.name);
     setShowCollaboratorDropdown(false);
+    setSelectedCandidate(null);
+    setCandidateSearch('');
+    
+    // Load lại danh sách candidates của CTV này
+    loadCandidates(collaborator.id);
   };
 
   const filteredCandidates = candidates.filter(c => {
@@ -735,14 +859,6 @@ const AdminAddNominationPage = () => {
     );
   });
 
-  const filteredJobs = jobs.filter(j => {
-    const searchLower = jobSearch.toLowerCase();
-    return (
-      (j.title || '').toLowerCase().includes(searchLower) ||
-      (j.jobCode || j.id || '').toString().includes(jobSearch) ||
-      (j.company?.name || j.companyName || '').toLowerCase().includes(searchLower)
-    );
-  });
 
   const filteredCollaborators = collaborators.filter(c => {
     const searchLower = collaboratorSearch.toLowerCase();
@@ -985,21 +1101,8 @@ const AdminAddNominationPage = () => {
         return;
       }
       
-      // Create: Use FormData
-      const submitFormData = new FormData();
-      submitFormData.append('jobId', jobIdToSubmit.toString());
-      
-      if (formData.candidateId && selectedCandidate) {
-        const cvCode = selectedCandidate.code || formData.candidateId;
-        if (cvCode) {
-          submitFormData.append('cvCode', cvCode);
-        }
-      }
-      if (formData.collaboratorId) {
-        submitFormData.append('collaboratorId', formData.collaboratorId);
-      }
-      
-      // Candidate info (required if no cvId)
+      // Create: Use JSON object (backend expects JSON, not FormData)
+      // First, handle new candidate creation if needed
       if (candidateTab === 'new' && !formData.candidateId) {
         // Create CV storage first if creating new candidate
         const cvFormData = new FormData();
@@ -1079,14 +1182,36 @@ const AdminAddNominationPage = () => {
 
         const cvResponse = await apiService.createAdminCV(cvFormData);
         if (cvResponse.success && cvResponse.data?.cv?.id) {
-          submitFormData.append('cvId', cvResponse.data.cv.id);
           setFormData(prev => ({ ...prev, candidateId: cvResponse.data.cv.id }));
+          // Update selectedCandidate with new CV data
+          setSelectedCandidate(cvResponse.data.cv);
         } else {
           alert('Có lỗi xảy ra khi tạo hồ sơ ứng viên');
+          setLoading(false);
           return;
         }
-      } else {
-        // Use edited data if available, otherwise use formData
+      }
+      
+      // Build JSON payload for job application
+      const jobApplicationData = {
+        jobId: parseInt(jobIdToSubmit)
+      };
+      
+      // Add cvCode if candidate is selected
+      if (formData.candidateId && selectedCandidate) {
+        const cvCode = selectedCandidate.code || formData.candidateId;
+        if (cvCode) {
+          jobApplicationData.cvCode = cvCode;
+        }
+      }
+      
+      // Add collaboratorId if provided
+      if (formData.collaboratorId) {
+        jobApplicationData.collaboratorId = parseInt(formData.collaboratorId);
+      }
+      
+      // Candidate info (if no cvCode but have candidate data)
+      if (!jobApplicationData.cvCode) {
         const candidateData = editingCV && Object.keys(cvEditData).length > 0 ? cvEditData : {
           name: formData.name || selectedCandidate?.name || selectedCandidate?.fullName || '',
           birthDate: formData.birthDate || selectedCandidate?.birthDate || '',
@@ -1095,16 +1220,20 @@ const AdminAddNominationPage = () => {
           phone: formData.phone || selectedCandidate?.phone || '',
         };
         
-        if (candidateData.name) submitFormData.append('name', candidateData.name);
-        if (candidateData.birthDate) submitFormData.append('birthDate', candidateData.birthDate);
-        if (candidateData.gender) submitFormData.append('gender', candidateData.gender);
-        if (candidateData.email) submitFormData.append('email', candidateData.email);
-        if (candidateData.phone) submitFormData.append('phone', candidateData.phone);
+        if (candidateData.name) jobApplicationData.name = candidateData.name;
+        if (candidateData.birthDate) jobApplicationData.birthDate = candidateData.birthDate;
+        if (candidateData.gender) jobApplicationData.gender = candidateData.gender;
+        if (candidateData.email) jobApplicationData.email = candidateData.email;
+        if (candidateData.phone) jobApplicationData.phone = candidateData.phone;
       }
       
       // Dates
-      if (formData.appliedDate) submitFormData.append('appliedAt', formData.appliedDate);
-      if (formData.interviewDate) submitFormData.append('interviewDate', formData.interviewDate);
+      if (formData.appliedDate) {
+        jobApplicationData.appliedAt = formData.appliedDate;
+      }
+      if (formData.interviewDate) {
+        jobApplicationData.interviewDate = formData.interviewDate;
+      }
       
       // Status - map từ frontend labels sang backend numbers
       const statusMap = {
@@ -1116,17 +1245,23 @@ const AdminAddNominationPage = () => {
       const statusValue = typeof formData.status === 'string' 
         ? (statusMap[formData.status] || 1)
         : formData.status;
-      submitFormData.append('status', statusValue);
+      jobApplicationData.status = statusValue;
       
       // Financial
-      if (formData.referralFee) submitFormData.append('referralFee', formData.referralFee);
-      if (formData.yearlySalary) submitFormData.append('yearlySalary', formData.yearlySalary);
+      if (formData.referralFee) {
+        jobApplicationData.referralFee = parseFloat(formData.referralFee);
+      }
+      if (formData.yearlySalary) {
+        jobApplicationData.yearlySalary = parseFloat(formData.yearlySalary);
+      }
       
       // Notes
-      if (formData.notes) submitFormData.append('notes', formData.notes);
+      if (formData.notes) {
+        jobApplicationData.notes = formData.notes;
+      }
 
-      // Create only (update already handled above)
-      const response = await apiService.createAdminJobApplication(submitFormData);
+      // Create job application with JSON payload
+      const response = await apiService.createAdminJobApplication(jobApplicationData);
       if (response.success) {
         alert('Đơn tiến cử đã được tạo thành công!');
         navigate('/admin/nominations');
@@ -1620,6 +1755,82 @@ const AdminAddNominationPage = () => {
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {/* Left Column */}
         <div className="space-y-3">
+          {/* Collaborator Selection */}
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
+              <Users className="w-4 h-4 text-blue-600" />
+              Cộng tác viên
+              {adminProfile?.role === 2 && (
+                <span className="text-[10px] text-blue-600 font-normal ml-1">
+                  (CTV được phân công)
+                </span>
+              )}
+            </h2>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  Tìm kiếm CTV
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Nhập tên hoặc ID CTV..."
+                    value={collaboratorSearch}
+                    onChange={(e) => {
+                      setCollaboratorSearch(e.target.value);
+                      setShowCollaboratorDropdown(true);
+                    }}
+                    onFocus={() => setShowCollaboratorDropdown(true)}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                  {showCollaboratorDropdown && filteredCollaborators.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {filteredCollaborators.map((collaborator) => (
+                        <button
+                          key={collaborator.id}
+                          type="button"
+                          onClick={() => handleCollaboratorSelect(collaborator)}
+                          className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 flex items-center justify-between"
+                        >
+                          <div>
+                            <div className="font-medium text-gray-900">{collaborator.name}</div>
+                            <div className="text-gray-500">{collaborator.id} • {collaborator.email}</div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {formData.collaboratorId && (
+                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="text-xs font-medium text-blue-900">Đã chọn: {formData.collaboratorName}</div>
+                    <div className="text-[10px] text-blue-700">ID: {formData.collaboratorId}</div>
+                  </div>
+                )}
+              </div>
+              {adminProfile?.role === 1 && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="auto-assign-ctv"
+                    className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+                  />
+                  <label htmlFor="auto-assign-ctv" className="text-xs text-gray-700">
+                    Tự động gán CTV
+                  </label>
+                </div>
+              )}
+              {adminProfile?.role === 2 && collaborators.length === 0 && (
+                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-xs text-yellow-800">
+                    Bạn chưa được phân công CTV nào. Vui lòng liên hệ Super Admin để được phân công CTV.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Candidate Selection */}
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
@@ -1661,9 +1872,28 @@ const AdminAddNominationPage = () => {
 
             {candidateTab === 'existing' ? (
               <div className="space-y-3">
+                {!formData.collaboratorId && (
+                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg mb-3">
+                    <p className="text-xs text-yellow-800">
+                      Vui lòng chọn CTV trước để xem danh sách ứng viên của CTV đó.
+                    </p>
+                  </div>
+                )}
+                {formData.collaboratorId && candidates.length === 0 && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3">
+                    <p className="text-xs text-blue-800">
+                      CTV này chưa có ứng viên nào. Bạn có thể tạo ứng viên mới ở tab "Tạo ứng viên mới".
+                    </p>
+                  </div>
+                )}
                 <div>
                   <label className="block text-xs font-semibold text-gray-900 mb-2">
                     Tìm kiếm ứng viên
+                    {formData.collaboratorId && (
+                      <span className="text-[10px] text-gray-500 font-normal ml-1">
+                        (của CTV: {formData.collaboratorName}) - {candidates.length} ứng viên
+                      </span>
+                    )}
                   </label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
@@ -1693,6 +1923,16 @@ const AdminAddNominationPage = () => {
                             </div>
                           </button>
                         ))}
+                      </div>
+                    )}
+                    {showCandidateDropdown && filteredCandidates.length === 0 && candidateSearch && formData.collaboratorId && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-3">
+                        <p className="text-xs text-gray-500">Không tìm thấy ứng viên nào phù hợp với từ khóa "{candidateSearch}"</p>
+                      </div>
+                    )}
+                    {showCandidateDropdown && candidates.length === 0 && !candidateSearch && formData.collaboratorId && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-3">
+                        <p className="text-xs text-gray-500">CTV này chưa có ứng viên nào. Vui lòng tạo ứng viên mới.</p>
                       </div>
                     )}
                   </div>
@@ -2539,120 +2779,184 @@ const AdminAddNominationPage = () => {
 
           {/* Job Selection */}
           <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <Briefcase className="w-4 h-4 text-blue-600" />
-              Công việc <span className="text-red-500">*</span>
-            </h2>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
-                  Tìm kiếm công việc
-                </label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Nhập tên job, ID hoặc công ty..."
-                    value={jobSearch}
-                    onChange={(e) => {
-                      setJobSearch(e.target.value);
-                      setShowJobDropdown(true);
-                    }}
-                    onFocus={() => setShowJobDropdown(true)}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  />
-                  {showJobDropdown && filteredJobs.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                      {filteredJobs.map((job) => (
-                        <button
-                          key={job.id}
-                          type="button"
-                          onClick={() => handleJobSelect(job)}
-                          className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100"
-                        >
-                          <div className="font-medium text-gray-900">{job.title}</div>
-                          <div className="text-gray-500">{job.jobCode || job.id} • {job.company?.name || job.companyName || '-'}</div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                {formData.jobId && (
-                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="text-xs font-medium text-blue-900">Đã chọn: {formData.jobTitle}</div>
-                    <div className="text-[10px] text-blue-700">ID: {formData.jobId}</div>
-                  </div>
-                )}
-                {errors.jobId && <p className="text-[10px] text-red-500 mt-1">{errors.jobId}</p>}
-              </div>
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                <Briefcase className="w-4 h-4 text-blue-600" />
+                Công việc <span className="text-red-500">*</span>
+              </h2>
               <button
                 type="button"
                 onClick={() => navigate('/admin/jobs/create')}
                 className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
               >
-                <span>+ Tạo job mới</span>
+                <Plus className="w-3 h-3" />
+                Tạo job mới
               </button>
             </div>
-          </div>
-
-          {/* Collaborator Selection */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <Users className="w-4 h-4 text-blue-600" />
-              Cộng tác viên
-            </h2>
             <div className="space-y-3">
+              {/* Search */}
               <div>
                 <label className="block text-xs font-semibold text-gray-900 mb-2">
-                  Tìm kiếm CTV
+                  Tìm kiếm công việc
                 </label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Nhập tên hoặc ID CTV..."
-                    value={collaboratorSearch}
-                    onChange={(e) => {
-                      setCollaboratorSearch(e.target.value);
-                      setShowCollaboratorDropdown(true);
-                    }}
-                    onFocus={() => setShowCollaboratorDropdown(true)}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  />
-                  {showCollaboratorDropdown && filteredCollaborators.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                      {filteredCollaborators.map((collaborator) => (
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Nhập tên job, ID hoặc công ty..."
+                      value={jobSearch}
+                      onChange={(e) => setJobSearch(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleJobSearch()}
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleJobSearch}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors"
+                  >
+                    Tìm
+                  </button>
+                </div>
+              </div>
+
+              {/* Selected Job */}
+              {formData.jobId && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-medium text-blue-900">Đã chọn: {formData.jobTitle}</div>
+                      <div className="text-[10px] text-blue-700 mt-1">ID: {formData.jobId}</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, jobId: '', jobTitle: '' }));
+                        setSelectedJob(null);
+                        setJobSearch('');
+                      }}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+              {errors.jobId && <p className="text-[10px] text-red-500">{errors.jobId}</p>}
+
+              {/* Jobs List */}
+              <div className="border border-gray-200 rounded-lg">
+                {jobsLoading ? (
+                  <div className="p-8 text-center">
+                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <p className="mt-2 text-xs text-gray-500">Đang tải...</p>
+                  </div>
+                ) : jobs.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <Briefcase className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-xs text-gray-500">Không tìm thấy công việc nào</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="max-h-96 overflow-y-auto">
+                      {jobs.map((job) => (
                         <button
-                          key={collaborator.id}
+                          key={job.id}
                           type="button"
-                          onClick={() => handleCollaboratorSelect(collaborator)}
-                          className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 flex items-center justify-between"
+                          onClick={() => handleJobSelect(job)}
+                          className={`w-full px-4 py-3 text-left border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors ${
+                            formData.jobId === job.id || formData.jobId === job.id.toString()
+                              ? 'bg-blue-50 border-l-4 border-l-blue-600'
+                              : ''
+                          }`}
                         >
-                          <div>
-                            <div className="font-medium text-gray-900">{collaborator.name}</div>
-                            <div className="text-gray-500">{collaborator.id} • {collaborator.email}</div>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1">
+                              <div className="text-xs font-semibold text-gray-900 mb-1">{job.title}</div>
+                              <div className="text-[10px] text-gray-500 space-y-0.5">
+                                <div>Mã: {job.jobCode || job.id}</div>
+                                {job.company?.name || job.companyName ? (
+                                  <div className="flex items-center gap-1">
+                                    <Building2 className="w-3 h-3" />
+                                    {job.company?.name || job.companyName}
+                                  </div>
+                                ) : null}
+                                {job.workLocation && (
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="w-3 h-3" />
+                                    {job.workLocation}
+                                  </div>
+                                )}
+                                {job.estimatedSalary && (
+                                  <div className="flex items-center gap-1">
+                                    <DollarSign className="w-3 h-3" />
+                                    {job.estimatedSalary}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            {(formData.jobId === job.id || formData.jobId === job.id.toString()) && (
+                              <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                            )}
                           </div>
                         </button>
                       ))}
                     </div>
-                  )}
-                </div>
-                {formData.collaboratorId && (
-                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="text-xs font-medium text-blue-900">Đã chọn: {formData.collaboratorName}</div>
-                    <div className="text-[10px] text-blue-700">ID: {formData.collaboratorId}</div>
-                  </div>
+
+                    {/* Pagination */}
+                    {jobsPagination.totalPages > 1 && (
+                      <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between bg-gray-50">
+                        <div className="text-xs text-gray-700">
+                          Hiển thị {(jobsPagination.currentPage - 1) * jobsPagination.itemsPerPage + 1} - {Math.min(jobsPagination.currentPage * jobsPagination.itemsPerPage, jobsPagination.total)} của {jobsPagination.total}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => loadJobs(1, jobSearch)}
+                            disabled={jobsPagination.currentPage === 1 || jobsLoading}
+                            className="p-1.5 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <ChevronsLeft className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newPage = Math.max(1, jobsPagination.currentPage - 1);
+                              loadJobs(newPage, jobSearch);
+                            }}
+                            disabled={jobsPagination.currentPage === 1 || jobsLoading}
+                            className="p-1.5 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <ChevronLeft className="w-3 h-3" />
+                          </button>
+                          <span className="text-xs text-gray-700 px-2">
+                            Trang {jobsPagination.currentPage} / {jobsPagination.totalPages}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newPage = Math.min(jobsPagination.totalPages, jobsPagination.currentPage + 1);
+                              loadJobs(newPage, jobSearch);
+                            }}
+                            disabled={jobsPagination.currentPage === jobsPagination.totalPages || jobsLoading}
+                            className="p-1.5 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <ChevronRight className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => loadJobs(jobsPagination.totalPages, jobSearch)}
+                            disabled={jobsPagination.currentPage === jobsPagination.totalPages || jobsLoading}
+                            className="p-1.5 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <ChevronsRight className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="auto-assign-ctv"
-                  className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
-                />
-                <label htmlFor="auto-assign-ctv" className="text-xs text-gray-700">
-                  Tự động gán CTV
-                </label>
               </div>
             </div>
           </div>

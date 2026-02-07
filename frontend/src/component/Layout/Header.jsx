@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Bell, User, Globe, ChevronDown, LogOut, MessageCircle } from 'lucide-react';
+import { Bell, User, Globe, ChevronDown, LogOut, MessageCircle, HelpCircle, BookOpen } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { translations } from '../../translations/translations';
 import apiService from '../../services/api';
@@ -106,9 +106,30 @@ const Header = () => {
 
   return (
     <header className="bg-white border-b border-gray-200 px-3 sm:px-4 py-2 sm:py-3 shadow-sm">
-      <div className="flex items-center justify-end gap-2 sm:gap-3">
-        {/* Right side - Actions (only 3 icons) */}
+      <div className="flex items-center justify-between gap-2 sm:gap-3">
+        {/* Left side - Page Title */}
+        <div className="flex-1 min-w-0">
+          <h1 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
+            {getPageTitle()}
+          </h1>
+        </div>
+
+        {/* Right side - Actions */}
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          {/* Help Guide Button */}
+          <a
+            href="https://dust-camel-0dd.notion.site/2c6563f4199880ae9cf0cbe005546446?v=2c6563f41998818a8e4d000cd327e761"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 sm:px-3 sm:py-2.5 transition-colors flex items-center gap-2"
+            title={language === 'vi' ? 'Hướng dẫn sử dụng' : language === 'en' ? 'User Guide' : 'ユーザーガイド'}
+          >
+            <BookOpen className="w-5 h-5 text-gray-700" />
+            <span className="hidden sm:inline text-sm font-medium text-gray-700">
+              {language === 'vi' ? 'Hướng dẫn sử dụng' : language === 'en' ? 'User Guide' : 'ユーザーガイド'}
+            </span>
+          </a>
+
           {/* Language Switcher */}
           <div className="relative" ref={languageMenuRef}>
             <button

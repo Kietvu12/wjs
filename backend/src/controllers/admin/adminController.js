@@ -53,7 +53,12 @@ export const adminController = {
       // Super Admin (role = 1) can always login regardless of isActive/status
       // Other admins need to be active
       if (admin.role !== 1) {
-        if (!admin.isActive || admin.status !== 1) {
+        // Check isActive (boolean) and status (1 = active)
+        const isActive = admin.isActive === true || admin.isActive === 1;
+        const isStatusActive = admin.status === 1;
+        
+        if (!isActive || !isStatusActive) {
+          console.log(`[Admin Login] Account inactive - isActive: ${admin.isActive}, status: ${admin.status}, role: ${admin.role}`);
           return res.status(403).json({
             success: false,
             message: 'Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.'
@@ -64,6 +69,7 @@ export const adminController = {
       // Verify password
       const isPasswordValid = await comparePassword(password, admin.password);
       if (!isPasswordValid) {
+        console.log(`[Admin Login] Invalid password for email: ${email}, role: ${admin.role}`);
         return res.status(401).json({
           success: false,
           message: 'Email hoặc mật khẩu không đúng'
@@ -77,14 +83,19 @@ export const adminController = {
         role: admin.role
       });
 
-      // Log login action
-      await ActionLog.create({
-        adminId: admin.id,
-        object: 'Admin',
-        action: 'login',
-        ip: req.ip || req.connection.remoteAddress,
-        description: `Admin ${admin.name} đã đăng nhập`
-      });
+      // Log login action (don't fail login if logging fails)
+      try {
+        await ActionLog.create({
+          adminId: admin.id,
+          object: 'Admin',
+          action: 'login',
+          ip: req.ip || req.connection.remoteAddress,
+          description: `Admin ${admin.name} đã đăng nhập`
+        });
+      } catch (logError) {
+        console.error('[Admin Login] Failed to log action:', logError);
+        // Don't fail login if logging fails
+      }
 
       // Return admin data (without password)
       const adminData = admin.toJSON();
@@ -100,6 +111,7 @@ export const adminController = {
         }
       });
     } catch (error) {
+      console.error('[Admin Login] Error:', error);
       next(error);
     }
   },

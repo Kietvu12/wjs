@@ -101,11 +101,13 @@ export const cvController = {
         where.collaboratorId = parseInt(collaboratorId);
       }
 
-      // Filter by admin - default to current admin if not specified
+      // Filter by admin - only if explicitly specified
+      // Don't auto-filter by adminId if collaboratorId is provided (to allow viewing CTV's CVs)
       if (adminId) {
         where.adminId = parseInt(adminId);
-      } else if (req.admin?.id) {
-        // Automatically filter by current admin if no adminId specified
+      } else if (req.admin?.id && !collaboratorId) {
+        // Only auto-filter by current admin if no collaboratorId specified
+        // This allows Super Admin to view all CVs, and AdminBackOffice to view assigned CTV's CVs
         where.adminId = req.admin.id;
       }
 

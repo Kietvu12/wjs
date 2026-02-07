@@ -1,4 +1,4 @@
-import { Group, Admin, ActionLog } from '../../models/index.js';
+import { Group, Admin, ActionLog, CollaboratorAssignment, JobApplication, CVStorage, sequelize } from '../../models/index.js';
 import { Op } from 'sequelize';
 
 // Helper function to map model field names to database column names
@@ -331,6 +331,504 @@ export const groupController = {
       res.json({
         success: true,
         data: { groups }
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Assign admin to group
+   * PUT /api/admin/groups/:id/assign-admin
+   */
+  assignAdminToGroup: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { adminId } = req.body;
+
+      if (!adminId) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID admin là bắt buộc'
+        });
+      }
+
+      const group = await Group.findByPk(id);
+      if (!group) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy nhóm quyền'
+        });
+      }
+
+      const admin = await Admin.findByPk(adminId);
+      if (!admin) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy admin'
+        });
+      }
+
+      // Store old data for log
+      const oldGroupId = admin.groupId;
+
+      // Update admin's group
+      admin.groupId = parseInt(id);
+      await admin.save();
+
+      // Log action
+      await ActionLog.create({
+        adminId: req.admin.id,
+        object: 'Group',
+        action: 'assign_admin',
+        ip: req.ip || req.connection.remoteAddress,
+        before: { adminId: admin.id, groupId: oldGroupId },
+        after: { adminId: admin.id, groupId: parseInt(id) },
+        description: `Gán admin ${admin.name} vào nhóm ${group.name}`
+      });
+
+      res.json({
+        success: true,
+        message: 'Gán admin vào nhóm thành công',
+        data: { admin, group }
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Bulk assign admins to group
+   * PUT /api/admin/groups/:id/bulk-assign-admins
+   */
+  bulkAssignAdminsToGroup: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { adminIds } = req.body;
+
+      if (!adminIds || !Array.isArray(adminIds) || adminIds.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Danh sách ID admin là bắt buộc'
+        });
+      }
+
+      const group = await Group.findByPk(id);
+      if (!group) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy nhóm quyền'
+        });
+      }
+
+      // Update all admins
+      const updatedAdmins = [];
+      for (const adminId of adminIds) {
+        const admin = await Admin.findByPk(adminId);
+        if (admin) {
+          const oldGroupId = admin.groupId;
+          admin.groupId = parseInt(id);
+          await admin.save();
+          updatedAdmins.push({ admin, oldGroupId });
+        }
+      }
+
+      // Log action
+      await ActionLog.create({
+        adminId: req.admin.id,
+        object: 'Group',
+        action: 'bulk_assign_admins',
+        ip: req.ip || req.connection.remoteAddress,
+        after: { groupId: parseInt(id), adminIds },
+        description: `Gán ${updatedAdmins.length} admin vào nhóm ${group.name}`
+      });
+
+      res.json({
+        success: true,
+        message: `Đã gán ${updatedAdmins.length} admin vào nhóm thành công`,
+        data: { count: updatedAdmins.length, group }
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Remove admin from group
+   * PUT /api/admin/groups/:id/remove-admin
+   */
+  removeAdminFromGroup: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { adminId } = req.body;
+
+      if (!adminId) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID admin là bắt buộc'
+        });
+      }
+
+      const group = await Group.findByPk(id);
+      if (!group) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy nhóm quyền'
+        });
+      }
+
+      const admin = await Admin.findByPk(adminId);
+      if (!admin) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy admin'
+        });
+      }
+
+      if (admin.groupId !== parseInt(id)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Admin không thuộc nhóm này'
+        });
+      }
+
+      // Store old data for log
+      const oldGroupId = admin.groupId;
+
+      // Remove admin from group
+      admin.groupId = null;
+      await admin.save();
+
+      // Log action
+      await ActionLog.create({
+        adminId: req.admin.id,
+        object: 'Group',
+        action: 'remove_admin',
+        ip: req.ip || req.connection.remoteAddress,
+        before: { adminId: admin.id, groupId: oldGroupId },
+        after: { adminId: admin.id, groupId: null },
+        description: `Gỡ admin ${admin.name} khỏi nhóm ${group.name}`
+      });
+
+      res.json({
+        success: true,
+        message: 'Gỡ admin khỏi nhóm thành công',
+        data: { admin }
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Get group statistics
+   * GET /api/admin/groups/:id/statistics
+   */
+  getGroupStatistics: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+
+      const group = await Group.findByPk(id);
+      if (!group) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy nhóm quyền'
+        });
+      }
+
+      // Count admins in group
+      const adminCount = await Admin.count({
+        where: { groupId: parseInt(id), status: 1 }
+      });
+
+      // Count active/inactive admins
+      const activeAdminCount = await Admin.count({
+        where: { groupId: parseInt(id), status: 1, isActive: true }
+      });
+      const inactiveAdminCount = adminCount - activeAdminCount;
+
+      // Count collaborators assigned to admins in this group
+      const adminsInGroup = await Admin.findAll({
+        where: { groupId: parseInt(id) },
+        attributes: ['id']
+      });
+      const adminIds = adminsInGroup.map(a => a.id);
+
+      let collaboratorCount = 0;
+      if (adminIds.length > 0) {
+        collaboratorCount = await CollaboratorAssignment.count({
+          where: {
+            adminId: { [Op.in]: adminIds },
+            status: 1
+          },
+          distinct: true,
+          col: 'collaborator_id'
+        });
+      }
+
+      // Count job applications handled by group
+      let jobApplicationCount = 0;
+      if (adminIds.length > 0) {
+        jobApplicationCount = await JobApplication.count({
+          where: {
+            [Op.or]: [
+              { adminId: { [Op.in]: adminIds } },
+              { adminResponsibleId: { [Op.in]: adminIds } }
+            ]
+          }
+        });
+      }
+
+      // Count CVs managed by group
+      let cvCount = 0;
+      if (adminIds.length > 0) {
+        // CVs belong to collaborators assigned to admins in group
+        const assignedCollaborators = await CollaboratorAssignment.findAll({
+          where: {
+            adminId: { [Op.in]: adminIds },
+            status: 1
+          },
+          attributes: ['collaboratorId'],
+          distinct: true
+        });
+        const collaboratorIds = assignedCollaborators.map(a => a.collaboratorId);
+        
+        if (collaboratorIds.length > 0) {
+          cvCount = await CVStorage.count({
+            where: {
+              collaboratorId: { [Op.in]: collaboratorIds }
+            }
+          });
+        }
+      }
+
+      res.json({
+        success: true,
+        data: {
+          statistics: {
+            adminCount,
+            activeAdminCount,
+            inactiveAdminCount,
+            collaboratorCount,
+            jobApplicationCount,
+            cvCount
+          }
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Get group activity history
+   * GET /api/admin/groups/:id/history
+   */
+  getGroupHistory: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { page = 1, limit = 20 } = req.query;
+
+      const group = await Group.findByPk(id);
+      if (!group) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy nhóm quyền'
+        });
+      }
+
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+
+      // Get action logs related to this group
+      // Search in description for group name or actions related to group
+      const { count, rows } = await ActionLog.findAndCountAll({
+        where: {
+          object: 'Group',
+          [Op.or]: [
+            { description: { [Op.like]: `%nhóm ${group.name}%` } },
+            { description: { [Op.like]: `%${group.code}%` } },
+            { description: { [Op.like]: `%Group%` } }
+          ]
+        },
+        include: [{
+          model: Admin,
+          as: 'admin',
+          required: false,
+          attributes: ['id', 'name', 'email']
+        }],
+        limit: parseInt(limit),
+        offset,
+        order: [['created_at', 'DESC']]
+      });
+
+      res.json({
+        success: true,
+        data: {
+          history: rows,
+          pagination: {
+            total: count,
+            page: parseInt(page),
+            limit: parseInt(limit),
+            totalPages: Math.ceil(count / parseInt(limit))
+          }
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Get my group (for Admin CA Team - role = 3)
+   * GET /api/admin/groups/my-group
+   */
+  getMyGroup: async (req, res, next) => {
+    try {
+      const admin = req.admin;
+
+      if (!admin.groupId) {
+        return res.status(404).json({
+          success: false,
+          message: 'Bạn chưa được gán vào nhóm nào'
+        });
+      }
+
+      const group = await Group.findByPk(admin.groupId, {
+        include: [{
+          model: Admin,
+          as: 'admins',
+          required: false,
+          where: { status: 1 },
+          attributes: ['id', 'name', 'email', 'role', 'isActive', 'status']
+        }]
+      });
+
+      if (!group) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy nhóm quyền'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: { group }
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Get my group statistics (for Admin CA Team - role = 3)
+   * GET /api/admin/groups/my-group/statistics
+   */
+  getMyGroupStatistics: async (req, res, next) => {
+    try {
+      const admin = req.admin;
+
+      if (!admin.groupId) {
+        return res.status(404).json({
+          success: false,
+          message: 'Bạn chưa được gán vào nhóm nào'
+        });
+      }
+
+      const group = await Group.findByPk(admin.groupId);
+      if (!group) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy nhóm quyền'
+        });
+      }
+
+      // Get all admins in group
+      const adminsInGroup = await Admin.findAll({
+        where: { groupId: admin.groupId, status: 1 },
+        attributes: ['id']
+      });
+      const adminIds = adminsInGroup.map(a => a.id);
+
+      // Count collaborators assigned to group
+      let collaboratorCount = 0;
+      if (adminIds.length > 0) {
+        collaboratorCount = await CollaboratorAssignment.count({
+          where: {
+            adminId: { [Op.in]: adminIds },
+            status: 1
+          },
+          distinct: true,
+          col: 'collaborator_id'
+        });
+      }
+
+      // Count job applications handled by group
+      let jobApplicationCount = 0;
+      if (adminIds.length > 0) {
+        jobApplicationCount = await JobApplication.count({
+          where: {
+            [Op.or]: [
+              { adminId: { [Op.in]: adminIds } },
+              { adminResponsibleId: { [Op.in]: adminIds } }
+            ]
+          }
+        });
+      }
+
+      // Count CVs managed by group
+      let cvCount = 0;
+      if (adminIds.length > 0) {
+        const assignedCollaborators = await CollaboratorAssignment.findAll({
+          where: {
+            adminId: { [Op.in]: adminIds },
+            status: 1
+          },
+          attributes: ['collaboratorId'],
+          distinct: true
+        });
+        const collaboratorIds = assignedCollaborators.map(a => a.collaboratorId);
+        
+        if (collaboratorIds.length > 0) {
+          cvCount = await CVStorage.count({
+            where: {
+              collaboratorId: { [Op.in]: collaboratorIds }
+            }
+          });
+        }
+      }
+
+      // Personal statistics
+      const myCollaboratorCount = await CollaboratorAssignment.count({
+        where: {
+          adminId: admin.id,
+          status: 1
+        },
+        distinct: true,
+        col: 'collaborator_id'
+      });
+
+      const myJobApplicationCount = await JobApplication.count({
+        where: {
+          [Op.or]: [
+            { adminId: admin.id },
+            { adminResponsibleId: admin.id }
+          ]
+        }
+      });
+
+      res.json({
+        success: true,
+        data: {
+          groupStatistics: {
+            collaboratorCount,
+            jobApplicationCount,
+            cvCount
+          },
+          personalStatistics: {
+            collaboratorCount: myCollaboratorCount,
+            jobApplicationCount: myJobApplicationCount
+          }
+        }
       });
     } catch (error) {
       next(error);

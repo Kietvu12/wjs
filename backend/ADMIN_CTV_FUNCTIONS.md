@@ -31,6 +31,473 @@ Dựa trên phân tích database JobShare 2.0, hệ thống có **48 bảng** v�
   - Xóa nhóm quyền
   - Phân quyền chi tiết cho từng nhóm
 
+#### 1.3. Quản lý Admin Group (Nhóm Admin)
+
+**📌 PHÂN QUYỀN TỔNG QUAN:**
+
+- **SuperAdmin (role = 1):** Có quyền quản lý toàn bộ Admin Group, bao gồm tạo, sửa, xóa nhóm, gán/gỡ admin, cấu hình quyền hạn, xem tất cả thống kê và báo cáo.
+- **Admin trong nhóm (Admin CA Team - role = 3, có group_id):** Chỉ có quyền xem thông tin nhóm của mình, quản lý CTV được phân công cho nhóm, xử lý đơn ứng tuyển và CV của CTV trong nhóm, xem thống kê của nhóm mình. **KHÔNG có quyền** quản lý nhóm, gán/gỡ admin, hoặc xem dữ liệu của nhóm khác.
+
+*Chi tiết phân quyền xem ở mục 1.3.7*
+
+##### 1.3.1. Quản lý danh sách Admin Group (Super Admin)
+
+- ✅ **Xem danh sách Admin Group**
+  - Hiển thị danh sách tất cả nhóm admin
+  - Lọc theo tên nhóm
+  - Lọc theo mã nhóm (code)
+  - Lọc theo trạng thái (active/inactive)
+  - Tìm kiếm nhóm theo từ khóa (tên, mã)
+  - Sắp xếp theo tên, ngày tạo, số lượng admin
+  - Xem số lượng admin trong từng nhóm
+  - Xem số lượng CTV được phân công cho nhóm
+  - Phân trang danh sách
+
+- ✅ **Xem chi tiết Admin Group**
+  - Thông tin cơ bản nhóm:
+    - Tên nhóm (name)
+    - Mã nhóm (code)
+    - Mã giới thiệu (referral_code) - nếu có
+    - Mô tả nhóm (description)
+    - Trạng thái (status: active/inactive)
+    - Ngày tạo, ngày cập nhật
+  - Danh sách admin thuộc nhóm:
+    - Tên, email, SĐT admin
+    - Vai trò admin (Super Admin, Admin Backoffice, Admin CA Team)
+    - Trạng thái tài khoản admin
+    - Ngày tham gia nhóm
+  - Thống kê nhóm:
+    - Tổng số admin trong nhóm
+    - Số admin active/inactive
+    - Số lượng CTV được phân công cho nhóm
+    - Số đơn ứng tuyển do nhóm xử lý
+    - Số CV do nhóm quản lý
+  - Lịch sử hoạt động của nhóm:
+    - Lịch sử tạo, chỉnh sửa, xóa
+    - Lịch sử gán/gỡ admin
+    - Lịch sử thay đổi quyền hạn
+
+##### 1.3.2. Tạo và chỉnh sửa Admin Group
+
+- ✅ **Tạo Admin Group mới**
+  - Nhập thông tin cơ bản:
+    - Tên nhóm (bắt buộc)
+    - Mã nhóm (code) - tự động tạo hoặc nhập thủ công
+    - Mã giới thiệu (referral_code) - tự động tạo hoặc nhập thủ công
+    - Mô tả nhóm (description)
+  - Thiết lập trạng thái:
+    - Active/Inactive
+  - Cấu hình quyền hạn của nhóm (nếu có hệ thống phân quyền):
+    - Quyền truy cập các module
+    - Quyền CRUD (Create, Read, Update, Delete)
+    - Quyền xem báo cáo, thống kê
+    - Quyền quản lý CTV, đơn ứng tuyển
+  - Validation:
+    - Kiểm tra mã nhóm không trùng
+    - Kiểm tra mã giới thiệu không trùng
+
+- ✅ **Chỉnh sửa Admin Group**
+  - Cập nhật thông tin cơ bản:
+    - Cập nhật tên nhóm
+    - Cập nhật mã nhóm (nếu cho phép)
+    - Cập nhật mã giới thiệu
+    - Cập nhật mô tả
+  - Thay đổi trạng thái:
+    - Kích hoạt/Vô hiệu hóa nhóm
+  - Cập nhật cấu hình quyền hạn:
+    - Thay đổi quyền truy cập module
+    - Thay đổi quyền CRUD
+    - Thay đổi quyền xem báo cáo
+  - Validation:
+    - Kiểm tra mã nhóm không trùng với nhóm khác
+    - Kiểm tra nhóm có admin không trước khi vô hiệu hóa
+
+- ✅ **Xóa Admin Group**
+  - Kiểm tra điều kiện:
+    - Kiểm tra xem nhóm có admin nào không
+    - Không cho xóa nếu nhóm còn admin
+    - Hiển thị cảnh báo nếu nhóm đang có CTV được phân công
+  - Xóa nhóm:
+    - Soft delete (nếu có deleted_at)
+    - Hard delete (nếu không có admin và CTV)
+  - Xử lý admin sau khi xóa nhóm:
+    - Gỡ group_id khỏi admin (set null)
+    - Hoặc chuyển admin sang nhóm khác
+
+##### 1.3.3. Quản lý Admin trong nhóm
+
+- ✅ **Gán admin vào nhóm**
+  - Gán 1 admin vào 1 nhóm:
+    - Chọn admin từ danh sách
+    - Chọn nhóm đích
+    - Xác nhận gán
+  - Gán nhiều admin vào 1 nhóm (bulk assign):
+    - Chọn nhiều admin cùng lúc
+    - Chọn nhóm đích
+    - Gán hàng loạt
+  - Chuyển admin từ nhóm này sang nhóm khác:
+    - Chọn admin
+    - Chọn nhóm nguồn
+    - Chọn nhóm đích
+    - Xác nhận chuyển
+  - Validation:
+    - Kiểm tra admin đã thuộc nhóm khác chưa
+    - Kiểm tra admin có quyền tham gia nhóm không
+
+- ✅ **Gỡ admin khỏi nhóm**
+  - Gỡ 1 admin khỏi nhóm:
+    - Chọn admin
+    - Chọn nhóm
+    - Xác nhận gỡ
+  - Gỡ nhiều admin khỏi nhóm (bulk remove):
+    - Chọn nhiều admin
+    - Gỡ hàng loạt
+  - Xử lý sau khi gỡ:
+    - Set group_id = null cho admin
+    - Ghi log hành động
+
+- ✅ **Xem danh sách admin trong nhóm**
+  - Lọc admin theo nhóm:
+    - Chọn nhóm
+    - Hiển thị danh sách admin thuộc nhóm
+  - Xem thông tin chi tiết admin trong nhóm:
+    - Thông tin cá nhân
+    - Vai trò, quyền hạn
+    - Trạng thái tài khoản
+    - Ngày tham gia nhóm
+  - Xem quyền hạn của admin trong nhóm:
+    - Quyền được kế thừa từ nhóm
+    - Quyền riêng của admin (nếu có)
+  - Thống kê admin trong nhóm:
+    - Số đơn ứng tuyển đã xử lý
+    - Số CTV được phân công
+    - Số CV đã quản lý
+
+##### 1.3.4. Quản lý quyền hạn nhóm
+
+- ✅ **Cấu hình quyền truy cập module**
+  - Module quản lý CTV:
+    - Xem danh sách CTV
+    - Tạo/sửa/xóa CTV
+    - Phân công CTV
+  - Module quản lý đơn ứng tuyển:
+    - Xem danh sách đơn
+    - Tạo/sửa/xóa đơn
+    - Thay đổi trạng thái đơn
+  - Module quản lý CV:
+    - Xem danh sách CV
+    - Tạo/sửa/xóa CV
+  - Module quản lý việc làm:
+    - Xem danh sách việc làm
+    - Tạo/sửa/xóa việc làm
+  - Module quản lý thanh toán:
+    - Xem yêu cầu thanh toán
+    - Duyệt/từ chối thanh toán
+  - Module báo cáo & thống kê:
+    - Xem dashboard
+    - Xem báo cáo
+    - Xuất báo cáo
+
+- ✅ **Cấu hình quyền CRUD**
+  - Quyền Create (Tạo mới):
+    - Cho phép/không cho phép tạo mới
+    - Áp dụng cho từng module
+  - Quyền Read (Xem):
+    - Xem tất cả
+    - Chỉ xem của nhóm mình
+    - Chỉ xem của mình
+  - Quyền Update (Chỉnh sửa):
+    - Cho phép/không cho phép chỉnh sửa
+    - Chỉnh sửa tất cả
+    - Chỉ chỉnh sửa của nhóm mình
+    - Chỉ chỉnh sửa của mình
+  - Quyền Delete (Xóa):
+    - Cho phép/không cho phép xóa
+    - Xóa tất cả
+    - Chỉ xóa của nhóm mình
+    - Chỉ xóa của mình
+
+- ✅ **Cấu hình quyền đặc biệt**
+  - Quyền xem báo cáo, thống kê:
+    - Xem dashboard tổng quan
+    - Xem báo cáo CTV
+    - Xem báo cáo đơn ứng tuyển
+    - Xem báo cáo thanh toán
+    - Xuất báo cáo Excel/PDF
+  - Quyền quản lý CTV:
+    - Phân công CTV cho admin
+    - Chuyển CTV giữa các admin
+    - Xem tất cả CTV
+    - Chỉ xem CTV được phân công
+  - Quyền quản lý đơn ứng tuyển:
+    - Xem tất cả đơn
+    - Chỉ xem đơn của nhóm mình
+    - Chỉ xem đơn của mình
+    - Thay đổi trạng thái đơn
+  - Quyền quản lý hệ thống:
+    - Cấu hình hệ thống
+    - Quản lý admin khác
+    - Quản lý nhóm admin
+
+##### 1.3.5. Thống kê và báo cáo Admin Group
+
+- ✅ **Thống kê hoạt động của nhóm**
+  - Thống kê admin:
+    - Tổng số admin trong nhóm
+    - Số admin active/inactive
+    - Số admin theo vai trò
+  - Thống kê CTV:
+    - Tổng số CTV được phân công cho nhóm
+    - Số CTV active/inactive
+    - Top CTV có nhiều đơn ứng tuyển nhất
+  - Thống kê đơn ứng tuyển:
+    - Tổng số đơn do nhóm xử lý
+    - Số đơn theo trạng thái
+    - Tỷ lệ thành công (nyusha/thanh toán)
+    - Biểu đồ đơn theo thời gian
+  - Thống kê CV:
+    - Tổng số CV do nhóm quản lý
+    - Số CV mới trong tháng
+  - Thống kê thanh toán:
+    - Tổng số tiền thanh toán
+    - Số yêu cầu thanh toán đã duyệt
+    - Biểu đồ thanh toán theo thời gian
+
+- ✅ **Xuất báo cáo Admin Group**
+  - Báo cáo danh sách admin trong nhóm:
+    - Excel/PDF
+    - Bao gồm thông tin admin, vai trò, trạng thái
+  - Báo cáo hoạt động nhóm:
+    - Excel/PDF
+    - Thống kê đơn ứng tuyển, CV, thanh toán
+  - Báo cáo CTV được phân công:
+    - Excel/PDF
+    - Danh sách CTV, số đơn, số tiền
+
+##### 1.3.6. Lịch sử và log Admin Group
+
+- ✅ **Xem lịch sử hoạt động của nhóm**
+  - Lịch sử tạo, chỉnh sửa, xóa:
+    - Ai thực hiện
+    - Khi nào
+    - Thay đổi gì
+    - Dữ liệu trước và sau
+  - Lịch sử gán admin vào nhóm:
+    - Admin nào được gán
+    - Ai gán
+    - Khi nào
+    - Từ nhóm nào sang nhóm nào
+  - Lịch sử gỡ admin khỏi nhóm:
+    - Admin nào bị gỡ
+    - Ai gỡ
+    - Khi nào
+  - Lịch sử thay đổi quyền hạn:
+    - Quyền nào được thay đổi
+    - Ai thay đổi
+    - Khi nào
+    - Giá trị trước và sau
+
+- ✅ **Xem log chi tiết**
+  - Lọc log theo:
+    - Admin thực hiện
+    - Loại hành động
+    - Khoảng thời gian
+    - Nhóm
+  - Xem chi tiết log:
+    - Thông tin đầy đủ về hành động
+    - Dữ liệu trước và sau (JSON)
+    - IP address
+    - User agent
+
+##### 1.3.7. Phân quyền SuperAdmin và AdminGroup
+
+**🔑 QUYỀN CỦA SUPER ADMIN (role = 1) ĐỐI VỚI ADMIN GROUP:**
+
+- ✅ **Quản lý toàn bộ Admin Group**
+  - **Tạo Admin Group mới:**
+    - Tạo nhóm mới với đầy đủ thông tin
+    - Cấu hình quyền hạn cho nhóm
+    - Thiết lập mã giới thiệu (referral_code)
+  - **Chỉnh sửa Admin Group:**
+    - Sửa tất cả thông tin nhóm (tên, mã, mô tả)
+    - Thay đổi trạng thái nhóm (active/inactive)
+    - Cấu hình lại quyền hạn của nhóm
+  - **Xóa Admin Group:**
+    - Xóa nhóm (soft delete hoặc hard delete)
+    - Xử lý admin sau khi xóa nhóm
+  - **Gán/Gỡ admin vào nhóm:**
+    - Gán bất kỳ admin nào vào bất kỳ nhóm nào
+    - Gán nhiều admin cùng lúc (bulk assign)
+    - Chuyển admin giữa các nhóm
+    - Gỡ admin khỏi nhóm
+  - **Xem toàn bộ thông tin:**
+    - Xem danh sách tất cả nhóm
+    - Xem chi tiết mọi nhóm
+    - Xem tất cả admin trong mọi nhóm
+    - Xem lịch sử hoạt động của tất cả nhóm
+  - **Cấu hình quyền hạn:**
+    - Cấu hình quyền truy cập module cho nhóm
+    - Cấu hình quyền CRUD cho nhóm
+    - Cấu hình quyền đặc biệt cho nhóm
+  - **Thống kê và báo cáo:**
+    - Xem thống kê của tất cả nhóm
+    - Xuất báo cáo của tất cả nhóm
+    - So sánh hiệu suất giữa các nhóm
+
+**👥 QUYỀN CỦA ADMIN TRONG NHÓM (Admin CA Team - role = 3, có group_id):**
+
+- ✅ **Xem thông tin nhóm của mình (CHỈ ĐỌC)**
+  - Xem thông tin cơ bản nhóm:
+    - Tên, mã nhóm
+    - Mô tả nhóm
+    - Trạng thái nhóm
+    - Mã giới thiệu (referral_code)
+  - Xem danh sách admin cùng nhóm:
+    - Tên, email, vai trò
+    - Trạng thái tài khoản
+    - **KHÔNG được xem mật khẩu, thông tin nhạy cảm**
+  - Xem quyền hạn của nhóm mình:
+    - Quyền truy cập module được cấp
+    - Quyền CRUD được cấp
+    - Quyền đặc biệt được cấp
+  - **KHÔNG được:**
+    - Tạo nhóm mới
+    - Chỉnh sửa thông tin nhóm
+    - Xóa nhóm
+    - Gán/gỡ admin vào nhóm
+    - Thay đổi quyền hạn của nhóm
+
+- ✅ **Quản lý CTV được phân công cho nhóm**
+  - Xem danh sách CTV được phân công cho nhóm:
+    - Tất cả CTV được SuperAdmin phân công cho nhóm
+    - Lọc, tìm kiếm CTV
+  - Xem chi tiết CTV được phân công:
+    - Thông tin đầy đủ của CTV
+    - Lịch sử hoạt động
+  - **Tiến cử ứng viên cho CTV được phân công:**
+    - Tạo đơn ứng tuyển mới cho CTV
+    - Chọn việc làm
+    - Nhập thông tin ứng viên
+    - Upload CV, tài liệu
+  - **Thêm mới ứng viên cho CTV được phân công:**
+    - Tạo CV mới cho CTV
+    - Nhập thông tin ứng viên
+    - Upload file CV
+  - Xem danh sách đơn ứng tuyển của CTV được phân công
+  - Xem danh sách CV của CTV được phân công
+  - Cập nhật thông tin đơn ứng tuyển của CTV được phân công
+  - Thay đổi trạng thái đơn ứng tuyển của CTV được phân công
+  - **KHÔNG được:**
+    - Phân công CTV mới cho nhóm (chỉ SuperAdmin mới có quyền)
+    - Chuyển CTV sang nhóm khác
+    - Gỡ CTV khỏi nhóm
+    - Xem CTV không thuộc nhóm mình
+
+- ✅ **Quản lý đơn ứng tuyển của nhóm**
+  - Xem danh sách đơn ứng tuyển:
+    - Chỉ xem đơn của CTV được phân công cho nhóm
+    - Lọc theo trạng thái, ngày, việc làm
+    - Tìm kiếm đơn
+  - Xem chi tiết đơn ứng tuyển:
+    - Thông tin đầy đủ đơn
+    - Lịch sử thay đổi trạng thái
+  - Tạo đơn ứng tuyển mới:
+    - Chỉ cho CTV được phân công cho nhóm
+    - Chọn việc làm
+    - Nhập thông tin ứng viên
+  - Chỉnh sửa đơn ứng tuyển:
+    - Chỉ đơn của CTV được phân công cho nhóm
+    - Cập nhật thông tin ứng viên
+    - Cập nhật lịch trình (ngày PV, nyusha)
+    - Thay đổi trạng thái đơn
+  - Xóa đơn ứng tuyển:
+    - Chỉ đơn của CTV được phân công cho nhóm
+  - **KHÔNG được:**
+    - Xem đơn của CTV không thuộc nhóm mình
+    - Chỉnh sửa đơn của nhóm khác
+    - Xóa đơn của nhóm khác
+
+- ✅ **Quản lý CV của nhóm**
+  - Xem danh sách CV:
+    - Chỉ xem CV của CTV được phân công cho nhóm
+    - Lọc, tìm kiếm CV
+  - Xem chi tiết CV:
+    - Thông tin đầy đủ CV
+    - File CV đính kèm
+  - Tạo CV mới:
+    - Chỉ cho CTV được phân công cho nhóm
+    - Nhập thông tin ứng viên
+    - Upload file CV
+  - Chỉnh sửa CV:
+    - Chỉ CV của CTV được phân công cho nhóm
+    - Cập nhật thông tin ứng viên
+    - Thay đổi file CV
+  - Xóa CV:
+    - Chỉ CV của CTV được phân công cho nhóm
+  - **KHÔNG được:**
+    - Xem CV của CTV không thuộc nhóm mình
+    - Chỉnh sửa CV của nhóm khác
+
+- ✅ **Quản lý thanh toán của nhóm**
+  - Xem danh sách yêu cầu thanh toán:
+    - Chỉ yêu cầu của CTV được phân công cho nhóm
+    - Lọc theo trạng thái, thời gian
+  - Xem chi tiết yêu cầu thanh toán:
+    - Thông tin đầy đủ yêu cầu
+    - Thông tin đơn ứng tuyển liên quan
+  - Duyệt/Từ chối yêu cầu thanh toán:
+    - Chỉ yêu cầu của CTV được phân công cho nhóm
+    - Nhập lý do từ chối (nếu có)
+  - **KHÔNG được:**
+    - Xem yêu cầu thanh toán của CTV không thuộc nhóm mình
+    - Duyệt yêu cầu của nhóm khác
+
+- ✅ **Xem thống kê của nhóm**
+  - Xem thống kê hoạt động của nhóm:
+    - Số admin trong nhóm
+    - Số CTV được phân công
+    - Số đơn ứng tuyển do nhóm xử lý
+    - Số CV do nhóm quản lý
+    - Biểu đồ thống kê
+  - Xem thống kê cá nhân trong nhóm:
+    - Số đơn đã xử lý
+    - Số CTV được phân công
+    - Số CV đã quản lý
+    - Tỷ lệ thành công
+  - **KHÔNG được:**
+    - Xem thống kê của nhóm khác
+    - So sánh với nhóm khác (trừ khi SuperAdmin cho phép)
+    - Xuất báo cáo tổng hợp (chỉ SuperAdmin)
+
+- ✅ **Xem lịch sử hoạt động**
+  - Xem lịch sử hoạt động của nhóm:
+    - Lịch sử tạo, chỉnh sửa đơn ứng tuyển
+    - Lịch sử thay đổi trạng thái đơn
+    - Lịch sử quản lý CV
+  - **KHÔNG được:**
+    - Xem lịch sử quản lý nhóm (chỉ SuperAdmin)
+    - Xem lịch sử của nhóm khác
+
+**📋 TÓM TẮT PHÂN QUYỀN:**
+
+| Chức năng | SuperAdmin | Admin trong nhóm (Admin CA Team) |
+|-----------|------------|----------------------------------|
+| **Tạo Admin Group** | ✅ Có quyền | ❌ Không có quyền |
+| **Chỉnh sửa Admin Group** | ✅ Có quyền | ❌ Không có quyền |
+| **Xóa Admin Group** | ✅ Có quyền | ❌ Không có quyền |
+| **Gán/Gỡ admin vào nhóm** | ✅ Có quyền | ❌ Không có quyền |
+| **Cấu hình quyền hạn nhóm** | ✅ Có quyền | ❌ Không có quyền |
+| **Xem thông tin nhóm** | ✅ Xem tất cả nhóm | ✅ Chỉ xem nhóm của mình |
+| **Xem admin trong nhóm** | ✅ Xem tất cả | ✅ Chỉ xem admin cùng nhóm |
+| **Quản lý CTV** | ✅ Quản lý tất cả CTV | ✅ Chỉ CTV được phân công cho nhóm |
+| **Phân công CTV cho nhóm** | ✅ Có quyền | ❌ Không có quyền |
+| **Quản lý đơn ứng tuyển** | ✅ Quản lý tất cả đơn | ✅ Chỉ đơn của CTV trong nhóm |
+| **Quản lý CV** | ✅ Quản lý tất cả CV | ✅ Chỉ CV của CTV trong nhóm |
+| **Quản lý thanh toán** | ✅ Quản lý tất cả | ✅ Chỉ thanh toán của CTV trong nhóm |
+| **Xem thống kê** | ✅ Xem tất cả | ✅ Chỉ thống kê của nhóm mình |
+| **Xuất báo cáo** | ✅ Xuất tất cả | ❌ Không có quyền |
+| **Xem lịch sử** | ✅ Xem tất cả | ✅ Chỉ lịch sử của nhóm mình |
+
 #### 1.2. Quản lý Session & Security
 
 - ✅ **Xem lịch sử đăng nhập/đăng xuất**
@@ -127,6 +594,36 @@ Dựa trên phân tích database JobShare 2.0, hệ thống có **48 bảng** v�
   - Status code
   - IP address
   - Thời gian gọi
+
+#### 2.7. Phân công CTV cho AdminBackOffice (Super Admin)
+
+- ✅ **Super Admin phân công CTV cho AdminBackOffice**
+  - Xem danh sách CTV chưa được phân công
+  - Xem danh sách CTV đã được phân công cho từng AdminBackOffice
+  - Phân công 1 CTV cho 1 AdminBackOffice
+  - Phân công nhiều CTV cho 1 AdminBackOffice (bulk assign)
+  - Chuyển CTV từ AdminBackOffice này sang AdminBackOffice khác
+  - Hủy phân công CTV (gỡ khỏi AdminBackOffice)
+  - Xem lịch sử phân công CTV (ai phân công, khi nào, cho ai)
+- ✅ **AdminBackOffice quản lý CTV được phân công**
+  - Xem danh sách CTV được Super Admin phân công cho mình
+  - Xem chi tiết CTV được phân công
+  - **Tiến cử ứng viên cho CTV được phân công**
+    - Tạo đơn ứng tuyển mới cho CTV được phân công
+    - Chọn việc làm
+    - Nhập thông tin ứng viên
+    - Upload CV, tài liệu
+    - Gán đơn ứng tuyển cho CTV được phân công
+  - **Thêm mới ứng viên cho CTV được phân công**
+    - Tạo CV mới cho CTV được phân công
+    - Nhập thông tin ứng viên
+    - Upload file CV
+    - Gán CV cho CTV được phân công
+  - Xem danh sách đơn ứng tuyển của CTV được phân công
+  - Xem danh sách CV của CTV được phân công
+  - Cập nhật thông tin đơn ứng tuyển của CTV được phân công
+  - Thay đổi trạng thái đơn ứng tuyển của CTV được phân công
+  - Xem thống kê CTV được phân công (số đơn ứng tuyển, số CV, tỷ lệ thành công)
 
 ---
 
@@ -897,10 +1394,19 @@ Dựa trên phân tích database JobShare 2.0, hệ thống có **48 bảng** v�
 
 ## 📋 TÓM TẮT SỐ LƯỢNG CHỨC NĂNG
 
-### Admin: **~150+ chức năng**
+### Admin: **~180+ chức năng**
 
-- Quản lý xác thực & phân quyền: ~15 chức năng
-- Quản lý CTV: ~35 chức năng
+- Quản lý xác thực & phân quyền: ~35 chức năng
+  - Quản lý Admin: ~15 chức năng
+  - Quản lý Admin Group: ~20 chức năng
+- Quản lý CTV: ~50 chức năng
+  - Quản lý thông tin CTV: ~15 chức năng
+  - Quản lý điểm tích lũy: ~5 chức năng
+  - Quản lý cấp bậc CTV: ~5 chức năng
+  - Quản lý nhóm CTV: ~5 chức năng
+  - Quản lý thông báo CTV: ~5 chức năng
+  - Quản lý API Log CTV: ~5 chức năng
+  - Phân công CTV cho AdminBackOffice: ~10 chức năng
 - Quản lý CV: ~15 chức năng
 - Quản lý việc làm: ~40 chức năng
 - Quản lý đơn ứng tuyển: ~25 chức năng

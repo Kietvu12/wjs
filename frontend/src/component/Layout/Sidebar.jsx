@@ -12,7 +12,9 @@ import {
   Phone,
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   Check,
+  Menu,
 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { translations } from '../../translations/translations';
@@ -23,6 +25,7 @@ const Sidebar = () => {
   const { language } = useLanguage();
   const t = translations[language];
   const [showNominationSubmenu, setShowNominationSubmenu] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const generalItems = [
     { id: 'thong-tin-chung', label: t.generalInfo, icon: LayoutGrid, path: '/agent' },
@@ -54,40 +57,44 @@ const Sidebar = () => {
   }, [location.pathname]);
 
   return (
-    <div className="hidden lg:flex w-64 bg-white h-screen flex flex-col shadow-sm">
+    <div className={`hidden lg:flex ${isExpanded ? 'w-64' : 'w-28'} bg-white h-screen flex flex-col shadow-sm transition-all duration-300`}>
       {/* Logo Section */}
-      <div className="p-6 border-b border-gray-100">
+      <div className={`${isExpanded ? 'p-6' : 'p-4'} border-b border-gray-100 flex items-center ${isExpanded ? 'justify-start' : 'justify-center'}`}>
         <Link to="/agent" className="flex items-center gap-2 cursor-pointer">
           <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center">
             <Check className="w-5 h-5 text-white" />
           </div>
-          <span className="text-xl font-bold text-gray-900">JobShare</span>
+          {isExpanded && <span className="text-xl font-bold text-gray-900">JobShare</span>}
         </Link>
       </div>
 
       {/* Team/Space Selector */}
-      <div className="px-4 pt-4 pb-2">
-        <div className="bg-gray-50 rounded-lg p-3 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-semibold">E</span>
+      {isExpanded && (
+        <div className="px-4 pt-4 pb-2">
+          <div className="bg-gray-50 rounded-lg p-3 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-semibold">E</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs text-gray-500">Elux Space</span>
+                <span className="text-sm font-medium text-gray-900">HR Team</span>
+              </div>
             </div>
-            <div className="flex flex-col">
-              <span className="text-xs text-gray-500">Elux Space</span>
-              <span className="text-sm font-medium text-gray-900">HR Team</span>
-            </div>
+            <ChevronDown className="w-4 h-4 text-gray-400" />
           </div>
-          <ChevronDown className="w-4 h-4 text-gray-400" />
         </div>
-      </div>
+      )}
 
       {/* Navigation Section */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {/* General Section */}
         <div className="mb-6">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
-            {t.general}
-          </h3>
+          {isExpanded && (
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
+              {t.general}
+            </h3>
+          )}
           <div className="space-y-1">
             {generalItems.map((item) => {
               const Icon = item.icon;
@@ -98,37 +105,53 @@ const Sidebar = () => {
                   {item.hasSubmenu ? (
                     <button
                       onClick={() => {
-                        setShowNominationSubmenu(!showNominationSubmenu);
+                        if (isExpanded) {
+                          setShowNominationSubmenu(!showNominationSubmenu);
+                        }
                         navigate(item.path);
                       }}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                      className={`w-full flex ${isExpanded ? 'items-center gap-3' : 'flex-col items-center gap-1'} px-2 py-2.5 rounded-lg transition-colors ${
                         active
                           ? 'bg-gray-100 text-red-600'
                           : 'text-gray-700 hover:bg-gray-50'
                       }`}
                     >
-                      <Icon className={`w-5 h-5 ${active ? 'text-red-600' : 'text-gray-600'}`} />
-                      <span className={`text-sm font-medium flex-1 text-left ${active ? 'text-red-600' : 'text-gray-700'}`}>
-                        {item.label}
-                      </span>
-                      <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${showNominationSubmenu ? 'rotate-90' : ''}`} />
+                      <Icon className={`w-5 h-5 flex-shrink-0 ${active ? 'text-red-600' : 'text-gray-600'}`} />
+                      {isExpanded ? (
+                        <>
+                          <span className={`text-sm font-medium flex-1 text-left ${active ? 'text-red-600' : 'text-gray-700'}`}>
+                            {item.label}
+                          </span>
+                          <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${showNominationSubmenu ? 'rotate-90' : ''}`} />
+                        </>
+                      ) : (
+                        <span className={`text-[10px] font-medium text-center leading-tight break-words ${active ? 'text-red-600' : 'text-gray-700'}`}>
+                          {item.label}
+                        </span>
+                      )}
                     </button>
                   ) : (
                     <Link
                       to={item.path}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                      className={`w-full flex ${isExpanded ? 'items-center gap-3' : 'flex-col items-center gap-1'} px-2 py-2.5 rounded-lg transition-colors ${
                         active
                           ? 'bg-gray-100 text-red-600'
                           : 'text-gray-700 hover:bg-gray-50'
                       }`}
                     >
-                      <Icon className={`w-5 h-5 ${active ? 'text-red-600' : 'text-gray-600'}`} />
-                      <span className={`text-sm font-medium flex-1 text-left ${active ? 'text-red-600' : 'text-gray-700'}`}>
-                        {item.label}
-                      </span>
+                      <Icon className={`w-5 h-5 flex-shrink-0 ${active ? 'text-red-600' : 'text-gray-600'}`} />
+                      {isExpanded ? (
+                        <span className={`text-sm font-medium flex-1 text-left ${active ? 'text-red-600' : 'text-gray-700'}`}>
+                          {item.label}
+                        </span>
+                      ) : (
+                        <span className={`text-[10px] font-medium text-center leading-tight break-words ${active ? 'text-red-600' : 'text-gray-700'}`}>
+                          {item.label}
+                        </span>
+                      )}
                     </Link>
                   )}
-                  {item.hasSubmenu && showNominationSubmenu && (
+                  {item.hasSubmenu && showNominationSubmenu && isExpanded && (
                     <div className="ml-8 mt-1 space-y-1">
                       {/* Submenu items can be added here */}
                     </div>
@@ -140,10 +163,12 @@ const Sidebar = () => {
         </div>
 
         {/* Others Section */}
-        <div className="border-t border-gray-200 pt-6">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
-            {t.others}
-          </h3>
+        <div className={`${isExpanded ? 'border-t border-gray-200' : ''} pt-6`}>
+          {isExpanded && (
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
+              {t.others}
+            </h3>
+          )}
           <div className="space-y-1">
             {otherItems.map((item) => {
               const Icon = item.icon;
@@ -153,21 +178,47 @@ const Sidebar = () => {
                 <Link
                   key={item.id}
                   to={item.path}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                  className={`w-full flex ${isExpanded ? 'items-center gap-3' : 'flex-col items-center gap-1'} px-2 py-2.5 rounded-lg transition-colors ${
                     active
                       ? 'bg-gray-100 text-red-600'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  <Icon className={`w-5 h-5 ${active ? 'text-red-600' : 'text-gray-600'}`} />
-                  <span className={`text-sm font-medium flex-1 text-left ${active ? 'text-red-600' : 'text-gray-700'}`}>
-                    {item.label}
-                  </span>
+                  <Icon className={`w-5 h-5 flex-shrink-0 ${active ? 'text-red-600' : 'text-gray-600'}`} />
+                  {isExpanded ? (
+                    <span className={`text-sm font-medium flex-1 text-left ${active ? 'text-red-600' : 'text-gray-700'}`}>
+                      {item.label}
+                    </span>
+                  ) : (
+                    <span className={`text-[10px] font-medium text-center leading-tight break-words ${active ? 'text-red-600' : 'text-gray-700'}`}>
+                      {item.label}
+                    </span>
+                  )}
                 </Link>
               );
             })}
           </div>
         </div>
+      </div>
+
+      {/* Expand/Collapse Button */}
+      <div className={`${isExpanded ? 'p-4' : 'p-2'} border-t border-gray-100`}>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className={`w-full bg-red-600 text-white rounded-lg ${isExpanded ? 'px-3 py-2.5 flex items-center gap-2' : 'px-2 py-2 flex flex-col items-center gap-1'} hover:bg-red-700 transition-colors`}
+        >
+          {isExpanded ? (
+            <>
+              <ChevronLeft className="w-5 h-5 flex-shrink-0" />
+              <span className="text-sm font-medium">Thu gọn</span>
+            </>
+          ) : (
+            <>
+              <Menu className="w-5 h-5 flex-shrink-0" />
+              <span className="text-[10px] font-medium text-center leading-tight break-words">Mở rộng</span>
+            </>
+          )}
+        </button>
       </div>
 
     </div>

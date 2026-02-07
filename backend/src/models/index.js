@@ -688,6 +688,10 @@ export const JobApplication = sequelize.define(
       type: DataTypes.BIGINT.UNSIGNED,
       field: 'admin_id'
     },
+    adminResponsibleId: {
+      type: DataTypes.BIGINT.UNSIGNED,
+      field: 'admin_responsible_id'
+    },
     title: {
       type: DataTypes.TEXT
     },
@@ -2567,6 +2571,49 @@ export const Message = sequelize.define(
   }
 );
 
+// Collaborator Assignments (Phân công CTV cho AdminBackOffice)
+export const CollaboratorAssignment = sequelize.define(
+  'CollaboratorAssignment',
+  {
+    id: {
+      type: DataTypes.BIGINT.UNSIGNED,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    collaboratorId: {
+      type: DataTypes.BIGINT.UNSIGNED,
+      allowNull: false,
+      field: 'collaborator_id'
+    },
+    adminId: {
+      type: DataTypes.BIGINT.UNSIGNED,
+      allowNull: false,
+      field: 'admin_id'
+    },
+    assignedBy: {
+      type: DataTypes.BIGINT.UNSIGNED,
+      allowNull: false,
+      field: 'assigned_by'
+    },
+    notes: {
+      type: DataTypes.TEXT
+    },
+    status: {
+      type: DataTypes.TINYINT,
+      allowNull: false,
+      defaultValue: 1
+    }
+  },
+  {
+    tableName: 'collaborator_assignments',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    paranoid: true,
+    deletedAt: 'deleted_at'
+  }
+);
+
 // Associations
 Admin.belongsTo(Group, { as: 'group', foreignKey: 'groupId' });
 Group.hasMany(Admin, { as: 'admins', foreignKey: 'groupId' });
@@ -2579,6 +2626,16 @@ RankLevel.hasMany(Collaborator, { as: 'collaborators', foreignKey: 'rankLevelId'
 
 Collaborator.belongsTo(Group, { as: 'group', foreignKey: 'groupId' });
 Group.hasMany(Collaborator, { as: 'collaborators', foreignKey: 'groupId' });
+
+// Collaborator Assignment associations
+CollaboratorAssignment.belongsTo(Collaborator, { as: 'collaborator', foreignKey: 'collaboratorId' });
+Collaborator.hasMany(CollaboratorAssignment, { as: 'assignments', foreignKey: 'collaboratorId' });
+
+CollaboratorAssignment.belongsTo(Admin, { as: 'admin', foreignKey: 'adminId' });
+Admin.hasMany(CollaboratorAssignment, { as: 'collaboratorAssignments', foreignKey: 'adminId' });
+
+CollaboratorAssignment.belongsTo(Admin, { as: 'assignedByAdmin', foreignKey: 'assignedBy' });
+Admin.hasMany(CollaboratorAssignment, { as: 'assignedCollaborators', foreignKey: 'assignedBy' });
 
 Job.belongsTo(JobCategory, { as: 'category', foreignKey: 'jobCategoryId' });
 JobCategory.hasMany(Job, { as: 'jobs', foreignKey: 'jobCategoryId' });
@@ -2609,6 +2666,9 @@ Collaborator.hasMany(JobApplication, { as: 'jobApplications', foreignKey: 'colla
 
 JobApplication.belongsTo(Admin, { as: 'admin', foreignKey: 'adminId' });
 Admin.hasMany(JobApplication, { as: 'jobApplications', foreignKey: 'adminId' });
+
+JobApplication.belongsTo(Admin, { as: 'adminResponsible', foreignKey: 'adminResponsibleId' });
+Admin.hasMany(JobApplication, { as: 'responsibleJobApplications', foreignKey: 'adminResponsibleId' });
 
 JobApplication.belongsTo(CVStorage, { as: 'cv', foreignKey: 'cvCode', targetKey: 'code' });
 CVStorage.hasMany(JobApplication, { as: 'jobApplications', foreignKey: 'cvCode', sourceKey: 'code' });

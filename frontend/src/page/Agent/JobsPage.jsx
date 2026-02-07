@@ -42,9 +42,9 @@ const JobsPage = () => {
   };
 
   return (
-    <div className="flex gap-3 h-[calc(100vh-120px)]">
-      {/* Filter Panel - 1/4 screen width, compact mode */}
-      <div className="w-1/4 flex-shrink-0">
+    <div className="flex flex-col lg:flex-row gap-3 lg:gap-3 h-[calc(100vh-100px)] lg:h-[calc(100vh-100px)] overflow-hidden">
+      {/* Filter Panel - Full width on mobile, 1/4 on desktop */}
+      <div className="w-full lg:w-1/4 flex-shrink-0 h-auto lg:h-full overflow-hidden">
         <AgentJobsPageSession1 
           onSearch={handleSearch}
           onFiltersChange={handleFiltersChange}
@@ -53,7 +53,7 @@ const JobsPage = () => {
       </div>
       
       {/* Job List Area - Full width with pagination */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 h-full overflow-hidden">
         <AgentJobsPageSession2 
           jobs={jobs} 
           filters={filters} 

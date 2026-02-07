@@ -47,6 +47,16 @@ import EmailsPage from './page/Admin/EmailsPage';
 import SettingsPage from './page/Admin/SettingsPage';
 import JobCategoriesPage from './page/Admin/JobCategoriesPage';
 import AddJobCategoryPage from './page/Admin/AddJobCategoryPage';
+import CollaboratorAssignmentsPage from './page/Admin/CollaboratorAssignmentsPage';
+import MyAssignedCollaboratorsPage from './page/Admin/MyAssignedCollaboratorsPage';
+import MyGroupPage from './page/Admin/MyGroupPage';
+import GroupsPage from './page/Admin/GroupsPage';
+import GroupDetailPage from './page/Admin/GroupDetailPage';
+import AddGroupPage from './page/Admin/AddGroupPage';
+import AddAdminPage from './page/Admin/AddAdminPage';
+import GroupJobsPage from './page/Admin/GroupJobsPage';
+import GroupCandidatesPage from './page/Admin/GroupCandidatesPage';
+import GroupCollaboratorsPage from './page/Admin/GroupCollaboratorsPage';
 import LoginPage from './page/LoginPage';
 
 // Component để xử lý redirect từ "/"
@@ -136,6 +146,8 @@ function App() {
             <Route path="companies/:companyId/edit" element={<AddCompanyPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="accounts" element={<AccountsPage />} />
+            <Route path="accounts/new" element={<AddAdminPage />} />
+            <Route path="accounts/:id/edit" element={<AddAdminPage />} />
             <Route path="campaigns" element={<CampaignsPage />} />
             <Route path="campaigns/create" element={<AddCampaignPage />} />
             <Route path="campaigns/:campaignId" element={<AdminCampaignDetailPage />} />
@@ -143,6 +155,16 @@ function App() {
             <Route path="job-categories" element={<JobCategoriesPage />} />
             <Route path="job-categories/add" element={<AddJobCategoryPage />} />
             <Route path="job-categories/:categoryId/edit" element={<AddJobCategoryPage />} />
+            <Route path="collaborator-assignments" element={<CollaboratorAssignmentsPage />} />
+            <Route path="my-assigned-collaborators" element={<MyAssignedCollaboratorsPage />} />
+            <Route path="my-group" element={<MyGroupPage />} />
+            <Route path="group-collaborators" element={<GroupCollaboratorsPage />} />
+            <Route path="group-jobs" element={<GroupJobsPage />} />
+            <Route path="group-candidates" element={<GroupCandidatesPage />} />
+            <Route path="groups" element={<GroupsPage />} />
+            <Route path="groups/new" element={<AddGroupPage />} />
+            <Route path="groups/:id" element={<GroupDetailPage />} />
+            <Route path="groups/:id/edit" element={<AddGroupPage />} />
             <Route path="emails" element={<EmailsPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>

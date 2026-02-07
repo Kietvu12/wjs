@@ -1,23 +1,22 @@
 import express from 'express';
 import { jobController } from '../controllers/admin/jobController.js';
-import { authenticate } from '../middleware/auth.js';
-import { isSuperAdminOrBackoffice } from '../middleware/auth.js';
+import { authenticate, isSuperAdminOrBackoffice, isAnyAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
 /**
  * @route   GET /api/admin/jobs
  * @desc    Get list of jobs
- * @access  Private (Super Admin, Backoffice)
+ * @access  Private (Super Admin, Backoffice, Admin CA Team)
  */
-router.get('/', authenticate, isSuperAdminOrBackoffice, jobController.getJobs);
+router.get('/', authenticate, isAnyAdmin, jobController.getJobs);
 
 /**
  * @route   GET /api/admin/jobs/:id
  * @desc    Get job by ID
- * @access  Private (Super Admin, Backoffice)
+ * @access  Private (Super Admin, Backoffice, Admin CA Team)
  */
-router.get('/:id', authenticate, isSuperAdminOrBackoffice, jobController.getJobById);
+router.get('/:id', authenticate, isAnyAdmin, jobController.getJobById);
 
 /**
  * @route   POST /api/admin/jobs

@@ -1,7 +1,6 @@
 import express from 'express';
 import { jobCategoryController } from '../controllers/admin/jobCategoryController.js';
-import { authenticate } from '../middleware/auth.js';
-import { isSuperAdminOrBackoffice } from '../middleware/auth.js';
+import { authenticate, isSuperAdminOrBackoffice, isAnyAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -10,14 +9,14 @@ const router = express.Router();
  * Base path: /api/admin/job-categories
  */
 
-// Get job category tree (hierarchical structure)
-router.get('/tree', authenticate, isSuperAdminOrBackoffice, jobCategoryController.getJobCategoryTree);
+// Get job category tree (hierarchical structure) - Allow all admin roles to view
+router.get('/tree', authenticate, isAnyAdmin, jobCategoryController.getJobCategoryTree);
 
-// Get list of job categories
-router.get('/', authenticate, isSuperAdminOrBackoffice, jobCategoryController.getJobCategories);
+// Get list of job categories - Allow all admin roles to view
+router.get('/', authenticate, isAnyAdmin, jobCategoryController.getJobCategories);
 
-// Get job category by ID
-router.get('/:id', authenticate, isSuperAdminOrBackoffice, jobCategoryController.getJobCategoryById);
+// Get job category by ID - Allow all admin roles to view
+router.get('/:id', authenticate, isAnyAdmin, jobCategoryController.getJobCategoryById);
 
 // Create new job category
 router.post('/', authenticate, isSuperAdminOrBackoffice, jobCategoryController.createJobCategory);

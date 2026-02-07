@@ -17,7 +17,12 @@ const getAuthHeaders = () => {
 const handleResponse = async (response) => {
   const data = await response.json();
   if (!response.ok) {
-    throw new Error(data.message || 'An error occurred');
+    // Nếu có message từ backend, dùng nó
+    const errorMessage = data.message || data.error || `HTTP ${response.status}: ${response.statusText}`;
+    const error = new Error(errorMessage);
+    error.status = response.status;
+    error.data = data;
+    throw error;
   }
   // Backend trả về: { success: true, message: '...', data: {...} }
   // Trả về data trực tiếp để dễ sử dụng
@@ -106,6 +111,40 @@ const apiService = {
     const queryString = new URLSearchParams(params).toString();
     const response = await fetch(`${API_BASE_URL}/admin/admins?${queryString}`, {
       method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getAdminById: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/admin/admins/${id}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  createAdmin: async (data) => {
+    const response = await fetch(`${API_BASE_URL}/admin/admins`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(response);
+  },
+
+  updateAdmin: async (id, data) => {
+    const response = await fetch(`${API_BASE_URL}/admin/admins/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(response);
+  },
+
+  deleteAdmin: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/admin/admins/${id}`, {
+      method: 'DELETE',
       headers: getAuthHeaders()
     });
     return handleResponse(response);
@@ -1183,6 +1222,211 @@ const apiService = {
   deleteAdminPaymentRequest: async (id) => {
     const response = await fetch(`${API_BASE_URL}/admin/payment-requests/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  /**
+   * Admin Collaborator Assignment APIs
+   */
+  getCollaboratorAssignments: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`${API_BASE_URL}/admin/collaborator-assignments?${queryString}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getUnassignedCollaborators: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`${API_BASE_URL}/admin/collaborator-assignments/unassigned?${queryString}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getMyAssignedCollaborators: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`${API_BASE_URL}/admin/collaborator-assignments/my-assigned?${queryString}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getCollaboratorAssignmentById: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/admin/collaborator-assignments/${id}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  createCollaboratorAssignment: async (data) => {
+    const response = await fetch(`${API_BASE_URL}/admin/collaborator-assignments`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(response);
+  },
+
+  bulkAssignCollaborators: async (data) => {
+    const response = await fetch(`${API_BASE_URL}/admin/collaborator-assignments/bulk`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(response);
+  },
+
+  updateCollaboratorAssignment: async (id, data) => {
+    const response = await fetch(`${API_BASE_URL}/admin/collaborator-assignments/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(response);
+  },
+
+  deleteCollaboratorAssignment: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/admin/collaborator-assignments/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getCollaboratorAssignmentHistory: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`${API_BASE_URL}/admin/collaborator-assignments/history?${queryString}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getCollaboratorAssignmentStatistics: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`${API_BASE_URL}/admin/collaborator-assignments/statistics?${queryString}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  /**
+   * Group Management APIs
+   */
+  getGroups: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`${API_BASE_URL}/admin/groups?${queryString}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getAllGroups: async () => {
+    const response = await fetch(`${API_BASE_URL}/admin/groups/all`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getGroupById: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/admin/groups/${id}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  createGroup: async (data) => {
+    const response = await fetch(`${API_BASE_URL}/admin/groups`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(response);
+  },
+
+  updateGroup: async (id, data) => {
+    const response = await fetch(`${API_BASE_URL}/admin/groups/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(response);
+  },
+
+  deleteGroup: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/admin/groups/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  assignAdminToGroup: async (groupId, adminId) => {
+    const response = await fetch(`${API_BASE_URL}/admin/groups/${groupId}/assign-admin`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ adminId })
+    });
+    return handleResponse(response);
+  },
+
+  bulkAssignAdminsToGroup: async (groupId, adminIds) => {
+    const response = await fetch(`${API_BASE_URL}/admin/groups/${groupId}/bulk-assign-admins`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ adminIds })
+    });
+    return handleResponse(response);
+  },
+
+  removeAdminFromGroup: async (groupId, adminId) => {
+    const response = await fetch(`${API_BASE_URL}/admin/groups/${groupId}/remove-admin`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ adminId })
+    });
+    return handleResponse(response);
+  },
+
+  getGroupStatistics: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/admin/groups/${id}/statistics`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getGroupHistory: async (id, params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`${API_BASE_URL}/admin/groups/${id}/history?${queryString}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getMyGroup: async () => {
+    const response = await fetch(`${API_BASE_URL}/admin/groups/my-group`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getMyGroupStatistics: async () => {
+    const response = await fetch(`${API_BASE_URL}/admin/groups/my-group/statistics`, {
+      method: 'GET',
       headers: getAuthHeaders()
     });
     return handleResponse(response);

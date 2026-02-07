@@ -83,3 +83,8 @@ export const isSuperAdmin = authorize(1);
  */
 export const isSuperAdminOrBackoffice = authorize(1, 2);
 
+/**
+ * Check if admin is any admin role (Super Admin, Backoffice, or CA Team)
+ */
+export const isAnyAdmin = authorize(1, 2, 3);
+

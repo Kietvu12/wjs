@@ -135,6 +135,12 @@ export const jobApplicationController = {
           attributes: ['id', 'name', 'email']
         },
         {
+          model: Admin,
+          as: 'adminResponsible',
+          required: false,
+          attributes: ['id', 'name', 'email']
+        },
+        {
           model: CVStorage,
           as: 'cv',
           required: false,
@@ -221,6 +227,12 @@ export const jobApplicationController = {
           {
             model: Admin,
             as: 'admin',
+            required: false,
+            attributes: ['id', 'name', 'email']
+          },
+          {
+            model: Admin,
+            as: 'adminResponsible',
             required: false,
             attributes: ['id', 'name', 'email']
           },
@@ -316,10 +328,22 @@ export const jobApplicationController = {
         }
       }
 
+      // Logic phân biệt adminId và adminResponsibleId:
+      // - adminId: ID của admin tạo đơn (tương ứng với CTV thuộc admin đó) - chỉ set khi CTV tự tạo đơn và admin quản lý CTV đó
+      // - adminResponsibleId: ID của admin phụ trách (khi admin tạo đơn từ trang admin, có thể có hoặc không có collaboratorId)
+      // 
+      // Khi AdminBackOffice tạo đơn từ trang AddNominationPage (/api/admin/job-applications):
+      // - Luôn set adminResponsibleId = req.admin.id (admin phụ trách tạo đơn)
+      // - adminId = null (không phải admin tạo đơn cho CTV của mình)
+      // - collaboratorId có thể có hoặc không (tùy vào việc có chọn CTV hay không)
+      const adminIdValue = null; // Admin tạo đơn từ trang admin không set adminId
+      const adminResponsibleIdValue = req.admin?.id || null; // Luôn set admin phụ trách
+
       const jobApplication = await JobApplication.create({
         jobId,
         collaboratorId: collaboratorId || null,
-        adminId: req.admin?.id || null,
+        adminId: adminIdValue,
+        adminResponsibleId: adminResponsibleIdValue,
         title,
         status,
         cvCode: cvCode || null,
@@ -348,6 +372,12 @@ export const jobApplicationController = {
           {
             model: Admin,
             as: 'admin',
+            required: false,
+            attributes: ['id', 'name', 'email']
+          },
+          {
+            model: Admin,
+            as: 'adminResponsible',
             required: false,
             attributes: ['id', 'name', 'email']
           },
@@ -598,6 +628,12 @@ export const jobApplicationController = {
           {
             model: Admin,
             as: 'admin',
+            required: false,
+            attributes: ['id', 'name', 'email']
+          },
+          {
+            model: Admin,
+            as: 'adminResponsible',
             required: false,
             attributes: ['id', 'name', 'email']
           },
