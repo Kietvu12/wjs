@@ -622,7 +622,7 @@ const mockJobs = [
       jobCode: job.jobCode || job.id,
       tags,
       title: job.title || '',
-      company: job.company?.name || '',
+      company: job.recruitingCompany?.companyName || job.company?.name || '',
       recruitingCompany: job.recruitingCompany,
       category,
       techniqueRequirements,
@@ -831,7 +831,7 @@ const mockJobs = [
                         <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 mt-0.5 flex-shrink-0" />
                         <div className="text-xs sm:text-sm text-gray-700">
                           <span className="font-semibold text-gray-600">{t.hiringCompany}:</span>
-                          <span className="ml-1 sm:ml-2 break-words">{job.recruitingCompany?.companyName || job.company || 'N/A'}</span>
+                          <span className="ml-1 sm:ml-2 break-words">{job.recruitingCompany?.companyName || job.company?.name || 'N/A'}</span>
                         </div>
                       </div>
                     </div>

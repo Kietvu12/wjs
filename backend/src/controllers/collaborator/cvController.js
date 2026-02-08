@@ -563,6 +563,111 @@ export const cvController = {
     } catch (error) {
       next(error);
     }
+  },
+
+  /**
+   * Get recently updated CVs (sorted by updatedAt DESC)
+   * GET /api/ctv/cvs/recent
+   */
+  getRecentCVs: async (req, res, next) => {
+    try {
+      const {
+        page = 1,
+        limit = 20,
+        search,
+        isDuplicate,
+        sortBy = 'updatedAt',
+        sortOrder = 'DESC'
+      } = req.query;
+
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+      const where = {
+        collaboratorId: req.collaborator.id // Chỉ lấy CV của CTV này
+      };
+
+      // Search by name, email, or code
+      if (search) {
+        where[Op.or] = [
+          { name: { [Op.like]: `%${search}%` } },
+          { email: { [Op.like]: `%${search}%` } },
+          { code: { [Op.like]: `%${search}%` } }
+        ];
+      }
+
+      // Filter by duplicate status
+      if (isDuplicate !== undefined) {
+        where.isDuplicate = isDuplicate === '1' || isDuplicate === 'true';
+      }
+
+      // Validate sortBy
+      const allowedSortFields = ['id', 'createdAt', 'updatedAt', 'name', 'code'];
+      const sortField = allowedSortFields.includes(sortBy) ? sortBy : 'updatedAt';
+      const orderDirection = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+      const dbSortField = mapOrderField(sortField);
+
+      // Build order clause - always prioritize updatedAt DESC
+      const orderClause = [['updated_at', 'DESC']];
+      if (sortField !== 'updatedAt') {
+        orderClause.push([dbSortField, orderDirection]);
+      }
+      orderClause.push(['id', 'DESC']);
+
+      const { count, rows } = await CVStorage.findAndCountAll({
+        where,
+        limit: parseInt(limit),
+        offset,
+        order: orderClause
+      });
+
+      // Get applications count for each CV
+      const cvCodes = rows.map(cv => cv.code).filter(code => code);
+      let countMap = {};
+      
+      if (cvCodes.length > 0) {
+        const applications = await JobApplication.findAll({
+          attributes: [
+            'cvCode',
+            [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+          ],
+          where: {
+            cvCode: {
+              [Op.in]: cvCodes
+            }
+          },
+          group: ['cvCode'],
+          raw: true,
+          paranoid: true
+        });
+        
+        applications.forEach((item) => {
+          if (item.cvCode) {
+            countMap[item.cvCode] = parseInt(item.count) || 0;
+          }
+        });
+      }
+
+      // Attach applications count to each CV
+      const cvsWithCount = rows.map(cv => {
+        const cvData = cv.toJSON();
+        cvData.applicationsCount = countMap[cv.code] || 0;
+        return cvData;
+      });
+
+      res.json({
+        success: true,
+        data: {
+          cvs: cvsWithCount,
+          pagination: {
+            total: count,
+            page: parseInt(page),
+            limit: parseInt(limit),
+            totalPages: Math.ceil(count / parseInt(limit))
+          }
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
   }
 };
 

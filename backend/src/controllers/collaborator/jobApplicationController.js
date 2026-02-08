@@ -38,6 +38,7 @@ export const jobApplicationController = {
         search,
         status,
         jobId,
+        cvCode,
         appliedFrom,
         appliedTo,
         interviewFrom,
@@ -61,6 +62,11 @@ export const jobApplicationController = {
       // Filter by job
       if (jobId) {
         where.jobId = parseInt(jobId);
+      }
+
+      // Filter by CV code
+      if (cvCode) {
+        where.cvCode = cvCode;
       }
 
       // Filter by applied date
@@ -611,6 +617,99 @@ export const jobApplicationController = {
       res.json({
         success: true,
         message: 'Xóa đơn ứng tuyển thành công'
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Get nomination history for a candidate by CV code
+   * GET /api/ctv/candidates/:cvCode/nomination-history
+   */
+  getCandidateNominationHistory: async (req, res, next) => {
+    try {
+      const { cvCode } = req.params;
+      const {
+        page = 1,
+        limit = 50,
+        search
+      } = req.query;
+
+      // Verify CV belongs to this collaborator
+      const cv = await CVStorage.findOne({
+        where: {
+          code: cvCode,
+          collaboratorId: req.collaborator.id
+        }
+      });
+
+      if (!cv) {
+        return res.status(404).json({
+          success: false,
+          message: 'CV không tồn tại hoặc không thuộc về bạn'
+        });
+      }
+
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+      const where = {
+        collaboratorId: req.collaborator.id,
+        cvCode: cvCode
+      };
+
+      // Search filter
+      if (search) {
+        where[Op.or] = [
+          { title: { [Op.like]: `%${search}%` } }
+        ];
+      }
+
+      const { count, rows } = await JobApplication.findAndCountAll({
+        where,
+        include: [
+          {
+            model: Job,
+            as: 'job',
+            required: false,
+            attributes: ['id', 'jobCode', 'title', 'status'],
+            include: [
+              {
+                model: JobCategory,
+                as: 'category',
+                required: false,
+                attributes: ['id', 'name', 'slug']
+              },
+              {
+                model: Company,
+                as: 'company',
+                required: false,
+                attributes: ['id', 'name', 'companyCode']
+              }
+            ]
+          },
+          {
+            model: CVStorage,
+            as: 'cv',
+            required: false,
+            attributes: ['id', 'code', 'name', 'email', 'phone']
+          }
+        ],
+        limit: parseInt(limit),
+        offset,
+        order: [['created_at', 'DESC']]
+      });
+
+      res.json({
+        success: true,
+        data: {
+          applications: rows,
+          pagination: {
+            total: count,
+            page: parseInt(page),
+            limit: parseInt(limit),
+            totalPages: Math.ceil(count / parseInt(limit))
+          }
+        }
       });
     } catch (error) {
       next(error);

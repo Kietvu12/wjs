@@ -68,6 +68,7 @@ import messageRoutes from './routes/messageRoutes.js';
 import emailToCompanyRoutes from './routes/emailToCompanyRoutes.js';
 import emailToCollaboratorRoutes from './routes/emailToCollaboratorRoutes.js';
 import emailToGroupRoutes from './routes/emailToGroupRoutes.js';
+import outlookEmailRoutes from './routes/outlookEmailRoutes.js';
 import paymentRequestRoutes from './routes/paymentRequestRoutes.js';
 import ctvAuthRoutes from './routes/ctvAuthRoutes.js';
 import ctvCvRoutes from './routes/ctvCvRoutes.js';
@@ -83,9 +84,11 @@ import ctvJobPickupRoutes from './routes/ctvJobPickupRoutes.js';
 import ctvScheduleRoutes from './routes/ctvScheduleRoutes.js';
 import ctvJobCategoryRoutes from './routes/ctvJobCategoryRoutes.js';
 import ctvMessageRoutes from './routes/ctvMessageRoutes.js';
+import reportsRoutes from './routes/reportsRoutes.js';
 
 // Admin routes
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/reports', reportsRoutes);
 app.use('/api/admin/groups', groupRoutes);
 app.use('/api/admin/collaborators', collaboratorRoutes);
 app.use('/api/admin/collaborator-assignments', collaboratorAssignmentRoutes);
@@ -105,6 +108,7 @@ app.use('/api/admin/messages', messageRoutes);
 app.use('/api/admin/emails/companies', emailToCompanyRoutes);
 app.use('/api/admin/emails/collaborators', emailToCollaboratorRoutes);
 app.use('/api/admin/emails/groups', emailToGroupRoutes);
+app.use('/api/admin/emails/outlook', outlookEmailRoutes);
 app.use('/api/admin/payment-requests', paymentRequestRoutes);
 
 // CTV routes

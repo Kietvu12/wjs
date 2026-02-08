@@ -7,11 +7,13 @@ import {
   CVStorage,
   ActionLog,
   PaymentRequest,
-  Admin
+  Admin,
+  CollaboratorAssignment
 } from '../../models/index.js';
 import { Op } from 'sequelize';
 import sequelize from '../../config/database.js';
 import { calculateCommission } from '../../utils/commissionCalculator.js';
+import { statusMessageService } from '../../services/statusMessageService.js';
 
 // Helper function to map model field names to database column names
 const mapOrderField = (fieldName) => {
@@ -23,6 +25,41 @@ const mapOrderField = (fieldName) => {
     'nyushaDate': 'nyusha_date'
   };
   return fieldMap[fieldName] || fieldName;
+};
+
+/**
+ * Kiểm tra xem AdminBackOffice có quyền cập nhật job application của CTV này không
+ * @param {Object} admin - Admin object
+ * @param {Object} jobApplication - JobApplication object
+ * @returns {Promise<boolean>} - true nếu có quyền, false nếu không
+ */
+const checkAdminBackOfficePermission = async (admin, jobApplication) => {
+  // SuperAdmin (role = 1) có quyền tất cả
+  if (admin.role === 1) {
+    return true;
+  }
+
+  // AdminBackOffice (role = 2) chỉ có quyền với CTV được phân công
+  if (admin.role === 2) {
+    // Nếu job application không có collaboratorId, không cho phép
+    if (!jobApplication.collaboratorId) {
+      return false;
+    }
+
+    // Kiểm tra xem CTV có được phân công cho admin này không
+    const assignment = await CollaboratorAssignment.findOne({
+      where: {
+        collaboratorId: jobApplication.collaboratorId,
+        adminId: admin.id,
+        status: 1 // Active assignment
+      }
+    });
+
+    return assignment !== null;
+  }
+
+  // Các role khác không có quyền
+  return false;
 };
 
 /**
@@ -426,6 +463,15 @@ export const jobApplicationController = {
         });
       }
 
+      // Kiểm tra quyền AdminBackOffice
+      const hasPermission = await checkAdminBackOfficePermission(req.admin, jobApplication);
+      if (!hasPermission) {
+        return res.status(403).json({
+          success: false,
+          message: 'Bạn không có quyền cập nhật đơn ứng tuyển này. Chỉ có thể cập nhật đơn của CTV được phân công cho bạn.'
+        });
+      }
+
       const oldData = jobApplication.toJSON();
 
       // Validate job if being changed
@@ -496,9 +542,6 @@ export const jobApplicationController = {
 
       await jobApplication.save();
       
-      // Reload để đảm bảo giá trị đã được cập nhật
-      await jobApplication.reload();
-
       // Check if status is nyusha (8) and has yearlySalary - create payment request immediately
       const isNyusha = jobApplication.status === 8;
       const hasYearlySalary = jobApplication.yearlySalary && jobApplication.yearlySalary > 0;
@@ -645,6 +688,35 @@ export const jobApplicationController = {
         ]
       });
 
+      const newData = jobApplication.toJSON();
+
+      // Tự động tạo tin nhắn nếu có thay đổi status
+      if (updateData.status !== undefined && oldData.status !== parseInt(updateData.status)) {
+        try {
+          await statusMessageService.createStatusMessage({
+            jobApplicationId: id,
+            oldStatus: oldData.status,
+            newStatus: parseInt(updateData.status),
+            adminId: req.admin.id,
+            note: updateData.rejectNote || null
+          });
+        } catch (messageError) {
+          console.error('[Job Application] Error creating status message:', messageError);
+        }
+      } else if (updateData.status === undefined) {
+        // Nếu không thay đổi status, kiểm tra các thay đổi khác
+        try {
+          await statusMessageService.createUpdateMessage({
+            jobApplicationId: id,
+            oldData,
+            newData,
+            adminId: req.admin.id
+          });
+        } catch (messageError) {
+          console.error('[Job Application] Error creating update message:', messageError);
+        }
+      }
+
       // Log action
       await ActionLog.create({
         adminId: req.admin.id,
@@ -690,7 +762,17 @@ export const jobApplicationController = {
         });
       }
 
+      // Kiểm tra quyền AdminBackOffice
+      const hasPermission = await checkAdminBackOfficePermission(req.admin, jobApplication);
+      if (!hasPermission) {
+        return res.status(403).json({
+          success: false,
+          message: 'Bạn không có quyền cập nhật trạng thái đơn ứng tuyển này. Chỉ có thể cập nhật đơn của CTV được phân công cho bạn.'
+        });
+      }
+
       const oldData = jobApplication.toJSON();
+      const oldStatus = jobApplication.status;
 
       jobApplication.status = parseInt(status);
       if (rejectNote !== undefined) {
@@ -793,6 +875,22 @@ export const jobApplicationController = {
           console.error('[Payment Request] Error creating payment request (updateStatus):', paymentError);
           console.error('[Payment Request] Error stack (updateStatus):', paymentError.stack);
           // Không throw error, chỉ log để không ảnh hưởng đến việc update status
+        }
+      }
+
+      // Tự động tạo tin nhắn trạng thái nếu có thay đổi
+      if (oldStatus !== parseInt(status)) {
+        try {
+          await statusMessageService.createStatusMessage({
+            jobApplicationId: id,
+            oldStatus,
+            newStatus: parseInt(status),
+            adminId: req.admin.id,
+            note: rejectNote || null
+          });
+        } catch (messageError) {
+          console.error('[Job Application] Error creating status message:', messageError);
+          // Không throw error để không ảnh hưởng đến việc update status
         }
       }
 

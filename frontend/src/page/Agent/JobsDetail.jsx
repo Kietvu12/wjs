@@ -464,7 +464,7 @@ const JobsDetail = () => {
               <Building2 className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
               <div className="text-xs sm:text-sm text-gray-700">
                 <span className="font-semibold text-gray-600">Các công ty tuyển dụng:</span>
-                <span className="ml-2">{job.recruitingCompany?.companyName || job.company?.name || 'N/A'}</span>
+                <span className="ml-2">{job.recruitingCompany?.companyName || 'N/A'}</span>
               </div>
             </div>
 
@@ -869,7 +869,7 @@ const JobsDetail = () => {
           )}
 
           {/* Thông tin công ty */}
-          {(job.recruitingCompany || job.company) && (
+          {job.recruitingCompany && (
             <CollapsibleCard
               title="Thông tin công ty"
               icon={Building2}
@@ -935,37 +935,6 @@ const JobsDetail = () => {
                         </div>
                       </div>
                     )}
-                  </div>
-                )}
-
-                {/* Source Company */}
-                {job.company && (
-                  <div className={job.recruitingCompany ? "pt-4 border-t border-gray-200" : ""}>
-                    <div className="text-xs sm:text-sm font-semibold text-gray-700 mb-3">Công ty nguồn (Job posted by):</div>
-                    <div className="flex items-start gap-3">
-                      {job.company.logo ? (
-                        <img
-                          src={job.company.logo}
-                          alt={job.company.name}
-                          className="w-10 h-10 sm:w-12 sm:h-12 object-contain rounded flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-600 rounded flex items-center justify-center flex-shrink-0">
-                          <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <div className="font-semibold text-gray-900 mb-1 text-sm sm:text-base">{job.company.name}</div>
-                        {offices.length > 0 && (
-                          <div className="text-xs sm:text-sm text-gray-600 mb-2">{stripHtml(offices[0].address)}</div>
-                        )}
-                        {job.company.description && (
-                          <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                            {stripHtml(job.company.description)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
                   </div>
                 )}
               </div>

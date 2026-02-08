@@ -95,9 +95,7 @@ const AdminAddJobPage = () => {
   const [smokingPolicyDetails, setSmokingPolicyDetails] = useState([]);
   const [workingHours, setWorkingHours] = useState([]);
   const [workingHourDetails, setWorkingHourDetails] = useState([]);
-  const [jdFile, setJdFile] = useState(null);
   const [jdFileJp, setJdFileJp] = useState(null);
-  const [cvFormFile, setCvFormFile] = useState(null);
   const [categories, setCategories] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [campaigns, setCampaigns] = useState([]);
@@ -690,21 +688,9 @@ const AdminAddJobPage = () => {
     }
   };
 
-  const handleJdFileChange = (e) => {
-    if (e.target.files[0]) {
-      setJdFile(e.target.files[0]);
-    }
-  };
-
   const handleJdFileJpChange = (e) => {
     if (e.target.files[0]) {
       setJdFileJp(e.target.files[0]);
-    }
-  };
-
-  const handleCvFormFileChange = (e) => {
-    if (e.target.files[0]) {
-      setCvFormFile(e.target.files[0]);
     }
   };
 
@@ -2206,43 +2192,6 @@ const AdminAddJobPage = () => {
             <div className="space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-gray-900 mb-2">
-                  JD File (Tiếng Việt)
-                </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-600 transition-colors">
-                  <label htmlFor="jd-upload" className="cursor-pointer">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                        <Upload className="w-5 h-5 text-gray-400" />
-                      </div>
-                      <p className="text-xs font-semibold text-gray-900">Kéo thả file JD vào đây</p>
-                      <p className="text-[10px] text-gray-500">hoặc</p>
-                      <p className="text-xs text-blue-600 font-medium">Chọn file từ máy tính</p>
-                      <p className="text-[10px] text-gray-500">Hỗ trợ PDF, DOC, DOCX</p>
-                    </div>
-                    <input
-                      id="jd-upload"
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      onChange={handleJdFileChange}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-                {jdFile && (
-                  <div className="mt-2 text-xs text-gray-600 flex items-center justify-between bg-gray-50 p-2 rounded">
-                    <span>{jdFile.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => setJdFile(null)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
                   JD File (Tiếng Nhật)
                 </label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-600 transition-colors">
@@ -2271,43 +2220,6 @@ const AdminAddJobPage = () => {
                     <button
                       type="button"
                       onClick={() => setJdFileJp(null)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
-                  Form CV bắt buộc
-                </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-600 transition-colors">
-                  <label htmlFor="cv-form-upload" className="cursor-pointer">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                        <Upload className="w-5 h-5 text-gray-400" />
-                      </div>
-                      <p className="text-xs font-semibold text-gray-900">Kéo thả file CV Form vào đây</p>
-                      <p className="text-[10px] text-gray-500">hoặc</p>
-                      <p className="text-xs text-blue-600 font-medium">Chọn file từ máy tính</p>
-                      <p className="text-[10px] text-gray-500">Hỗ trợ PDF, Excel</p>
-                    </div>
-                    <input
-                      id="cv-form-upload"
-                      type="file"
-                      accept=".pdf,.xlsx,.xls"
-                      onChange={handleCvFormFileChange}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-                {cvFormFile && (
-                  <div className="mt-2 text-xs text-gray-600 flex items-center justify-between bg-gray-50 p-2 rounded">
-                    <span>{cvFormFile.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => setCvFormFile(null)}
                       className="text-red-500 hover:text-red-700"
                     >
                       <X className="w-3 h-3" />
@@ -2467,6 +2379,26 @@ const AdminAddJobPage = () => {
               Chi tiết hoa hồng (Job Values)
             </h2>
             <div className="space-y-3">
+              {/* Commission Type */}
+              <div className="mb-4 pb-3 border-b border-gray-200">
+                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  Loại hoa hồng <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="jobCommissionType"
+                  value={formData.jobCommissionType}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                >
+                  <option value="fixed">Số tiền cố định</option>
+                  <option value="percent">Phần trăm</option>
+                </select>
+                <p className="text-[10px] text-gray-500 mt-1">
+                  {formData.jobCommissionType === 'fixed' 
+                    ? 'Giá trị trong Job Values sẽ được hiểu là số tiền cố định (VND). Ví dụ: 50000000 = 50 triệu VND'
+                    : 'Giá trị trong Job Values sẽ được hiểu là phần trăm (%). Ví dụ: 30 = 30%'}
+                </p>
+              </div>
               {jobValues.map((jv, index) => (
                 <div key={index} className="border border-gray-200 rounded-lg p-3 space-y-2">
                   <div className="flex items-center justify-between">

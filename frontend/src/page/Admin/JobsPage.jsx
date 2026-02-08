@@ -728,10 +728,10 @@ const AdminJobsPage = () => {
                               }}
                               className="text-blue-600 hover:text-blue-800 font-medium"
                             >
-                              {job.company?.name || job.companyName}
+                              {job.recruitingCompany?.companyName || job.companyName || '-'}
                             </button>
                           ) : (
-                            <span>{job.companyName || '-'}</span>
+                            <span>{job.recruitingCompany?.companyName || job.companyName || '-'}</span>
                           )}
                         </div>
                       </div>

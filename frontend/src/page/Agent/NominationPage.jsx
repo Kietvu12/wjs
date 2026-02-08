@@ -21,6 +21,9 @@ import {
   ChevronLeft,
   ChevronsLeft,
   ChevronsRight,
+  History,
+  Clock,
+  RefreshCw,
 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { translations } from '../../translations/translations';
@@ -33,7 +36,7 @@ const NominationPage = () => {
   const { language } = useLanguage();
   const t = translations[language];
   
-  const [activeTab, setActiveTab] = useState('existing'); // 'existing' or 'new'
+  const [activeTab, setActiveTab] = useState('existing'); // 'existing', 'new', 'history', 'recent'
   const [step, setStep] = useState('select'); // 'select' or 'confirm'
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -51,6 +54,15 @@ const NominationPage = () => {
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  // New states for history and recent CVs
+  const [nominationHistory, setNominationHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [historySearchTerm, setHistorySearchTerm] = useState('');
+  const [recentCVs, setRecentCVs] = useState([]);
+  const [loadingRecentCVs, setLoadingRecentCVs] = useState(false);
+  const [recentPage, setRecentPage] = useState(1);
+  const [recentTotalItems, setRecentTotalItems] = useState(0);
+  const [recentTotalPages, setRecentTotalPages] = useState(0);
 
   useEffect(() => {
     loadJobDetail();
@@ -59,8 +71,12 @@ const NominationPage = () => {
   useEffect(() => {
     if (activeTab === 'existing' && step === 'select') {
       loadCVStorages();
+    } else if (activeTab === 'history') {
+      loadNominationHistory();
+    } else if (activeTab === 'recent') {
+      loadRecentCVs();
     }
-  }, [jobId, activeTab, step, currentPage, itemsPerPage, searchTerm]);
+  }, [jobId, activeTab, step, currentPage, itemsPerPage, searchTerm, historySearchTerm, recentPage]);
 
   const loadJobDetail = async () => {
     try {
@@ -306,6 +322,73 @@ const NominationPage = () => {
     if (gender === '1' || gender === 1) return 'Nam';
     if (gender === '2' || gender === 2) return 'Nữ';
     return '—';
+  };
+
+  const loadNominationHistory = async () => {
+    try {
+      setLoadingHistory(true);
+      const params = {
+        limit: 100 // Get more records to group properly
+      };
+      if (historySearchTerm) {
+        params.search = historySearchTerm;
+      }
+      // Get history for all candidates
+      const response = await apiService.getJobApplications(params);
+      if (response.success && response.data) {
+        // Group by company (recruitingCompany takes priority, then company)
+        const grouped = {};
+        (response.data.jobApplications || []).forEach(app => {
+          const companyName = app.job?.recruitingCompany?.companyName || 
+                             app.job?.company?.name || 
+                             'N/A';
+          if (!grouped[companyName]) {
+            grouped[companyName] = [];
+          }
+          grouped[companyName].push(app);
+        });
+        // Sort companies by number of applications (descending)
+        const sortedGroups = Object.entries(grouped)
+          .map(([company, apps]) => ({
+            company,
+            applications: apps.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          }))
+          .sort((a, b) => b.applications.length - a.applications.length);
+        setNominationHistory(sortedGroups);
+      }
+    } catch (error) {
+      console.error('Error loading nomination history:', error);
+      setNominationHistory([]);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const loadRecentCVs = async () => {
+    try {
+      setLoadingRecentCVs(true);
+      const params = {
+        page: recentPage,
+        limit: itemsPerPage,
+        sortBy: 'updatedAt',
+        sortOrder: 'desc',
+        isDuplicate: '0'
+      };
+      if (searchTerm) {
+        params.search = searchTerm;
+      }
+      const response = await apiService.getRecentUpdatedCVs(params);
+      if (response.success && response.data) {
+        setRecentCVs(response.data.cvs || []);
+        setRecentTotalItems(response.data.pagination?.total || 0);
+        setRecentTotalPages(response.data.pagination?.totalPages || 0);
+      }
+    } catch (error) {
+      console.error('Error loading recent CVs:', error);
+      setRecentCVs([]);
+    } finally {
+      setLoadingRecentCVs(false);
+    }
   };
 
   if (loading && step === 'select') {
@@ -751,24 +834,50 @@ const NominationPage = () => {
       )}
 
       {/* Tabs */}
-      <div className="bg-white rounded-2xl border border-gray-200">
-        <div className="flex border-b border-gray-200">
+      <div className="bg-white rounded-xl border border-gray-200">
+        <div className="flex border-b border-gray-200 overflow-x-auto">
           <button
             onClick={() => setActiveTab('existing')}
-            className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
+            className={`px-4 py-3 text-xs font-medium transition-colors whitespace-nowrap border-b-2 ${
               activeTab === 'existing'
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                ? 'bg-blue-50 text-blue-700 border-blue-700'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent'
             }`}
           >
             {t.selectExistingCV || 'Chọn ứng viên có sẵn'}
           </button>
           <button
+            onClick={() => setActiveTab('recent')}
+            className={`px-4 py-3 text-xs font-medium transition-colors whitespace-nowrap border-b-2 ${
+              activeTab === 'recent'
+                ? 'bg-blue-50 text-blue-700 border-blue-700'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent'
+            }`}
+          >
+            <div className="flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5" />
+              CV được cập nhật gần nhất
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`px-4 py-3 text-xs font-medium transition-colors whitespace-nowrap border-b-2 ${
+              activeTab === 'history'
+                ? 'bg-blue-50 text-blue-700 border-blue-700'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent'
+            }`}
+          >
+            <div className="flex items-center gap-1.5">
+              <History className="w-3.5 h-3.5" />
+              Lịch sử tiến cử
+            </div>
+          </button>
+          <button
             onClick={() => setActiveTab('new')}
-            className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
+            className={`px-4 py-3 text-xs font-medium transition-colors whitespace-nowrap border-b-2 ${
               activeTab === 'new'
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                ? 'bg-blue-50 text-blue-700 border-blue-700'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent'
             }`}
           >
             {t.createNewCV || 'Tạo hồ sơ mới'}
@@ -776,7 +885,7 @@ const NominationPage = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {activeTab === 'existing' ? (
             <div className="space-y-4">
               {/* Search */}
@@ -829,7 +938,21 @@ const NominationPage = () => {
                               <div>
                                 <p className="font-semibold text-gray-900">{cv.name || 'N/A'}</p>
                                 <p className="text-sm text-gray-600">{cv.email || 'N/A'}</p>
-                                <p className="text-xs text-gray-500">{cv.code}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <p className="text-xs text-gray-500">{cv.code}</p>
+                                  {cv.status !== undefined && (
+                                    <>
+                                      <span className="text-xs text-gray-400">•</span>
+                                      <span className="text-xs text-gray-500">
+                                        Loại hồ sơ: {
+                                          cv.status === 0 ? 'Draft' :
+                                          cv.status === 1 ? 'Active' :
+                                          cv.status === 2 ? 'Archived' : '—'
+                                        }
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
                               </div>
                             </div>
                             {selectedCvId === cv.id && canSelect && (
@@ -930,6 +1053,196 @@ const NominationPage = () => {
                     </div>
                   )}
                 </>
+              )}
+            </div>
+          ) : activeTab === 'recent' ? (
+            <div className="space-y-4">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm CV được cập nhật gần nhất..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setRecentPage(1);
+                  }}
+                  className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Recent CVs List */}
+              {loadingRecentCVs ? (
+                <div className="text-center py-8 text-gray-500 text-sm">
+                  Đang tải...
+                </div>
+              ) : recentCVs.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 text-sm">
+                  Không có CV nào được cập nhật gần đây
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {recentCVs.map((cv) => {
+                      const canSelect = !cv.isDuplicate;
+                      
+                      return (
+                        <div
+                          key={cv.id}
+                          onClick={() => canSelect && handleSelectCV(cv.id)}
+                          className={`p-3 border rounded-lg transition-all ${
+                            !canSelect
+                              ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                              : selectedCvId === cv.id
+                              ? 'border-blue-500 bg-blue-50 cursor-pointer'
+                              : 'border-gray-200 hover:border-gray-300 cursor-pointer'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                                {cv.name ? cv.name.charAt(0) : '?'}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-gray-900 text-sm truncate">{cv.name || 'N/A'}</p>
+                                <p className="text-xs text-gray-600 truncate">{cv.email || 'N/A'}</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <p className="text-xs text-gray-500">{cv.code}</p>
+                                  {cv.updatedAt && (
+                                    <>
+                                      <span className="text-xs text-gray-400">•</span>
+                                      <span className="text-xs text-gray-500">
+                                        Cập nhật: {formatDate(cv.updatedAt)}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            {selectedCvId === cv.id && canSelect && (
+                              <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                            )}
+                            {!canSelect && (
+                              <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Pagination */}
+                  {recentTotalPages > 1 && (
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => setRecentPage(1)}
+                          disabled={recentPage === 1}
+                          className="px-2 py-1 bg-white border border-gray-300 rounded text-xs font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          <ChevronsLeft className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setRecentPage(recentPage - 1)}
+                          disabled={recentPage === 1}
+                          className="px-2 py-1 bg-white border border-gray-300 rounded text-xs font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          <ChevronLeft className="w-3.5 h-3.5" />
+                        </button>
+                        <span className="text-xs text-gray-600 px-2">
+                          Trang {recentPage} / {recentTotalPages}
+                        </span>
+                        <button
+                          onClick={() => setRecentPage(recentPage + 1)}
+                          disabled={recentPage === recentTotalPages}
+                          className="px-2 py-1 bg-white border border-gray-300 rounded text-xs font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setRecentPage(recentTotalPages)}
+                          disabled={recentPage === recentTotalPages}
+                          className="px-2 py-1 bg-white border border-gray-300 rounded text-xs font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          <ChevronsRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <span className="text-xs text-gray-600">
+                        {recentTotalItems} kết quả
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          ) : activeTab === 'history' ? (
+            <div className="space-y-4">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm theo tên ứng viên, công ty..."
+                  value={historySearchTerm}
+                  onChange={(e) => setHistorySearchTerm(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* History List */}
+              {loadingHistory ? (
+                <div className="text-center py-8 text-gray-500 text-sm">
+                  Đang tải lịch sử...
+                </div>
+              ) : nominationHistory.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 text-sm">
+                  Chưa có lịch sử tiến cử
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {nominationHistory.map((item, index) => (
+                    <div
+                      key={index}
+                      className="p-3 border border-gray-200 rounded-lg bg-white"
+                    >
+                      <p className="font-semibold text-gray-900 text-sm mb-2">
+                        Cty {index + 1}: {item.company}
+                      </p>
+                      <div className="space-y-1.5 pl-2 border-l-2 border-gray-200">
+                        {item.applications.map((app) => (
+                          <div key={app.id} className="text-xs text-gray-600">
+                            <span className="font-medium">{app.cv?.name || app.name || 'N/A'}</span>
+                            {app.job?.title && (
+                              <span className="text-gray-500"> - {app.job.title}</span>
+                            )}
+                            {app.status && (
+                              <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${
+                                app.status >= 2 && app.status <= 11
+                                  ? 'bg-green-100 text-green-800'
+                                  : app.status === 12 || app.status === 15 || app.status === 16 || app.status === 17
+                                  ? 'bg-red-100 text-red-800'
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {app.status === 1 ? 'Đang xử lý' :
+                                 app.status === 2 ? 'Đang tiến cử' :
+                                 app.status === 8 ? 'Đã nhận việc' :
+                                 app.status === 11 ? 'Đã thanh toán' :
+                                 app.status === 15 ? 'Trượt' :
+                                 app.status === 16 ? 'Hủy' :
+                                 app.status === 17 ? 'Không shodaku' :
+                                 `Status ${app.status}`}
+                              </span>
+                            )}
+                            <span className="text-gray-400 ml-2">
+                              ({formatDate(app.createdAt)})
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           ) : (

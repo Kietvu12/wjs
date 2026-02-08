@@ -46,5 +46,12 @@ router.delete('/:id', authenticateCTV, cvController.deleteCV);
  */
 router.get('/statistics', authenticateCTV, cvController.getCVStatistics);
 
+/**
+ * @route   GET /api/ctv/cvs/recent
+ * @desc    Get recently updated CVs (sorted by updatedAt DESC)
+ * @access  Private (CTV)
+ */
+router.get('/recent', authenticateCTV, cvController.getRecentCVs);
+
 export default router;
 

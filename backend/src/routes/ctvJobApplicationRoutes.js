@@ -12,6 +12,13 @@ const router = express.Router();
 router.get('/', authenticateCTV, jobApplicationController.getJobApplications);
 
 /**
+ * @route   GET /api/ctv/job-applications/candidates/:cvCode/nomination-history
+ * @desc    Get nomination history for a candidate by CV code
+ * @access  Private (CTV)
+ */
+router.get('/candidates/:cvCode/nomination-history', authenticateCTV, jobApplicationController.getCandidateNominationHistory);
+
+/**
  * @route   GET /api/ctv/job-applications/:id
  * @desc    Get job application by ID (only own application)
  * @access  Private (CTV)

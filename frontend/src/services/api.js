@@ -201,6 +201,30 @@ const apiService = {
     return handleResponse(response);
   },
 
+  /**
+   * Get nomination history for a candidate (by CV code or email)
+   */
+  getCandidateNominationHistory: async (cvCode, params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`${API_BASE_URL}/ctv/job-applications/candidates/${cvCode}/nomination-history?${queryString}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  /**
+   * Get recently updated CVs for replacement
+   */
+  getRecentUpdatedCVs: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`${API_BASE_URL}/ctv/cvs/recent?${queryString}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
   createCVStorage: async (formData) => {
     const response = await fetch(`${API_BASE_URL}/ctv/cvs`, {
       method: 'POST',
@@ -1430,7 +1454,124 @@ const apiService = {
       headers: getAuthHeaders()
     });
     return handleResponse(response);
-  }
+  },
+
+  /**
+   * Reports API
+   */
+  getNominationEffectiveness: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`${API_BASE_URL}/admin/reports/nomination-effectiveness?${queryString}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getPlatformEffectiveness: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`${API_BASE_URL}/admin/reports/platform-effectiveness?${queryString}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getHREffectiveness: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`${API_BASE_URL}/admin/reports/hr-effectiveness?${queryString}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getMyPerformance: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`${API_BASE_URL}/admin/reports/my-performance?${queryString}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  /**
+   * Outlook Email API
+   */
+  getOutlookAuthorizationUrl: async () => {
+    const response = await fetch(`${API_BASE_URL}/admin/emails/outlook/authorize`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getOutlookConnections: async () => {
+    const response = await fetch(`${API_BASE_URL}/admin/emails/outlook/connections`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  syncOutlookEmails: async (data) => {
+    const response = await fetch(`${API_BASE_URL}/admin/emails/outlook/sync`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(response);
+  },
+
+  getSyncedEmails: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`${API_BASE_URL}/admin/emails/outlook/synced?${queryString}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getSyncedEmailDetail: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/admin/emails/outlook/synced/${id}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  sendOutlookEmail: async (data) => {
+    const response = await fetch(`${API_BASE_URL}/admin/emails/outlook/send`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(response);
+  },
+
+  markEmailAsRead: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/admin/emails/outlook/synced/${id}/read`, {
+      method: 'PATCH',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  deleteOutlookConnection: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/admin/emails/outlook/connections/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  toggleOutlookSync: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/admin/emails/outlook/connections/${id}/toggle-sync`, {
+      method: 'PATCH',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
 };
 
 export default apiService;

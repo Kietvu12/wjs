@@ -2822,6 +2822,169 @@ Admin.hasMany(Message, { as: 'messages', foreignKey: 'adminId' });
 Message.belongsTo(Collaborator, { as: 'collaborator', foreignKey: 'collaboratorId' });
 Collaborator.hasMany(Message, { as: 'messages', foreignKey: 'collaboratorId' });
 
+// Outlook Email Connection
+export const OutlookConnection = sequelize.define(
+  'OutlookConnection',
+  {
+    id: {
+      type: DataTypes.BIGINT.UNSIGNED,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    email: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      unique: true
+    },
+    accessToken: {
+      type: DataTypes.TEXT,
+      field: 'access_token'
+    },
+    refreshToken: {
+      type: DataTypes.TEXT,
+      field: 'refresh_token'
+    },
+    expiresAt: {
+      type: DataTypes.DATE,
+      field: 'expires_at'
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+      field: 'is_active'
+    },
+    lastSyncAt: {
+      type: DataTypes.DATE,
+      field: 'last_sync_at'
+    },
+    syncEnabled: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+      field: 'sync_enabled'
+    }
+  },
+  {
+    tableName: 'outlook_connections',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at'
+  }
+);
+
+// Synced Emails
+export const SyncedEmail = sequelize.define(
+  'SyncedEmail',
+  {
+    id: {
+      type: DataTypes.BIGINT.UNSIGNED,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    outlookConnectionId: {
+      type: DataTypes.BIGINT.UNSIGNED,
+      allowNull: false,
+      field: 'outlook_connection_id'
+    },
+    messageId: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      unique: true,
+      field: 'message_id'
+    },
+    conversationId: {
+      type: DataTypes.STRING(255),
+      field: 'conversation_id'
+    },
+    internetMessageId: {
+      type: DataTypes.STRING(255),
+      field: 'internet_message_id'
+    },
+    subject: {
+      type: DataTypes.STRING(500)
+    },
+    body: {
+      type: DataTypes.TEXT
+    },
+    bodyPreview: {
+      type: DataTypes.TEXT,
+      field: 'body_preview'
+    },
+    fromEmail: {
+      type: DataTypes.STRING(255),
+      field: 'from_email'
+    },
+    fromName: {
+      type: DataTypes.STRING(255),
+      field: 'from_name'
+    },
+    toRecipients: {
+      type: DataTypes.JSON,
+      field: 'to_recipients'
+    },
+    ccRecipients: {
+      type: DataTypes.JSON,
+      field: 'cc_recipients'
+    },
+    bccRecipients: {
+      type: DataTypes.JSON,
+      field: 'bcc_recipients'
+    },
+    receivedDateTime: {
+      type: DataTypes.DATE,
+      field: 'received_date_time'
+    },
+    sentDateTime: {
+      type: DataTypes.DATE,
+      field: 'sent_date_time'
+    },
+    isRead: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      field: 'is_read'
+    },
+    hasAttachments: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      field: 'has_attachments'
+    },
+    importance: {
+      type: DataTypes.STRING(50)
+    },
+    folder: {
+      type: DataTypes.STRING(100),
+      defaultValue: 'inbox'
+    },
+    direction: {
+      type: DataTypes.ENUM('inbound', 'outbound'),
+      allowNull: false,
+      defaultValue: 'inbound'
+    }
+  },
+  {
+    tableName: 'synced_emails',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    indexes: [
+      {
+        fields: ['outlook_connection_id', 'received_date_time']
+      },
+      {
+        fields: ['message_id']
+      },
+      {
+        fields: ['folder', 'is_read']
+      }
+    ]
+  }
+);
+
+// Outlook Email Associations
+OutlookConnection.hasMany(SyncedEmail, { as: 'syncedEmails', foreignKey: 'outlookConnectionId' });
+SyncedEmail.belongsTo(OutlookConnection, { as: 'outlookConnection', foreignKey: 'outlookConnectionId' });
+
 export {
   sequelize
 };
@@ -2876,7 +3039,9 @@ export default {
   Value,
   JobValue,
   Calendar,
-  Message
+  Message,
+  OutlookConnection,
+  SyncedEmail
 };
 
 // Favorite Jobs (CTV lưu job yêu thích)

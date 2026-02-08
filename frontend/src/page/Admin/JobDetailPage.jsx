@@ -302,10 +302,6 @@ const AdminJobDetailPage = () => {
                   <span className="text-gray-500">Danh mục:</span>
                   <span className="ml-2 font-medium">{job.category?.name || 'N/A'}</span>
                 </div>
-                <div>
-                  <span className="text-gray-500">Công ty nguồn:</span>
-                  <span className="ml-2 font-medium">{job.company?.name || 'N/A'}</span>
-                </div>
                 {job.recruitmentType && (
                   <div>
                     <span className="text-gray-500">Loại tuyển dụng:</span>
@@ -568,34 +564,6 @@ const AdminJobDetailPage = () => {
             </div>
           )}
 
-          {/* Job posted by */}
-          {job.company && (
-            <div className="pt-6 border-t border-gray-100">
-              <div className="text-sm text-gray-500 mb-3">Công ty nguồn (Job posted by)</div>
-              <div className="flex items-start gap-3">
-                {job.company.logo ? (
-                  <img
-                    src={job.company.logo}
-                    alt={job.company.name}
-                    className="w-12 h-12 object-contain rounded"
-                  />
-                ) : (
-                  <div className="w-12 h-12 bg-blue-600 rounded flex items-center justify-center">
-                    <Building2 className="w-6 h-6 text-white" />
-                  </div>
-                )}
-                <div className="flex-1">
-                  <div className="font-semibold text-gray-900 mb-1">{job.company.name}</div>
-                  {job.company.description && (
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {job.company.description.substring(0, 150)}
-                      {job.company.description.length > 150 ? '...' : ''}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 

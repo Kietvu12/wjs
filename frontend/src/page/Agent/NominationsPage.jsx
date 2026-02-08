@@ -12,6 +12,8 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  ChevronUp,
+  ChevronDown,
   Briefcase,
   User,
   Building2,
@@ -43,6 +45,8 @@ const NominationsPage = () => {
     limit: 20,
     totalPages: 1
   });
+  const [sortBy, setSortBy] = useState('appliedDate'); // 'candidateName' or 'appliedDate'
+  const [sortOrder, setSortOrder] = useState('DESC'); // 'ASC' or 'DESC'
 
   // Map status từ số sang object (sử dụng utility function)
   const mapStatus = (status) => {
@@ -108,7 +112,7 @@ const NominationsPage = () => {
 
       if (response.success && response.data) {
         // Map dữ liệu từ API sang format của component
-        const mappedNominations = (response.data.jobApplications || []).map((app) => {
+        let mappedNominations = (response.data.jobApplications || []).map((app) => {
           const statusInfo = mapStatus(app.status);
           return {
             id: app.id,
@@ -116,21 +120,38 @@ const NominationsPage = () => {
             candidateId: app.cv?.code || app.cvCode || '—',
             jobTitle: app.job?.title || '—',
             jobId: app.jobId,
-            companyName: app.job?.company?.name || '—',
+            companyName: app.job?.recruitingCompany?.companyName || app.job?.company?.name || '—',
             status: statusInfo.key,
             statusLabel: statusInfo.label,
             statusColor: statusInfo.color, // Thêm statusColor để dùng trong UI
             appliedDate: app.appliedAt || app.applied_at || app.createdAt || app.created_at,
             interviewDate: app.interviewDate || app.interview_date || '—',
             referralFee: app.referralFee || app.referral_fee || 0,
-            salary: app.annualSalary 
-              ? `${app.annualSalary.toLocaleString('vi-VN')}万円` 
-              : app.monthlySalary || app.monthly_salary
-                ? `${(app.monthlySalary || app.monthly_salary).toLocaleString('vi-VN')}万円/月` 
-                : app.job?.estimatedSalary || '—',
             cvId: app.cv?.id || app.cvId,
             jobSlug: app.job?.slug,
           };
+        });
+
+        // Client-side sorting
+        mappedNominations.sort((a, b) => {
+          if (sortBy === 'candidateName') {
+            const nameA = (a.candidateName || '').toLowerCase();
+            const nameB = (b.candidateName || '').toLowerCase();
+            if (sortOrder === 'ASC') {
+              return nameA.localeCompare(nameB);
+            } else {
+              return nameB.localeCompare(nameA);
+            }
+          } else if (sortBy === 'appliedDate') {
+            const dateA = new Date(a.appliedDate || 0).getTime();
+            const dateB = new Date(b.appliedDate || 0).getTime();
+            if (sortOrder === 'ASC') {
+              return dateA - dateB;
+            } else {
+              return dateB - dateA;
+            }
+          }
+          return 0;
         });
 
         setNominations(mappedNominations);
@@ -221,6 +242,58 @@ const NominationsPage = () => {
     loadNominations();
   };
 
+  // Apply sorting when sortBy or sortOrder changes
+  useEffect(() => {
+    if (nominations.length > 0) {
+      const sorted = [...nominations].sort((a, b) => {
+        if (sortBy === 'candidateName') {
+          const nameA = (a.candidateName || '').toLowerCase();
+          const nameB = (b.candidateName || '').toLowerCase();
+          if (sortOrder === 'ASC') {
+            return nameA.localeCompare(nameB);
+          } else {
+            return nameB.localeCompare(nameA);
+          }
+        } else if (sortBy === 'appliedDate') {
+          const dateA = new Date(a.appliedDate || 0).getTime();
+          const dateB = new Date(b.appliedDate || 0).getTime();
+          if (sortOrder === 'ASC') {
+            return dateA - dateB;
+          } else {
+            return dateB - dateA;
+          }
+        }
+        return 0;
+      });
+      setNominations(sorted);
+    }
+  }, [sortBy, sortOrder]);
+
+  const handleSort = (column) => {
+    if (sortBy === column) {
+      // Toggle sort order
+      setSortOrder(sortOrder === 'ASC' ? 'DESC' : 'ASC');
+    } else {
+      // Set new column and default to ASC
+      setSortBy(column);
+      setSortOrder('ASC');
+    }
+  };
+
+  const getSortIcon = (column) => {
+    if (sortBy !== column) {
+      return <ChevronUp className="w-3 h-3 text-gray-400 opacity-50" />;
+    }
+    return sortOrder === 'ASC' 
+      ? <ChevronUp className="w-3 h-3 text-blue-600" />
+      : <ChevronDown className="w-3 h-3 text-blue-600" />;
+  };
+
+  const truncateText = (text, maxLength = 40) => {
+    if (!text || text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Filter Section */}
@@ -272,7 +345,7 @@ const NominationsPage = () => {
             </select>
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-sm font-bold text-gray-900">Từ ngày:</label>
+            <label className="text-sm font-bold text-gray-900">Ngày tiến cử từ:</label>
             <input
               type="date"
               value={dateFrom}
@@ -281,7 +354,7 @@ const NominationsPage = () => {
             />
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-sm font-bold text-gray-900">Đến ngày:</label>
+            <label className="text-sm font-bold text-gray-900">Đến:</label>
             <input
               type="date"
               value={dateTo}
@@ -372,33 +445,48 @@ const NominationsPage = () => {
                   />
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">ID</th>
-                <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Ứng viên</th>
+                <th 
+                  className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200 cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => handleSort('candidateName')}
+                >
+                  <div className="flex items-center gap-1">
+                    Ứng viên
+                    {getSortIcon('candidateName')}
+                  </div>
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Job</th>
                 <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Công ty</th>
                 <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Trạng thái</th>
-                <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Ngày tiến cử</th>
+                <th 
+                  className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200 cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => handleSort('appliedDate')}
+                >
+                  <div className="flex items-center gap-1">
+                    Ngày tiến cử
+                    {getSortIcon('appliedDate')}
+                  </div>
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Ngày PV</th>
-                <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Phí giới thiệu</th>
-                <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Lương</th>
+                <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Phí giới thiệu dự kiến</th>
                 <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 border-b border-gray-200">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan="11" className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan="10" className="px-4 py-8 text-center text-gray-500">
                     Đang tải dữ liệu...
                   </td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan="11" className="px-4 py-8 text-center text-red-500">
+                  <td colSpan="10" className="px-4 py-8 text-center text-red-500">
                     {error}
                   </td>
                 </tr>
               ) : nominations.length === 0 ? (
                 <tr>
-                  <td colSpan="11" className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan="10" className="px-4 py-8 text-center text-gray-500">
                     Không tìm thấy đơn tiến cử nào
                   </td>
                 </tr>
@@ -426,40 +514,42 @@ const NominationsPage = () => {
                     </button>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-xs">
-                        {nomination.candidateName.charAt(0)}
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
+                        {nomination.candidateName && nomination.candidateName !== '—' ? nomination.candidateName.charAt(0).toUpperCase() : '?'}
                       </div>
-                      <div>
+                      <div className="min-w-0 flex-1">
                         {nomination.cvId ? (
                           <button
                             onClick={() => navigate(`/agent/candidates/${nomination.cvId}`)}
-                            className="text-sm font-semibold text-gray-900 hover:text-blue-600"
+                            className="text-sm font-semibold text-gray-900 hover:text-blue-600 truncate block w-full text-left"
+                            title={nomination.candidateName}
                           >
                             {nomination.candidateName}
                           </button>
                         ) : (
-                          <span className="text-sm font-semibold text-gray-900">
+                          <span className="text-sm font-semibold text-gray-900 truncate block" title={nomination.candidateName}>
                             {nomination.candidateName}
                           </span>
                         )}
-                        <p className="text-xs text-gray-500">{nomination.candidateId}</p>
+                        <p className="text-xs text-gray-500 truncate">{nomination.candidateId}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 max-w-xs">
                     {nomination.jobId ? (
                       <button
                         onClick={() => navigate(`/agent/jobs/${nomination.jobId}${nomination.jobSlug ? `?slug=${nomination.jobSlug}` : ''}`)}
                         className="text-sm font-medium text-gray-900 hover:text-blue-600 flex items-center gap-1"
+                        title={nomination.jobTitle}
                       >
-                        <Briefcase className="w-3 h-3" />
-                        {nomination.jobTitle}
+                        <Briefcase className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">{truncateText(nomination.jobTitle, 35)}</span>
                       </button>
                     ) : (
-                      <span className="text-sm font-medium text-gray-900 flex items-center gap-1">
-                        <Briefcase className="w-3 h-3" />
-                        {nomination.jobTitle}
+                      <span className="text-sm font-medium text-gray-900 flex items-center gap-1" title={nomination.jobTitle}>
+                        <Briefcase className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">{truncateText(nomination.jobTitle, 35)}</span>
                       </span>
                     )}
                   </td>
@@ -501,7 +591,6 @@ const NominationsPage = () => {
                       {nomination.referralFee > 0 ? `${nomination.referralFee.toLocaleString('vi-VN')}đ` : '—'}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-700">{nomination.salary}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-center gap-2">
                       <button

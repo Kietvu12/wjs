@@ -18,6 +18,7 @@ import AddCandidate from './page/Agent/AddCandidate';
 import NominationPage from './page/Agent/NominationPage';
 import CandidateDetail from './page/Agent/CandidateDetail';
 import EditCandidate from './page/Agent/EditCandidate';
+import CandidateApplicationsPage from './page/Agent/CandidateApplicationsPage';
 import NominationDetail from './page/Agent/NominationDetail';
 import Dashboard from './page/Admin/Dashboard';
 import CollaboratorsPage from './page/Admin/CollaboratorsPage';
@@ -35,6 +36,7 @@ import AdminAddNominationPage from './page/Admin/AddNominationPage';
 import AdminNominationPage from './page/Admin/AdminNominationPage';
 import AdminNominationDetailPage from './page/Admin/AdminNominationDetailPage';
 import PaymentsPage from './page/Admin/PaymentsPage';
+import PaymentRequestDetailPage from './page/Admin/PaymentRequestDetailPage';
 import CompaniesPage from './page/Admin/CompaniesPage';
 import AddCompanyPage from './page/Admin/AddCompanyPage';
 import AdminCompanyDetailPage from './page/Admin/AdminCompanyDetailPage';
@@ -103,6 +105,7 @@ function App() {
             <Route path="candidates/create" element={<AddCandidate />} />
             <Route path="candidates/:candidateId" element={<CandidateDetail />} />
             <Route path="candidates/:candidateId/edit" element={<EditCandidate />} />
+            <Route path="candidates/:candidateId/applications" element={<CandidateApplicationsPage />} />
             <Route path="nominations" element={<NominationsPage />} />
             <Route path="nominations/:nominationId" element={<NominationDetail />} />
             <Route path="payment-history" element={<PaymentHistoryPage />} />
@@ -140,6 +143,7 @@ function App() {
             <Route path="nominations/:nominationId" element={<AdminNominationDetailPage />} />
             <Route path="nominations/:nominationId/edit" element={<AdminAddNominationPage />} />
             <Route path="payments" element={<PaymentsPage />} />
+            <Route path="payments/:id" element={<PaymentRequestDetailPage />} />
             <Route path="companies" element={<CompaniesPage />} />
             <Route path="companies/create" element={<AddCompanyPage />} />
             <Route path="companies/:companyId" element={<AdminCompanyDetailPage />} />
