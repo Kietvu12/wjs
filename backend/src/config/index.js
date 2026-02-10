@@ -22,9 +22,23 @@ export default {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d'
   },
   
-  // CORS
+  // CORS - cho phép localhost và IP nội bộ khi chạy host (live local)
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173'
+    origin: (() => {
+      const envOrigin = process.env.CORS_ORIGIN;
+      if (envOrigin) {
+        return envOrigin.includes(',') ? envOrigin.split(',').map(s => s.trim()) : envOrigin;
+      }
+      const isDev = (process.env.NODE_ENV || 'development') === 'development';
+      if (isDev) {
+        return (origin, callback) => {
+          if (!origin) return callback(null, true);
+          const allowed = /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3})(:\d+)?$/.test(origin);
+          callback(null, allowed);
+        };
+      }
+      return 'http://localhost:5173';
+    })()
   },
   
   // File Upload

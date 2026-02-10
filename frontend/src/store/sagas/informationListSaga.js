@@ -91,7 +91,7 @@ function* fetchInformationListSaga(action) {
           tagIcon: 'Star', // Will be converted to component in component
           title: pickup.name || '',
           date: formatDate(pickup.createdAt),
-          description: pickup.description || `${pickup.jobsCount || 0} việc làm được chọn`,
+          description: pickup.description || '',
           action: 'Xem chi tiết',
           url: `/agent/jobs?pickupId=${pickup.id}`,
           isNew: isRecent(pickup.createdAt),

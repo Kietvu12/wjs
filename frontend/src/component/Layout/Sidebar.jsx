@@ -40,11 +40,12 @@ const Sidebar = () => {
     { id: 'lich-su-thanh-toan', label: t.paymentHistory, icon: History, path: '/agent/payment-history' },
   ];
 
+  const ZALO_HOTLINE_URL = 'https://zalo.me/0972899728';
   const otherItems = [
     { id: 'lien-he', label: t.contact, icon: Mail, path: '/agent/contact' },
     { id: 'cau-hoi-thuong-gap', label: t.faq, icon: HelpCircle, path: '/agent/faq' },
     { id: 'dieu-khoan-su-dung', label: t.terms, icon: FileType, path: '/agent/terms' },
-    { id: 'hotline-zalo', label: t.hotline, icon: Phone, path: '/agent/hotline' },
+    { id: 'hotline-zalo', label: t.hotline, icon: Phone, path: '/agent/hotline', externalUrl: ZALO_HOTLINE_URL },
   ];
 
   const isActive = (path) => {
@@ -192,19 +193,53 @@ const Sidebar = () => {
           <div className="space-y-1">
             {otherItems.map((item) => {
               const Icon = item.icon;
-              const active = isActive(item.path);
-              
+              const active = !item.externalUrl && isActive(item.path);
+              const sharedClassName = `w-full flex ${isExpanded ? 'items-center gap-3' : 'flex-col items-center gap-1'} px-2 py-2.5 rounded-lg transition-colors`;
+              const sharedStyle = {
+                backgroundColor: hoveredMenuItemIndex === item.id ? '#f9fafb' : 'transparent',
+                color: '#374151'
+              };
+              const content = (
+                <>
+                  <Icon className="w-5 h-5 flex-shrink-0" style={{ color: '#4b5563' }} />
+                  {isExpanded ? (
+                    <span className="text-sm font-medium flex-1 text-left" style={{ color: '#374151' }}>
+                      {item.label}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-medium text-center leading-tight break-words" style={{ color: '#374151' }}>
+                      {item.label}
+                    </span>
+                  )}
+                </>
+              );
+
+              if (item.externalUrl) {
+                return (
+                  <a
+                    key={item.id}
+                    href={item.externalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onMouseEnter={() => setHoveredMenuItemIndex(item.id)}
+                    onMouseLeave={() => setHoveredMenuItemIndex(null)}
+                    className={sharedClassName}
+                    style={sharedStyle}
+                  >
+                    {content}
+                  </a>
+                );
+              }
+
               return (
                 <Link
                   key={item.id}
                   to={item.path}
                   onMouseEnter={() => setHoveredMenuItemIndex(item.id)}
                   onMouseLeave={() => setHoveredMenuItemIndex(null)}
-                  className={`w-full flex ${isExpanded ? 'items-center gap-3' : 'flex-col items-center gap-1'} px-2 py-2.5 rounded-lg transition-colors`}
+                  className={sharedClassName}
                   style={{
-                    backgroundColor: active 
-                      ? '#f3f4f6' 
-                      : (hoveredMenuItemIndex === item.id ? '#f9fafb' : 'transparent'),
+                    backgroundColor: active ? '#f3f4f6' : (hoveredMenuItemIndex === item.id ? '#f9fafb' : 'transparent'),
                     color: active ? '#dc2626' : '#374151'
                   }}
                 >

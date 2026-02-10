@@ -65,7 +65,16 @@ const CandidatesPage = () => {
   // Load candidates data
   useEffect(() => {
     loadCandidates();
-  }, [currentPage, itemsPerPage, nameFilter, statusFilter, createdDateFilter, isDuplicateFilter]);
+  }, [
+    currentPage,
+    itemsPerPage,
+    nameFilter,
+    statusFilter,
+    createdDateFilter,
+    isDuplicateFilter,
+    sortColumn,
+    sortDirection,
+  ]);
 
   const loadCandidates = async () => {
     try {
@@ -115,10 +124,13 @@ const CandidatesPage = () => {
                 aVal = a.applicationsCount || 0;
                 bVal = b.applicationsCount || 0;
                 break;
-              case 'createdAt':
-                aVal = new Date(a.createdAt || 0).getTime();
-                bVal = new Date(b.createdAt || 0).getTime();
+              case 'createdAt': {
+                const aDate = a.createdAt || a.created_at || null;
+                const bDate = b.createdAt || b.created_at || null;
+                aVal = aDate ? new Date(aDate).getTime() : 0;
+                bVal = bDate ? new Date(bDate).getTime() : 0;
                 break;
+              }
               default:
                 return 0;
             }
@@ -602,7 +614,9 @@ const CandidatesPage = () => {
                     {getSortIcon('name')}
                   </div>
                 </th>
-                <th className="px-3 py-2 text-left text-xs font-bold border-b min-w-[120px]" style={{ color: '#111827', borderColor: '#e5e7eb' }}>{t.phase || 'Loại hồ sơ'}</th>
+                <th className="px-3 py-2 text-left text-xs font-bold border-b min-w-[120px]" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+                  {language === 'vi' ? 'Loại hồ sơ' : (t.phase || 'Phase')}
+                </th>
                 <th 
                   className="px-3 py-2 text-left text-xs font-bold border-b cursor-pointer transition-colors min-w-[140px]"
                   style={{
@@ -753,7 +767,7 @@ const CandidatesPage = () => {
                       </div>
                     </td>
                     <td className="px-3 py-2 text-xs" style={{ color: '#374151' }}>
-                      {formatDate(candidate.createdAt)}
+                      {formatDate(candidate.createdAt || candidate.created_at)}
                     </td>
                     <td className="px-3 py-2 text-xs" style={{ color: '#374151' }}>
                       {candidate.latestApplicationStatus ? (

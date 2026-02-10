@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Search,
   MapPin,
@@ -177,14 +177,14 @@ const HeaderNavigationButtons = ({
   );
 };
 
-const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) => {
+const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false, useAdminAPI = false }) => {
   const { language } = useLanguage();
   const t = translations[language];
+  const keywordInputRef = useRef(null);
 
   // State
   const [filters, setFilters] = useState({
     keyword: '',
-    keywordMode: 'OR',
     locations: [], // Array of { country: string, location: string }
     fieldIds: [], // Lĩnh vực
     jobTypeIds: [], // Loại công việc
@@ -201,7 +201,7 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
     },
   });
 
-  const [showKeywordMode, setShowKeywordMode] = useState(false);
+  // const [showKeywordMode, setShowKeywordMode] = useState(false); // Đã bỏ OR/AND cho keyword
   const [showLocationModal, setShowLocationModal] = useState(false); // Show both modals together
   const [selectedCountries, setSelectedCountries] = useState([]); // Array of selected countries
 
@@ -224,6 +224,7 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
   const [categoryTree, setCategoryTree] = useState([]); // Full category tree for nested display
   const [selectedFields, setSelectedFields] = useState([]); // Selected fields for dual modal
   const [resultCount, setResultCount] = useState(0);
+  const [displayCount, setDisplayCount] = useState(0);
   const [locations, setLocations] = useState([]); // Địa điểm làm việc
   const [loading, setLoading] = useState(false);
   
@@ -234,7 +235,6 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
   
   // Hover states
   const [hoveredNavButtonIndex, setHoveredNavButtonIndex] = useState(null);
-  const [hoveredKeywordModeButton, setHoveredKeywordModeButton] = useState(false);
   const [hoveredLocationButton, setHoveredLocationButton] = useState(false);
   const [hoveredFieldButton, setHoveredFieldButton] = useState(false);
   const [hoveredJobTypeButton, setHoveredJobTypeButton] = useState(false);
@@ -242,6 +242,7 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
   const [hoveredCheckboxIndex, setHoveredCheckboxIndex] = useState(null);
   const [hoveredClearButton, setHoveredClearButton] = useState(false);
   const [hoveredSearchButton, setHoveredSearchButton] = useState(false);
+  const [hoveredSaveSearchButton, setHoveredSaveSearchButton] = useState(false);
   const [hoveredModalCloseButton, setHoveredModalCloseButton] = useState(null);
   const [hoveredModalConfirmButton, setHoveredModalConfirmButton] = useState(null);
   const [hoveredModalItemIndex, setHoveredModalItemIndex] = useState(null);
@@ -409,9 +410,18 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
     try {
       // Load jobs to extract unique locations
       const response = useAdminAPI 
-        ? await apiService.getAdminJobs({ limit: 1000, status: 1 })
-        : await apiService.getCTVJobs({ limit: 1000, status: 1 });
+        ? await apiService.getAdminJobs({ page: 1, limit: 1000 })
+        : await apiService.getCTVJobs({ page: 1, limit: 1000 });
       if (response.success && response.data?.jobs) {
+        // Lưu tổng số job để dùng làm mặc định khi chưa có điều kiện tìm kiếm
+        const total =
+          (response.data.pagination && response.data.pagination.total) ||
+          response.data.total ||
+          response.data.jobs.length ||
+          0;
+        setResultCount(total);
+
+        // Trích xuất danh sách location như logic ban đầu
         const locationSet = new Set();
         response.data.jobs.forEach(job => {
           if (job.workingLocations && job.workingLocations.length > 0) {
@@ -422,19 +432,51 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
             });
           }
         });
-        setLocations(Array.from(locationSet).sort());
+        if (locationSet.size > 0) {
+          setLocations(Array.from(locationSet).sort());
+        } else {
+          // Fallback nếu API không trả workingLocations
+          setLocations(mockLocations);
+        }
       }
     } catch (error) {
       console.error('Error loading locations:', error);
-      // Fallback to mock data
+      // Fallback: dùng mockLocations cho UI, giữ nguyên resultCount (0)
       setLocations(mockLocations);
     }
   };
+
+  // Animate displayCount from 0 -> resultCount mỗi khi resultCount thay đổi
+  useEffect(() => {
+    let frameId;
+    const duration = 600; // ms
+    const start = performance.now();
+    const from = 0;
+    const to = resultCount;
+
+    const step = (now) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+      const current = Math.round(from + (to - from) * eased);
+      setDisplayCount(current);
+      if (progress < 1) {
+        frameId = requestAnimationFrame(step);
+      }
+    };
+
+    frameId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frameId);
+  }, [resultCount]);
 
 
   const handleSearch = async () => {
     try {
       setLoading(true);
+      // Lấy keyword trực tiếp từ input (uncontrolled) để tránh rerender làm mất focus
+      const keywordValue = keywordInputRef.current ? keywordInputRef.current.value : (filters.keyword || '');
+      const trimmedKeyword = keywordValue.trim();
+
       // Build query params
       const params = {
         page: 1,
@@ -442,8 +484,8 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
       };
 
       // Keyword search
-      if (filters.keyword && filters.keyword.trim()) {
-        params.search = filters.keyword.trim();
+      if (trimmedKeyword) {
+        params.search = trimmedKeyword;
       }
 
       // Category filter - ưu tiên jobTypeIds (Loại công việc), sau đó fieldIds (Lĩnh vực)
@@ -487,12 +529,15 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
         : await apiService.getCTVJobs(params);
       if (response.success && response.data) {
         setResultCount(response.data.pagination?.total || 0);
-        // Pass filters and results to parent
+        // Pass filters (có cập nhật keyword từ input) và results lên parent
         if (onSearch) {
           onSearch(response.data.jobs || []);
         }
         if (onFiltersChange) {
-          onFiltersChange(filters);
+          onFiltersChange({
+            ...filters,
+            keyword: keywordValue,
+          });
         }
       } else {
         // Nếu không có kết quả, vẫn truyền empty array
@@ -516,7 +561,6 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
   const handleClearAll = () => {
     setFilters({
       keyword: '',
-      keywordMode: 'OR',
       locations: [],
       fieldIds: [],
       jobTypeIds: [],
@@ -532,6 +576,9 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
         noExpOk: false,
       },
     });
+    if (keywordInputRef.current) {
+      keywordInputRef.current.value = '';
+    }
   };
 
   const toggleCountry = (country) => {
@@ -855,51 +902,12 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
           {/* A. Freeword / Keyword */}
         <FilterBlock icon={Search} label={language === 'vi' ? 'Từ khóa' : language === 'en' ? 'Keyword' : 'フリーワード'} compact={compact}>
           <div className="relative">
-            <div className={`absolute ${compact ? 'left-2' : 'left-3'} top-1/2 -translate-y-1/2 z-10`}>
-              <div className="relative">
-                <button
-                  onClick={() => setShowKeywordMode(!showKeywordMode)}
-                  onMouseEnter={() => setHoveredKeywordModeButton(true)}
-                  onMouseLeave={() => setHoveredKeywordModeButton(false)}
-                  className={`flex items-center gap-0.5 ${compact ? 'px-2 py-1 sm:px-2.5 sm:py-1.5' : 'px-3 py-1.5'} ${compact ? 'text-xs sm:text-sm' : 'text-sm'} font-medium rounded transition-colors`}
-                  style={{
-                    color: '#374151',
-                    backgroundColor: hoveredKeywordModeButton ? '#e5e7eb' : '#f3f4f6'
-                  }}
-                >
-                  {filters.keywordMode}
-                  <ChevronDown className={compact ? "w-3 h-3 sm:w-3.5 sm:h-3.5" : "w-4 h-4"} />
-                </button>
-                {showKeywordMode && (
-                  <div className={`absolute top-full mt-1 left-0 bg-white border border-gray-200 rounded-lg shadow-lg z-20 ${compact ? 'min-w-[70px] sm:min-w-[80px]' : 'min-w-[90px]'}`}>
-                    <button
-                      onClick={() => {
-                        setFilters(prev => ({ ...prev, keywordMode: 'OR' }));
-                        setShowKeywordMode(false);
-                      }}
-                      className={`w-full ${compact ? 'px-3 py-1.5 text-xs sm:text-sm' : 'px-4 py-2 text-sm'} text-left hover:bg-gray-50`}
-                    >
-                      OR
-                    </button>
-                    <button
-                      onClick={() => {
-                        setFilters(prev => ({ ...prev, keywordMode: 'AND' }));
-                        setShowKeywordMode(false);
-                      }}
-                      className={`w-full ${compact ? 'px-3 py-1.5 text-xs sm:text-sm' : 'px-4 py-2 text-sm'} text-left hover:bg-gray-50`}
-                    >
-                      AND
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
             <input
               type="text"
-              value={filters.keyword}
-              onChange={(e) => setFilters(prev => ({ ...prev, keyword: e.target.value }))}
+              ref={keywordInputRef}
+              defaultValue={filters.keyword}
               placeholder={language === 'vi' ? 'ID, tên job, nội dung công việc…' : language === 'en' ? 'ID, job name, job description…' : 'ID、求人名、業務内容…'}
-              className={`w-full ${compact ? 'pl-20 sm:pl-22 pr-3 sm:pr-4 py-2 sm:py-2.5 text-xs sm:text-sm' : 'pl-24 pr-5 py-3 text-sm'} border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+              className={`w-full ${compact ? 'px-3 sm:px-3.5 py-2 sm:py-2.5 text-xs sm:text-sm' : 'px-4 py-3 text-sm'} border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
             />
           </div>
         </FilterBlock>
@@ -1135,7 +1143,7 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
                   backgroundColor: hoveredClearButton ? '#e5e7eb' : '#f3f4f6'
                 }}
               >
-                {language === 'vi' ? 'Xóa tất cả' : language === 'en' ? 'Clear All' : 'すべてクリア'}
+                {language === 'vi' ? 'Xóa điều kiện' : language === 'en' ? 'Clear filters' : '条件をクリア'}
               </button>
               <button
                 onClick={handleSearch}
@@ -1144,30 +1152,50 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
                 onMouseLeave={() => setHoveredSearchButton(false)}
                 className={`flex-1 ${compact ? 'h-10 sm:h-11' : 'h-12'} rounded-lg flex items-center justify-center ${compact ? 'gap-1.5 sm:gap-2' : 'gap-2'} transition-colors shadow-md`}
                 style={{
-                  backgroundColor: hoveredSearchButton ? '#b91c1c' : '#dc2626',
+                  backgroundColor: hoveredSearchButton ? '#eab308' : '#facc15',
                   opacity: loading ? 0.5 : 1,
                   cursor: loading ? 'not-allowed' : 'pointer',
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
                 }}
               >
                 {loading ? (
-                  <RotateCw className={compact ? "w-4 h-4 sm:w-5 sm:h-5 animate-spin" : "w-5 h-5 animate-spin"} style={{ color: 'white' }} />
+                  <RotateCw className={compact ? "w-4 h-4 sm:w-5 sm:h-5 animate-spin" : "w-5 h-5 animate-spin"} style={{ color: '#1f2937' }} />
                 ) : (
-                  <Search className={compact ? "w-4 h-4 sm:w-5 sm:h-5" : "w-5 h-5"} style={{ color: 'white' }} />
+                  <Search className={compact ? "w-4 h-4 sm:w-5 sm:h-5" : "w-5 h-5"} style={{ color: '#1f2937' }} />
                 )}
-                <span className={compact ? "text-xs sm:text-sm font-semibold" : "text-base font-semibold"} style={{ color: 'white' }}>
-                  {language === 'vi' ? 'Tìm kiếm' : language === 'en' ? 'Search' : '検索'}
+                <span className={compact ? "text-xs sm:text-sm font-semibold" : "text-base font-semibold"} style={{ color: '#1f2937' }}>
+                  {language === 'vi'
+                    ? `Tìm ${displayCount.toLocaleString('vi-VN')} job`
+                    : language === 'en'
+                    ? `Search ${displayCount.toLocaleString()} jobs`
+                    : `${displayCount.toLocaleString('ja-JP')} 件の求人を検索`}
                 </span>
               </button>
             </div>
             <p className={`text-center ${compact ? 'text-xs sm:text-sm' : 'text-sm'} text-gray-600`}>
               {language === 'vi' 
-                ? `Tìm kiếm ${resultCount.toLocaleString('vi-VN')} kết quả`
+                ? `Đang hiển thị ${displayCount.toLocaleString('vi-VN')} việc phù hợp với điều kiện lọc`
                 : language === 'en'
-                ? `Search ${resultCount.toLocaleString()} results`
-                : `${resultCount.toLocaleString('ja-JP')} 件を検索`
-              }
+                ? `Showing ${displayCount.toLocaleString()} jobs matching your filters`
+                : `${displayCount.toLocaleString('ja-JP')} 件の条件に合う求人を表示中`}
             </p>
+            <div className="flex justify-center">
+              <button
+                onClick={() => {
+                  console.log('Save current search filters', filters);
+                }}
+                onMouseEnter={() => setHoveredSaveSearchButton(true)}
+                onMouseLeave={() => setHoveredSaveSearchButton(false)}
+                className={`${compact ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'} rounded-lg border font-medium transition-colors`}
+                style={{
+                  borderColor: '#60a5fa',
+                  color: '#1d4ed8',
+                  backgroundColor: hoveredSaveSearchButton ? '#eff6ff' : 'white'
+                }}
+              >
+                {language === 'vi' ? 'Lưu điều kiện đang tìm' : language === 'en' ? 'Save current filters' : '現在の条件を保存'}
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -59,14 +59,16 @@ export const translations = {
     next: 'Sau',
     
     // Session 4
-    schedule: 'Lịch trình',
+    schedule: 'Calendar',
     seeAll: 'Xem tất cả',
-    interview: 'Phỏng vấn',
+    interview: 'Lịch phỏng vấn',
     meeting: 'Cuộc họp',
-    naitei: 'Naitei',
+    naitei: 'Lịch vào công ty',
     goToMeeting: 'Tham gia cuộc họp',
     noEvents: 'Không có lịch hẹn',
     noEventsForDate: 'Không có lịch hẹn cho ngày này',
+    calendarDayNames: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+    calendarMonthNames: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
     
     // Sidebar
     general: 'Chung',
@@ -79,7 +81,7 @@ export const translations = {
     contact: 'Liên hệ',
     faq: 'Các câu hỏi thường gặp',
     terms: 'Điều khoản sử dụng',
-    hotline: 'Hotline hỗ trợ 24/7 qua Zalo',
+    hotline: 'Hotline hỗ trợ',
     upgradeToPro: 'Nâng cấp lên Pro',
     upgradeDescription: 'Mở khóa đầy đủ tính năng và nâng cao công việc của bạn.',
     upgradePlan: 'Gói nâng cấp',
@@ -283,6 +285,8 @@ export const translations = {
     goToMeeting: 'Go to Meeting',
     noEvents: 'No appointments',
     noEventsForDate: 'No appointments for this date',
+    calendarDayNames: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    calendarMonthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
     
     // Sidebar
     general: 'General',
@@ -499,6 +503,8 @@ export const translations = {
     goToMeeting: '会議に参加',
     noEvents: '予定がありません',
     noEventsForDate: 'この日の予定がありません',
+    calendarDayNames: ['日', '月', '火', '水', '木', '金', '土'],
+    calendarMonthNames: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
     
     // Sidebar
     general: '一般',

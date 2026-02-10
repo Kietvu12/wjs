@@ -11,13 +11,13 @@ const HomePage = () => {
       <div className="flex flex-col lg:flex-row gap-3 h-full">
         {/* Left Column - Sessions 1, 2, 3 */}
         <div className="flex-1 overflow-y-auto hide-scrollbar space-y-6 lg:pr-2">
+          <AgentHomePageSession3 />
           <AgentHomePageSession1 />
           <AgentHomePageSession2 />
-          <AgentHomePageSession3 />
         </div>
 
-        {/* Right Column - Session 4 (Desktop only) */}
-        <div className="hidden lg:block w-1/3 overflow-y-auto hide-scrollbar">
+        {/* Right Column - Session 4 (Desktop only) - thu gọn chiều ngang */}
+        <div className="hidden lg:block w-80 max-w-[340px] flex-shrink-0 overflow-y-auto hide-scrollbar">
           <AgentHomePageSession4 />
         </div>
       </div>

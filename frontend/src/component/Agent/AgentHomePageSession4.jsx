@@ -89,14 +89,14 @@ const AgentHomePageSession4 = () => {
     }
   };
 
-  // Generate dates for date picker (next 7 days)
+  // Generate dates for date picker (next 7 days) - dùng t.calendarDayNames theo ngôn ngữ
   const generateDates = () => {
+    const dayNames = t.calendarDayNames || ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const dates = [];
     const today = new Date();
     for (let i = 0; i < 7; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
-      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       dates.push({
         day: dayNames[date.getDay()],
         date: date.getDate()
@@ -106,6 +106,7 @@ const AgentHomePageSession4 = () => {
   };
 
   const dates = generateDates();
+  const monthNames = t.calendarMonthNames || ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   const allEvents = activeTab === 'interview' ? interviews : naitei;
   const events = viewMode === 'calendar' 
@@ -146,12 +147,10 @@ const AgentHomePageSession4 = () => {
     setCurrentMonth(newMonth);
   };
 
-  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
   return (
-    <div className="rounded-lg shadow-sm border h-full flex flex-col" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
+    <div className="rounded-lg shadow-sm border h-full flex flex-col max-w-full" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
       {/* Header */}
-      <div className="p-3 sm:p-4 border-b" style={{ borderColor: '#f3f4f6' }}>
+      <div className="p-2.5 sm:p-3 border-b" style={{ borderColor: '#f3f4f6' }}>
         <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
           <h3 className="text-base sm:text-lg font-bold" style={{ color: '#111827' }}>{t.schedule}</h3>
           <div className="flex items-center gap-1 sm:gap-2">
@@ -226,14 +225,14 @@ const AgentHomePageSession4 = () => {
             >
               <ChevronLeft className="w-4 h-4" style={{ color: '#4b5563' }} />
             </button>
-            <div className="flex items-center gap-1 sm:gap-2 flex-1 justify-center overflow-x-auto scrollbar-hide">
+            <div className="flex items-center gap-0.5 sm:gap-1 flex-1 justify-center overflow-x-auto schedule-date-scroll">
               {dates.map((item, index) => {
                 const isSelected = selectedDate === item.date;
                 return (
                   <button
                     key={index}
                     onClick={() => setSelectedDate(item.date)}
-                    className="flex flex-col items-center px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-colors min-w-[50px] sm:min-w-[60px] flex-shrink-0"
+                    className="flex flex-col items-center px-1.5 sm:px-2 py-1.5 rounded-lg transition-colors min-w-[44px] sm:min-w-[48px] flex-shrink-0"
                     style={{
                       backgroundColor: isSelected ? '#dc2626' : 'transparent',
                       color: isSelected ? 'white' : '#6b7280'
@@ -271,10 +270,10 @@ const AgentHomePageSession4 = () => {
         )}
 
         {/* Tabs */}
-        <div className="flex items-center gap-4 border-b" style={{ borderColor: '#e5e7eb' }}>
+        <div className="flex items-center gap-2 border-b" style={{ borderColor: '#e5e7eb' }}>
           <button
             onClick={() => setActiveTab('interview')}
-            className="flex items-center gap-2 px-4 py-2 border-b-2 transition-colors"
+            className="flex items-center gap-1.5 px-2 sm:px-3 py-2 border-b-2 transition-colors"
             style={{
               borderColor: activeTab === 'interview' ? '#dc2626' : 'transparent',
               color: activeTab === 'interview' ? '#dc2626' : '#6b7280'
@@ -290,12 +289,12 @@ const AgentHomePageSession4 = () => {
               }
             }}
           >
-            <MessageCircle className="w-4 h-4" style={{ color: activeTab === 'interview' ? '#dc2626' : '#9ca3af' }} />
-            <span className="text-sm font-medium">{t.interview} {interviews.length}</span>
+            <MessageCircle className="w-4 h-4 flex-shrink-0" style={{ color: activeTab === 'interview' ? '#dc2626' : '#9ca3af' }} />
+            <span className="text-xs font-medium whitespace-nowrap">{t.interview} {interviews.length}</span>
           </button>
           <button
             onClick={() => setActiveTab('naitei')}
-            className="flex items-center gap-2 px-4 py-2 border-b-2 transition-colors"
+            className="flex items-center gap-1.5 px-2 sm:px-3 py-2 border-b-2 transition-colors"
             style={{
               borderColor: activeTab === 'naitei' ? '#dc2626' : 'transparent',
               color: activeTab === 'naitei' ? '#dc2626' : '#6b7280'
@@ -311,28 +310,28 @@ const AgentHomePageSession4 = () => {
               }
             }}
           >
-            <Calendar className="w-4 h-4" style={{ color: activeTab === 'naitei' ? '#dc2626' : '#9ca3af' }} />
-            <span className="text-sm font-medium">{t.naitei} {naitei.length}</span>
+            <Calendar className="w-4 h-4 flex-shrink-0" style={{ color: activeTab === 'naitei' ? '#dc2626' : '#9ca3af' }} />
+            <span className="text-xs font-medium whitespace-nowrap">{t.naitei} {naitei.length}</span>
           </button>
         </div>
       </div>
 
       {/* Schedule Content */}
-      <div className="flex-1 overflow-y-auto p-3 sm:p-4">
-        <div className="space-y-3 sm:space-y-4">
+      <div className="flex-1 overflow-y-auto p-2.5 sm:p-3">
+        <div className="space-y-2 sm:space-y-3">
           {/* Calendar View - Only in calendar mode */}
           {viewMode === 'calendar' && (
-            <div className="mb-4 pb-4 border-b" style={{ borderColor: '#e5e7eb' }}>
-              {/* Calendar Grid */}
-              <div className="grid grid-cols-7 gap-1 mb-2">
+            <div className="mb-3 pb-3 border-b" style={{ borderColor: '#e5e7eb' }}>
+              {/* Calendar Grid - thu gọn */}
+              <div className="grid grid-cols-7 gap-0.5 mb-1">
                 {/* Day headers */}
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                  <div key={day} className="text-center text-xs font-semibold py-1" style={{ color: '#4b5563' }}>
+                {(t.calendarDayNames || ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']).map((day) => (
+                  <div key={day} className="text-center text-[10px] font-semibold py-0.5" style={{ color: '#4b5563' }}>
                     {day}
                   </div>
                 ))}
               </div>
-              <div className="grid grid-cols-7 gap-1">
+              <div className="grid grid-cols-7 gap-0.5">
                 {calendarDays.map((day, index) => {
                   if (day === null) {
                     return <div key={`empty-${index}`} className="aspect-square"></div>;
@@ -345,7 +344,7 @@ const AgentHomePageSession4 = () => {
                       onClick={() => setSelectedDate(day)}
                       onMouseEnter={() => setHoveredCalendarDayIndex(day)}
                       onMouseLeave={() => setHoveredCalendarDayIndex(null)}
-                      className="aspect-square flex flex-col items-center justify-center rounded-lg transition-colors relative"
+                      className="aspect-square min-w-0 flex flex-col items-center justify-center rounded-md transition-colors relative"
                       style={{
                         backgroundColor: isSelected ? '#dc2626' : (hoveredCalendarDayIndex === day ? '#f3f4f6' : 'transparent'),
                         color: isSelected ? 'white' : '#111827'
@@ -372,15 +371,15 @@ const AgentHomePageSession4 = () => {
               </div>
             ) : events.length > 0 ? (
               events.map((event) => (
-                <div key={event.id} className="flex gap-3">
+                <div key={event.id} className="flex gap-2">
                   {/* Time */}
-                  <div className="text-xs font-medium pt-1 min-w-[50px]" style={{ color: '#6b7280' }}>
+                  <div className="text-xs font-medium pt-1 min-w-[42px]" style={{ color: '#6b7280' }}>
                     {event.time}
                   </div>
 
                   {/* Event Card */}
                   <div 
-                    className="flex-1 border rounded-lg p-3 transition-shadow relative"
+                    className="flex-1 min-w-0 border rounded-lg p-2.5 transition-shadow relative"
                     onMouseEnter={() => setHoveredEventCardIndex(event.id)}
                     onMouseLeave={() => setHoveredEventCardIndex(null)}
                     style={{

@@ -38,6 +38,7 @@ const AgentJobsPageSession2 = ({ jobs: propJobs, filters, showAllJobs = false, e
   const [hoveredSaveButtonIndex, setHoveredSaveButtonIndex] = useState(null);
   const [hoveredSuggestButtonIndex, setHoveredSuggestButtonIndex] = useState(null);
   const [hoveredViewMoreButton, setHoveredViewMoreButton] = useState(false);
+  const [openDownloadMenuJobId, setOpenDownloadMenuJobId] = useState(null);
 
   // Load CTV profile to get rank level (only for CTV users)
   useEffect(() => {
@@ -463,6 +464,7 @@ const mockJobs = [
     // Calculate commission based on salary range, job percent, and CTV rank percent
     const jobValues = job.jobValues || job.profits || [];
     let commissionText = 'Liên hệ';
+    let commissionTiers = [];
     
     // Get CTV rank level percent
     const ctvRankPercent = ctvProfile?.rankLevel?.percent ? parseFloat(ctvProfile.rankLevel.percent) : 0;
@@ -571,6 +573,26 @@ const mockJobs = [
           commissionText = `${value}%`;
         }
       }
+
+      // Build commission tiers for UI when there are multiple jobValues
+      commissionTiers = jobValues.map((jv) => {
+        const tierCommissionType = job.jobCommissionType || 'fixed';
+        const rawValue = jv.value;
+        let amountText = '';
+        if (rawValue !== null && rawValue !== undefined && rawValue !== '') {
+          if (tierCommissionType === 'percent') {
+            amountText = `${parseFloat(rawValue).toLocaleString('vi-VN')}%`;
+          } else {
+            const amt = parseFloat(rawValue) || 0;
+            amountText = amt > 0 ? `${amt.toLocaleString('vi-VN')} triệu` : '';
+          }
+        }
+        const valueRef = jv.valueRef || {};
+        const conditionLabel = valueRef.valuename || '';
+        return (conditionLabel || amountText)
+          ? { label: conditionLabel, amount: amountText || commissionText }
+          : null;
+      }).filter(Boolean);
     }
 
     // Get requirements: technique and education
@@ -649,6 +671,7 @@ const mockJobs = [
       location: locationText,
       salary: salaryText,
       commission: commissionText,
+      commissionTiers,
       ageRange,
       nationality,
       gender,
@@ -814,25 +837,19 @@ const mockJobs = [
             </div>
           </div>
         ) : (
-        <div className={`space-y-3 sm:space-y-4 md:space-y-6 ${showAllJobs && enablePagination ? '' : 'pb-20'}`}>
+        <div className={`space-y-3 ${showAllJobs && enablePagination ? '' : 'pb-20'}`}>
             {displayJobs.map((job) => (
             <div
               key={job.id}
               onClick={() => {
-                // Save referrer to sessionStorage for reliable back navigation
                 if (useAdminAPI) {
-                  // Check if we're on group-jobs page
                   const currentPath = window.location.pathname;
-                  console.log('Current path when clicking job:', currentPath);
                   if (currentPath.includes('/admin/group-jobs')) {
                     sessionStorage.setItem('jobDetailReferrer', '/admin/group-jobs');
-                    console.log('Set referrer to /admin/group-jobs');
                   } else {
                     sessionStorage.setItem('jobDetailReferrer', '/admin/jobs');
-                    console.log('Set referrer to /admin/jobs');
                   }
                 }
-                // Pass state to indicate where user came from
                 const fromPage = useAdminAPI 
                   ? (window.location.pathname.includes('/admin/group-jobs') ? 'group-jobs' : 'jobs')
                   : 'agent-jobs';
@@ -842,178 +859,188 @@ const mockJobs = [
               }}
               onMouseEnter={() => setHoveredJobCardIndex(job.id)}
               onMouseLeave={() => setHoveredJobCardIndex(null)}
-              className="border rounded-lg p-3 sm:p-4 md:p-5 lg:p-6 transition-all duration-200 cursor-pointer"
+              className="border rounded-lg p-3 transition-all duration-200 cursor-pointer min-h-[320px] flex flex-col"
               style={{
                 backgroundColor: 'white',
                 borderColor: '#e5e7eb',
                 boxShadow: hoveredJobCardIndex === job.id ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
               }}
             >
-              <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 lg:gap-6">
+              <div className="flex flex-col lg:flex-row gap-3 flex-1 min-h-0">
                 {/* Main Content - Left Column */}
-                <div className="flex-1 flex flex-col space-y-4 min-w-0">
-                  {/* Header Section */}
-                  <div className="space-y-3 pb-2 border-b" style={{ borderColor: '#f3f4f6' }}>
-                    {/* Job Code */}
-                    <div className="text-xs sm:text-xs font-medium" style={{ color: '#6b7280' }}>
+                <div className="flex-1 flex flex-col min-w-0 space-y-2">
+                  {/* Header: Code + Tags + Title + Category + Company */}
+                  <div className="space-y-1.5 pb-2 border-b flex-shrink-0" style={{ borderColor: '#f3f4f6' }}>
+                    <div className="text-[11px] font-medium" style={{ color: '#6b7280' }}>
                       {language === 'vi' ? 'ID công việc' : language === 'en' ? 'Job ID' : '求人ID'}: <span style={{ color: '#374151' }}>{job.jobCode}</span>
                     </div>
-                    
-                    {/* Tags */}
                     {job.tags && job.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                      <div className="flex flex-wrap gap-1">
                         {job.tags.map((tag, index) => (
-                          <span
-                            key={index}
-                            className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium border"
-                            style={getTagInlineStyle(tag.color)}
-                          >
+                          <span key={index} className="px-2 py-0.5 rounded-full text-[10px] font-medium border" style={getTagInlineStyle(tag.color)}>
                             {tag.label}
                           </span>
                         ))}
                       </div>
                     )}
-
-                    {/* Job Title */}
-                    <h2 className="text-base sm:text-lg md:text-xl font-bold leading-tight pr-2" style={{ color: '#2563eb' }}>
-                      {job.title}
-                    </h2>
-
-                    {/* Category and Company */}
-                    <div className="space-y-1.5 sm:space-y-2">
-                      {job.category && (
-                        <div className="text-xs sm:text-sm" style={{ color: '#374151' }}>
-                          <span className="font-semibold" style={{ color: '#4b5563' }}>{language === 'vi' ? 'Phân loại công việc' : language === 'en' ? 'Job Category' : '職種分類'}:</span>
-                          <span className="ml-1 sm:ml-2 break-words">{job.category}</span>
-                        </div>
-                      )}
-
-                      {/* Company Name */}
-                      <div className="flex items-start gap-1.5 sm:gap-2">
-                        <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mt-0.5 flex-shrink-0" style={{ color: '#6b7280' }} />
-                        <div className="text-xs sm:text-sm" style={{ color: '#374151' }}>
-                          <span className="font-semibold" style={{ color: '#4b5563' }}>{t.hiringCompany}:</span>
-                          <span className="ml-1 sm:ml-2 break-words">{job.recruitingCompany?.companyName || job.company?.name || 'N/A'}</span>
-                        </div>
+                    <h2 className="text-sm font-bold leading-tight line-clamp-2 pr-1" style={{ color: '#2563eb' }}>{job.title}</h2>
+                    {job.category && (
+                      <div className="text-[11px] line-clamp-1" style={{ color: '#374151' }}>
+                        <span className="font-semibold" style={{ color: '#4b5563' }}>{language === 'vi' ? 'Phân loại' : language === 'en' ? 'Category' : '職種'}:</span>
+                        <span className="ml-1 break-words">{job.category}</span>
+                      </div>
+                    )}
+                    <div className="flex items-start gap-1">
+                      <Building2 className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: '#6b7280' }} />
+                      <div className="text-[11px] line-clamp-1" style={{ color: '#374151' }}>
+                        <span className="font-semibold" style={{ color: '#4b5563' }}>{t.hiringCompany}:</span>
+                        <span className="ml-1">{job.recruitingCompany?.companyName || job.company?.name || 'N/A'}</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Scrollable Sections Container */}
-                  <div className="grid grid-cols-1 gap-4">
-                    {/* Nội dung công việc - Scrollable */}
-                    {job.jobContent && (
-                      <div className="flex flex-col h-40 sm:h-48 md:h-52 border rounded-lg flex-shrink-0" style={{ borderColor: '#e5e7eb', backgroundColor: 'rgba(249, 250, 251, 0.5)' }}>
-                        <div className="px-3 sm:px-4 pt-2 sm:pt-3 pb-2 border-b rounded-t-lg flex-shrink-0" style={{ borderColor: '#e5e7eb', backgroundColor: 'white' }}>
-                          <div className="text-xs sm:text-sm font-semibold" style={{ color: '#1f2937' }}>
-                            {language === 'vi' ? 'Nội dung công việc' : language === 'en' ? 'Job Content' : '仕事内容'}
-                          </div>
+                  {/* Nội dung + Điều kiện: cùng chiều cao cố định */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1 min-h-0">
+                    {job.jobContent ? (
+                      <div className="flex flex-col h-[120px] border rounded-md flex-shrink-0 overflow-hidden" style={{ borderColor: '#e5e7eb', backgroundColor: '#fafafa' }}>
+                        <div className="px-2 py-1 border-b flex-shrink-0 text-[10px] font-semibold" style={{ borderColor: '#e5e7eb', color: '#374151' }}>
+                          {language === 'vi' ? 'Nội dung công việc' : language === 'en' ? 'Job Content' : '仕事内容'}
                         </div>
-                        <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm leading-relaxed whitespace-pre-line custom-scrollbar min-h-0" style={{ color: '#374151' }}>
-                          {job.jobContent}
-                        </div>
+                        <div className="flex-1 overflow-y-auto px-2 py-1.5 text-[11px] leading-snug whitespace-pre-line custom-scrollbar min-h-0" style={{ color: '#374151' }}>{job.jobContent}</div>
                       </div>
+                    ) : (
+                      <div className="h-[120px] rounded-md flex-shrink-0" style={{ backgroundColor: '#f9fafb', border: '1px dashed #e5e7eb' }} />
                     )}
-
-                    {/* Điều kiện ứng tuyển - Scrollable */}
-                    {job.applicationConditions && job.applicationConditions.length > 0 && (
-                      <div className="flex flex-col h-40 sm:h-48 md:h-52 border rounded-lg flex-shrink-0" style={{ borderColor: '#e5e7eb', backgroundColor: 'rgba(249, 250, 251, 0.5)' }}>
-                        <div className="px-3 sm:px-4 pt-2 sm:pt-3 pb-2 border-b rounded-t-lg flex-shrink-0" style={{ borderColor: '#e5e7eb', backgroundColor: 'white' }}>
-                          <div className="text-xs sm:text-sm font-semibold" style={{ color: '#1f2937' }}>
-                            {language === 'vi' ? 'Điều kiện ứng tuyển' : language === 'en' ? 'Application Conditions' : '応募条件'}
-                          </div>
+                    {job.applicationConditions && job.applicationConditions.length > 0 ? (
+                      <div className="flex flex-col h-[120px] border rounded-md flex-shrink-0 overflow-hidden" style={{ borderColor: '#e5e7eb', backgroundColor: '#fafafa' }}>
+                        <div className="px-2 py-1 border-b flex-shrink-0 text-[10px] font-semibold" style={{ borderColor: '#e5e7eb', color: '#374151' }}>
+                          {language === 'vi' ? 'Điều kiện ứng tuyển' : language === 'en' ? 'Conditions' : '応募条件'}
                         </div>
-                        <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm space-y-2 custom-scrollbar min-h-0" style={{ color: '#374151' }}>
+                        <div className="flex-1 overflow-y-auto px-2 py-1.5 text-[11px] space-y-1 custom-scrollbar min-h-0" style={{ color: '#374151' }}>
                           {job.applicationConditions.map((condition, index) => (
-                            <div key={index} className="flex items-start gap-2 sm:gap-2.5">
-                              <span className="flex-shrink-0 mt-0.5 font-bold" style={{ color: '#3b82f6' }}>•</span>
-                              <span className="whitespace-pre-line leading-relaxed">{condition}</span>
+                            <div key={index} className="flex items-start gap-1">
+                              <span className="flex-shrink-0 font-bold" style={{ color: '#3b82f6' }}>•</span>
+                              <span className="whitespace-pre-line leading-snug line-clamp-2">{condition}</span>
                             </div>
                           ))}
                         </div>
                       </div>
+                    ) : (
+                      <div className="h-[120px] rounded-md flex-shrink-0" style={{ backgroundColor: '#f9fafb', border: '1px dashed #e5e7eb' }} />
                     )}
                   </div>
                 </div>
 
-                {/* Side Panel - Right Column */}
-                <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 space-y-3 sm:space-y-4">
-                  {/* Commission Section */}
-                  {job.commission && (
-                    <div className="border-2 rounded-lg p-3 sm:p-4 md:p-5 shadow-sm" style={{ background: 'linear-gradient(to bottom right, #fef2f2, #fef2f2, #fee2e2)', borderColor: '#fca5a5', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
-                      <div className="text-xs font-semibold mb-2 sm:mb-3 uppercase tracking-wider" style={{ color: '#991b1b' }}>
-                        {t.companyCommission || 'Hoa hồng'}
-                      </div>
-                      <div className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight" style={{ color: '#7f1d1d' }}>
-                        {job.commission}
+                {/* Side Panel - Right: cố định bề rộng, đồng nhất kích thước */}
+                <div className="w-full lg:w-60 flex-shrink-0 flex flex-col gap-2">
+                  {job.commissionTiers && job.commissionTiers.length > 0 ? (
+                    <div className="flex-shrink-0 flex flex-col gap-1.5">
+                      <div className="flex rounded-md overflow-hidden shadow-sm border" style={{ borderColor: '#0d6bbd' }}>
+                        {/* Left grey label spanning rows */}
+                        <div
+                          className="flex-[0_0_35%] min-w-0 px-2 py-2 text-[10px] font-medium flex items-center justify-center text-center leading-snug whitespace-normal"
+                          style={{ backgroundColor: '#4b4f5a', color: '#ffffff' }}
+                        >
+                          <span className="line-clamp-3">
+                            {language === 'vi'
+                              ? 'Phí giới thiệu dự kiến của bạn'
+                              : language === 'en'
+                              ? 'Estimated referral fee for you'
+                              : '想定紹介料（あなた）'}
+                          </span>
+                        </div>
+                        {/* Right: condition + amount rows */}
+                        <div className="flex-1 min-w-0 flex flex-col">
+                          {job.commissionTiers.map((tier, index) => (
+                            <div
+                              key={index}
+                              className="flex min-h-[32px]"
+                              style={{
+                                borderTop: index === 0 ? 'none' : '1px solid #d1d5db',
+                              }}
+                            >
+                              <div
+                                className="w-24 sm:w-28 px-2 py-1 text-[10px] sm:text-[11px] font-semibold flex items-center justify-center text-center leading-snug"
+                                style={{ backgroundColor: '#e5f0fb', color: '#0d6bbd' }}
+                              >
+                                <span className="line-clamp-2">{tier.label}</span>
+                              </div>
+                              <div
+                                className="flex-1 px-2 sm:px-3 py-1 text-[11px] sm:text-[12px] font-bold flex items-center justify-center leading-snug"
+                                style={{ backgroundColor: '#007ac3', color: '#ffffff' }}
+                              >
+                                <span className="line-clamp-2">{tier.amount || job.commission}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
+                  ) : job.commission ? (
+                    <div className="flex-shrink-0 flex flex-col gap-1.5">
+                      <div className="flex items-stretch rounded-md overflow-hidden shadow-sm border" style={{ borderColor: '#0d6bbd' }}>
+                        <div
+                          className="flex-[0_0_45%] min-w-0 px-2 py-1 text-[10px] font-medium flex items-center justify-center text-center leading-snug whitespace-normal"
+                          style={{ backgroundColor: '#4b4f5a', color: '#ffffff' }}
+                        >
+                          <span className="line-clamp-2">
+                            {language === 'vi'
+                              ? 'Phí giới thiệu dự kiến của bạn'
+                              : language === 'en'
+                              ? 'Estimated referral fee for you'
+                              : '想定紹介料（あなた）'}
+                          </span>
+                        </div>
+                        <div
+                          className="flex-1 min-w-0 px-2 py-1 text-[11px] font-bold flex items-center justify-center"
+                          style={{ backgroundColor: '#007ac3', color: '#ffffff' }}
+                        >
+                          {job.commission}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-[52px] rounded-md flex-shrink-0" style={{ backgroundColor: '#f9fafb', border: '1px dashed #e5e7eb' }} />
                   )}
-
-                  {/* Quick Info Panel */}
-                  <div className="border rounded-lg p-3 sm:p-4 md:p-5 shadow-sm" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
-                    <div className="text-sm sm:text-base font-bold mb-3 sm:mb-4 pb-2 border-b" style={{ color: '#1f2937', borderColor: '#d1d5db' }}>
+                  <div className="border rounded-md p-2 flex-1 min-h-0 overflow-y-auto custom-scrollbar" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
+                    <div className="text-[10px] font-bold pb-1 border-b mb-1.5" style={{ color: '#374151', borderColor: '#e5e7eb' }}>
                       {language === 'vi' ? 'Thông tin nhanh' : language === 'en' ? 'Quick Info' : 'クイック情報'}
                     </div>
-                    
-                    <div className="space-y-3 sm:space-y-4">
-                      {/* Thu nhập hàng năm */}
+                    <div className="space-y-1.5">
                       {job.salary && (
-                        <div className="pb-2 sm:pb-3 border-b last:border-0" style={{ borderColor: '#e5e7eb' }}>
-                          <div className="text-xs font-semibold uppercase tracking-wide mb-1 sm:mb-1.5" style={{ color: '#6b7280' }}>
-                            {language === 'vi' ? 'Thu nhập hàng năm' : language === 'en' ? 'Annual income' : '年収'}
-                          </div>
-                          <div className="text-xs sm:text-sm font-semibold leading-relaxed break-words" style={{ color: '#111827' }}>{job.salary}</div>
+                        <div className="pb-1.5 border-b" style={{ borderColor: '#e5e7eb' }}>
+                          <div className="text-[9px] font-semibold uppercase text-gray-500">{language === 'vi' ? 'Thu nhập/năm' : language === 'en' ? 'Annual' : '年収'}</div>
+                          <div className="text-[11px] font-medium break-words line-clamp-2" style={{ color: '#111827' }}>{job.salary}</div>
                         </div>
                       )}
-
-                      {/* Tuổi */}
                       {job.ageRange && (
-                        <div className="pb-2 sm:pb-3 border-b last:border-0" style={{ borderColor: '#e5e7eb' }}>
-                          <div className="text-xs font-semibold uppercase tracking-wide mb-1 sm:mb-1.5" style={{ color: '#6b7280' }}>
-                            {language === 'vi' ? 'Tuổi' : language === 'en' ? 'Age' : '年齢'}
-                          </div>
-                          <div className="text-xs sm:text-sm font-semibold break-words" style={{ color: '#111827' }}>{job.ageRange}</div>
+                        <div className="pb-1.5 border-b" style={{ borderColor: '#e5e7eb' }}>
+                          <div className="text-[9px] font-semibold uppercase text-gray-500">{language === 'vi' ? 'Tuổi' : language === 'en' ? 'Age' : '年齢'}</div>
+                          <div className="text-[11px] font-medium break-words" style={{ color: '#111827' }}>{job.ageRange}</div>
                         </div>
                       )}
-
-                      {/* Quốc tịch */}
                       {job.nationality && (
-                        <div className="pb-2 sm:pb-3 border-b last:border-0" style={{ borderColor: '#e5e7eb' }}>
-                          <div className="text-xs font-semibold uppercase tracking-wide mb-1 sm:mb-1.5" style={{ color: '#6b7280' }}>
-                            {language === 'vi' ? 'Quốc tịch' : language === 'en' ? 'Nationality' : '国籍'}
-                          </div>
-                          <div className="text-xs sm:text-sm font-semibold break-words" style={{ color: '#111827' }}>{job.nationality}</div>
+                        <div className="pb-1.5 border-b" style={{ borderColor: '#e5e7eb' }}>
+                          <div className="text-[9px] font-semibold uppercase text-gray-500">{language === 'vi' ? 'Quốc tịch' : language === 'en' ? 'Nationality' : '国籍'}</div>
+                          <div className="text-[11px] font-medium break-words" style={{ color: '#111827' }}>{job.nationality}</div>
                         </div>
                       )}
-
-                      {/* Giới tính */}
                       {job.gender && (
-                        <div className="pb-2 sm:pb-3 border-b last:border-0" style={{ borderColor: '#e5e7eb' }}>
-                          <div className="text-xs font-semibold uppercase tracking-wide mb-1 sm:mb-1.5" style={{ color: '#6b7280' }}>
-                            {language === 'vi' ? 'Giới tính' : language === 'en' ? 'Gender' : '性別'}
-                          </div>
-                          <div className="text-xs sm:text-sm font-semibold break-words" style={{ color: '#111827' }}>{job.gender}</div>
+                        <div className="pb-1.5 border-b" style={{ borderColor: '#e5e7eb' }}>
+                          <div className="text-[9px] font-semibold uppercase text-gray-500">{language === 'vi' ? 'Giới tính' : language === 'en' ? 'Gender' : '性別'}</div>
+                          <div className="text-[11px] font-medium break-words" style={{ color: '#111827' }}>{job.gender}</div>
                         </div>
                       )}
-
-                      {/* Trình độ học vấn */}
                       {job.educationLevel && (
-                        <div className="pb-2 sm:pb-3 border-b last:border-0" style={{ borderColor: '#e5e7eb' }}>
-                          <div className="text-xs font-semibold uppercase tracking-wide mb-1 sm:mb-1.5" style={{ color: '#6b7280' }}>
-                            {language === 'vi' ? 'Trình độ học vấn' : language === 'en' ? 'Education level' : '学歴'}
-                          </div>
-                          <div className="text-xs sm:text-sm font-semibold break-words" style={{ color: '#111827' }}>{job.educationLevel}</div>
+                        <div className="pb-1.5 border-b" style={{ borderColor: '#e5e7eb' }}>
+                          <div className="text-[9px] font-semibold uppercase text-gray-500">{language === 'vi' ? 'Học vấn' : language === 'en' ? 'Education' : '学歴'}</div>
+                          <div className="text-[11px] font-medium break-words line-clamp-2" style={{ color: '#111827' }}>{job.educationLevel}</div>
                         </div>
                       )}
-
-                      {/* Địa chỉ làm việc */}
                       {job.location && (
-                        <div className="pb-2 sm:pb-3 border-b last:border-0" style={{ borderColor: '#e5e7eb' }}>
-                          <div className="text-xs font-semibold uppercase tracking-wide mb-1 sm:mb-1.5" style={{ color: '#6b7280' }}>
-                            {language === 'vi' ? 'Nơi làm việc' : language === 'en' ? 'Work locations' : '勤務地'}
-                          </div>
-                          <div className="text-xs sm:text-sm font-semibold leading-relaxed whitespace-pre-line break-words" style={{ color: '#111827' }}>{job.location}</div>
+                        <div className="pb-1.5" style={{ borderColor: '#e5e7eb' }}>
+                          <div className="text-[9px] font-semibold uppercase text-gray-500">{language === 'vi' ? 'Nơi làm việc' : language === 'en' ? 'Location' : '勤務地'}</div>
+                          <div className="text-[11px] font-medium leading-snug whitespace-pre-line break-words line-clamp-2" style={{ color: '#111827' }}>{job.location}</div>
                         </div>
                       )}
                     </div>
@@ -1021,103 +1048,92 @@ const mockJobs = [
                 </div>
               </div>
 
-              {/* Footer Section - Dates and Action Buttons */}
-              <div className="flex flex-col gap-3 sm:gap-4 pt-3 sm:pt-4 mt-3 sm:mt-4 border-t" style={{ borderColor: '#e5e7eb' }}>
-                {/* Date Information - Left Side */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm" style={{ color: '#4b5563' }}>
+              {/* Footer: ngày + nút - gọn, cố định */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2 mt-2 border-t flex-shrink-0" style={{ borderColor: '#e5e7eb' }}>
+                <div className="flex items-center gap-2 text-[11px]" style={{ color: '#6b7280' }}>
                   {job.updatedAt && (
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3 flex-shrink-0" />{language === 'vi' ? 'Cập nhật' : language === 'en' ? 'Updated' : '更新'}: {job.updatedAt}
+                    </span>
+                  )}
+                  {job.publishedAt && (
                     <>
-                      <div className="flex items-center gap-1.5 sm:gap-2">
-                        <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" style={{ color: '#6b7280' }} />
-                        <span className="break-words">
-                          {language === 'vi' ? 'Ngày cập nhật' : language === 'en' ? 'Update date' : '更新日'}: {job.updatedAt}
-                        </span>
-                      </div>
-                      {job.publishedAt && (
-                        <>
-                          <div className="hidden sm:block h-4 w-px" style={{ backgroundColor: '#d1d5db' }}></div>
-                          <div className="flex items-center gap-1.5 sm:gap-2">
-                            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" style={{ color: '#6b7280' }} />
-                            <span className="break-words">
-                              {language === 'vi' ? 'Ngày xuất bản' : language === 'en' ? 'Publication date' : '公開日'}: {job.publishedAt}
-                            </span>
-                          </div>
-                        </>
-                      )}
+                      {job.updatedAt && <span className="text-gray-300">|</span>}
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3 flex-shrink-0" />{language === 'vi' ? 'Xuất bản' : language === 'en' ? 'Published' : '公開'}: {job.publishedAt}
+                      </span>
                     </>
                   )}
-                  {!job.updatedAt && job.publishedAt && (
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                      <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" style={{ color: '#6b7280' }} />
-                      <span className="break-words">
-                        {language === 'vi' ? 'Ngày xuất bản' : language === 'en' ? 'Publication date' : '公開日'}: {job.publishedAt}
-                      </span>
-                    </div>
-                  )}
+                  {!job.updatedAt && !job.publishedAt && <span />}
                 </div>
-
-                {/* Action Buttons - Right Side */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-                  {/* Download Button */}
+                <div className="flex items-center gap-1.5 flex-wrap relative">
+                  {/* Download Button + Menu */}
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenDownloadMenuJobId(openDownloadMenuJobId === job.id ? null : job.id);
+                      }}
+                      onMouseEnter={() => setHoveredDownloadButtonIndex(job.id)}
+                      onMouseLeave={() => setHoveredDownloadButtonIndex(null)}
+                      className="flex items-center gap-1 px-2 py-1.5 border rounded-md text-[11px] font-medium transition-colors"
+                      style={{ borderColor: '#93c5fd', color: '#2563eb', backgroundColor: hoveredDownloadButtonIndex === job.id ? '#eff6ff' : 'transparent' }}
+                    >
+                      <Download className="w-3 h-3" /><span className="hidden sm:inline">{language === 'vi' ? 'Tải JD' : language === 'en' ? 'Download JD' : 'JDをダウンロード'}</span>
+                    </button>
+                    {openDownloadMenuJobId === job.id && (
+                      <div
+                        className="absolute z-20 mt-1 w-40 bg-white border rounded-md shadow-lg text-[11px]"
+                        style={{ borderColor: '#e5e7eb' }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          className="w-full text-left px-3 py-1.5 hover:bg-gray-50 transition-colors"
+                          onClick={() => {
+                            console.log('Download JD VI for job:', job.id);
+                            setOpenDownloadMenuJobId(null);
+                          }}
+                        >
+                          JD tiếng Việt
+                        </button>
+                        <button
+                          className="w-full text-left px-3 py-1.5 hover:bg-gray-50 transition-colors"
+                          onClick={() => {
+                            console.log('Download JD EN for job:', job.id);
+                            setOpenDownloadMenuJobId(null);
+                          }}
+                        >
+                          JD tiếng Anh
+                        </button>
+                        <button
+                          className="w-full text-left px-3 py-1.5 hover:bg-gray-50 transition-colors"
+                          onClick={() => {
+                            console.log('Download JD JP for job:', job.id);
+                            setOpenDownloadMenuJobId(null);
+                          }}
+                        >
+                          JD tiếng Nhật
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // TODO: Implement download functionality
-                      console.log('Download job:', job.id);
-                    }}
-                    onMouseEnter={() => setHoveredDownloadButtonIndex(job.id)}
-                    onMouseLeave={() => setHoveredDownloadButtonIndex(null)}
-                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 border rounded-lg transition-colors text-xs sm:text-sm font-medium"
-                    style={{
-                      borderColor: '#60a5fa',
-                      color: '#2563eb',
-                      backgroundColor: hoveredDownloadButtonIndex === job.id ? '#eff6ff' : 'transparent'
-                    }}
-                  >
-                    <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                    <span className="hidden sm:inline">{language === 'vi' ? 'Tải xuống' : language === 'en' ? 'Download' : 'ダウンロード'}</span>
-                    <span className="sm:hidden">{language === 'vi' ? 'Tải' : language === 'en' ? 'Download' : 'ダウンロード'}</span>
-                    <ChevronDown className="w-3 h-3 flex-shrink-0" />
-                  </button>
-
-                  {/* Save Button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // TODO: Implement save functionality
-                      console.log('Save job:', job.id);
-                    }}
+                    onClick={(e) => { e.stopPropagation(); console.log('Save job:', job.id); }}
                     onMouseEnter={() => setHoveredSaveButtonIndex(job.id)}
                     onMouseLeave={() => setHoveredSaveButtonIndex(null)}
-                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 border rounded-lg transition-colors text-xs sm:text-sm font-medium"
-                    style={{
-                      borderColor: '#60a5fa',
-                      color: '#2563eb',
-                      backgroundColor: hoveredSaveButtonIndex === job.id ? '#eff6ff' : 'transparent'
-                    }}
+                    className="flex items-center gap-1 px-2 py-1.5 border rounded-md text-[11px] font-medium transition-colors"
+                    style={{ borderColor: '#93c5fd', color: '#2563eb', backgroundColor: hoveredSaveButtonIndex === job.id ? '#eff6ff' : 'transparent' }}
                   >
-                    <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                    <span>{language === 'vi' ? 'Giữ gìn' : language === 'en' ? 'Save' : '保存'}</span>
+                    <Heart className="w-3 h-3" /><span>{language === 'vi' ? 'Lưu' : 'Save'}</span>
                   </button>
-
-                  {/* Suggest Candidate Button */}
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // TODO: Implement suggest candidate functionality
-                      console.log('Suggest candidate for job:', job.id);
-                    }}
+                    onClick={(e) => { e.stopPropagation(); console.log('Suggest candidate for job:', job.id); }}
                     onMouseEnter={() => setHoveredSuggestButtonIndex(job.id)}
                     onMouseLeave={() => setHoveredSuggestButtonIndex(null)}
-                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm font-medium"
-                    style={{
-                      backgroundColor: hoveredSuggestButtonIndex === job.id ? '#facc15' : '#facc15',
-                      color: '#111827'
-                    }}
+                    className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium transition-colors"
+                    style={{ backgroundColor: hoveredSuggestButtonIndex === job.id ? '#fde047' : '#facc15', color: '#111827' }}
                   >
-                    <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                    <span className="hidden sm:inline">{language === 'vi' ? 'Đề xuất một ứng cử viên' : language === 'en' ? 'Suggest a candidate' : '候補者を提案'}</span>
-                    <span className="sm:hidden">{language === 'vi' ? 'Đề xuất' : language === 'en' ? 'Suggest' : '提案'}</span>
+                    <UserPlus className="w-3 h-3" /><span className="hidden sm:inline">{language === 'vi' ? 'Tiến cử ứng viên' : 'Suggest'}</span>
                   </button>
                 </div>
               </div>

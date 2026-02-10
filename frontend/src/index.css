@@ -213,6 +213,26 @@ button:focus-visible {
   display: none;  /* Chrome, Safari and Opera */
 }
 
+/* Thanh scroll ngang gọn cho phần lịch (schedule date picker) */
+.schedule-date-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f3f4f6;
+}
+.schedule-date-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+.schedule-date-scroll::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 2px;
+}
+.schedule-date-scroll::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+.schedule-date-scroll::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
 /* React DatePicker Custom Styles */
 .react-datepicker-wrapper {
   width: 100%;

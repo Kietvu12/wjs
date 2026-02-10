@@ -163,7 +163,8 @@ async function startServer() {
     app.listen(PORT, () => {
       console.log(`🚀 Server is running on port ${PORT}`);
       console.log(`📝 Environment: ${config.nodeEnv}`);
-      console.log(`🌐 CORS enabled for: ${config.cors.origin}`);
+      const corsDesc = typeof config.cors.origin === 'function' ? 'localhost + LAN IP (dynamic)' : (Array.isArray(config.cors.origin) ? config.cors.origin.join(', ') : config.cors.origin);
+      console.log(`🌐 CORS enabled for: ${corsDesc}`);
     });
   } catch (error) {
     console.error('❌ Unable to start server:', error);

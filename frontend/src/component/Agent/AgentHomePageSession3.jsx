@@ -72,6 +72,20 @@ const AgentHomePageSession3 = () => {
     return totalPages > 1;
   }, [pagination]);
 
+  // Tách dữ liệu thành 3 nhóm: Campaign, Job pick up, News
+  const campaigns = React.useMemo(
+    () => (tableData || []).filter((item) => item.type === 'campaign'),
+    [tableData]
+  );
+  const jobPickups = React.useMemo(
+    () => (tableData || []).filter((item) => item.type === 'job-pickup'),
+    [tableData]
+  );
+  const newsItems = React.useMemo(
+    () => (tableData || []).filter((item) => item.type === 'news'),
+    [tableData]
+  );
+
   const loadMore = () => {
     const nextPage = Math.floor((tableData?.length || 0) / 20) + 1;
     dispatch(fetchInformationList(nextPage, true));
@@ -121,7 +135,7 @@ const AgentHomePageSession3 = () => {
             tagIcon: Star,
             title: pickup.name || '',
             date: formatDate(pickup.createdAt),
-            description: pickup.description || `${pickup.jobsCount || 0} việc làm được chọn`,
+            description: pickup.description || '',
             action: t.viewDetails || 'Xem chi tiết',
             url: `/agent/jobs?pickupId=${pickup.id}`,
             isNew: isRecent(pickup.createdAt),
@@ -540,209 +554,136 @@ const AgentHomePageSession3 = () => {
     );
   }
 
+  // Render block Campaign hoặc News (cột dạng list) - gọn, tone đỏ
+  const renderBlock = (title, items, defaultIcon) => (
+    <div className="flex flex-col h-full min-h-0 rounded-lg border overflow-hidden" style={{ backgroundColor: '#fafafa', borderColor: '#e5e7eb' }}>
+      <div className="flex items-center justify-between px-2 py-1.5 border-b flex-shrink-0" style={{ borderColor: '#fecaca', backgroundColor: '#fef2f2' }}>
+        <h3 className="text-[11px] font-bold" style={{ color: '#b91c1c' }}>{title}</h3>
+        {items.length > 0 && (
+          <span className="text-[10px]" style={{ color: '#6b7280' }}>{items.length}{language === 'ja' ? '件' : ''}</span>
+        )}
+      </div>
+      {items.length > 0 ? (
+        <div className="flex-1 min-h-0 overflow-y-auto max-h-[180px] sm:max-h-[200px]">
+          <div className="grid grid-cols-1 gap-1.5 p-1.5">
+            {items.map((item) => {
+              const iconMap = { 'Star': Star, 'Target': Target, 'FileText': FileText };
+              const Icon = iconMap[item.tagIcon] || defaultIcon;
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => handleRowClick(item)}
+                  onMouseEnter={() => setHoveredCardIndex(item.id)}
+                  onMouseLeave={() => setHoveredCardIndex(null)}
+                  className="border rounded-md p-2 transition-all cursor-pointer"
+                  style={{
+                    backgroundColor: 'white',
+                    borderColor: hoveredCardIndex === item.id ? '#fecaca' : '#e5e7eb',
+                    boxShadow: hoveredCardIndex === item.id ? '0 1px 4px rgba(220,38,38,0.12)' : 'none'
+                  }}
+                >
+                  <div className="flex items-start gap-1.5">
+                    <div className="p-1 rounded flex-shrink-0" style={getTagInlineStyle(item.tagColor)}>
+                      <Icon className="w-3 h-3" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className={`text-[11px] ${item.isNew ? 'font-semibold' : 'font-medium'} leading-tight line-clamp-1`} style={{ color: '#111827' }}>{item.title}</h4>
+                      <span className="text-[10px] mt-0.5 block" style={{ color: '#6b7280' }}>{item.date}</span>
+                      {item.description && (
+                        <p className="text-[10px] leading-snug line-clamp-2 mt-0.5" style={{ color: '#6b7280' }}>{item.description}</p>
+                      )}
+                      {item.isNew && (
+                        <span className="inline-block mt-1 px-1 py-0.5 text-white text-[9px] font-semibold rounded" style={{ backgroundColor: '#dc2626' }}>{t.new || 'Mới'}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 flex items-center justify-center p-2">
+          <p className="text-[10px]" style={{ color: '#9ca3af' }}>{t.noData || 'Không có dữ liệu'}</p>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="w-full rounded-lg shadow-sm border overflow-hidden" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
-      {/* Table Header */}
-      <div className="border-b px-3 sm:px-4 py-3" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
-        <h3 className="text-sm sm:text-base font-bold" style={{ color: '#111827' }}>{t.informationList || 'Danh sách thông tin'}</h3>
-      </div>
-
-      {/* Content */}
-      {tableData && tableData.length > 0 ? (
-        <>
-          {/* Desktop Table View */}
-          <div className="hidden lg:block overflow-x-auto max-h-[600px] overflow-y-auto">
-            <table className="w-full min-w-[600px]">
-              <thead className="border-b sticky top-0 z-10" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: '#374151' }}>
-                    {t.title || 'Tiêu đề'}
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: '#374151' }}>
-                    {t.category || 'Danh mục'}
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: '#374151' }}>
-                    {t.publishDate || 'Ngày đăng'}
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: '#374151' }}>
-                    {t.action || 'Thao tác'}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
-                {(tableData || []).map((item) => {
-                  const iconMap = {
-                    'Star': Star,
-                    'Target': Target,
-                    'FileText': FileText
-                  };
-                  const Icon = iconMap[item.tagIcon] || FileText;
-                  return (
-                    <tr
-                      key={item.id}
-                      onClick={() => handleRowClick(item)}
-                      onMouseEnter={() => setHoveredRowIndex(item.id)}
-                      onMouseLeave={() => setHoveredRowIndex(null)}
-                      className="transition-colors cursor-pointer"
-                      style={{
-                        backgroundColor: hoveredRowIndex === item.id ? '#f9fafb' : 'transparent'
-                      }}
-                    >
-                      <td className="px-4 py-3">
-                        <div className="flex flex-col">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className={`text-sm ${item.isNew ? 'font-semibold' : 'font-medium'}`} style={{ color: '#111827' }}>
-                              {item.title}
-                            </p>
-                            {item.isNew && (
-                              <span className="px-1.5 py-0.5 text-white text-xs font-semibold rounded" style={{ backgroundColor: '#dc2626' }}>
-                                {t.new || 'Mới'}
-                              </span>
-                            )}
-                          </div>
-                          {item.description && (
-                            <p className="text-xs leading-relaxed line-clamp-2" style={{ color: '#6b7280' }}>
-                              {item.description}
-                            </p>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold" style={getTagInlineStyle(item.tagColor)}>
-                          <Icon className="w-3.5 h-3.5" />
-                          {item.tag}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="text-xs" style={{ color: '#4b5563' }}>{item.date}</span>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <a
-                          href={item.url}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleRowClick(item);
-                          }}
-                          className="flex items-center gap-1 text-xs font-medium transition-colors"
-                          style={{ color: '#dc2626' }}
-                          onMouseEnter={(e) => e.currentTarget.style.color = '#b91c1c'}
-                          onMouseLeave={(e) => e.currentTarget.style.color = '#dc2626'}
-                        >
-                          {item.action}
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile Card View */}
-          <div className="lg:hidden max-h-[600px] overflow-y-auto">
-            <div className="grid grid-cols-1 gap-3 p-3">
-              {(tableData || []).map((item) => {
-                const iconMap = {
-                  'Star': Star,
-                  'Target': Target,
-                  'FileText': FileText
-                };
-                const Icon = iconMap[item.tagIcon] || FileText;
-                return (
-                  <div
-                    key={item.id}
-                    onClick={() => handleRowClick(item)}
-                    onMouseEnter={() => setHoveredCardIndex(item.id)}
-                    onMouseLeave={() => setHoveredCardIndex(null)}
-                    className="border rounded-lg p-4 transition-all cursor-pointer"
-                    style={{
-                      backgroundColor: 'white',
-                      borderColor: '#e5e7eb',
-                      boxShadow: hoveredCardIndex === item.id ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
-                    }}
-                  >
-                    {/* Card Header */}
-                    <div className="flex items-start justify-between gap-3 mb-2">
-                      <div className="flex items-start gap-3 flex-1 min-w-0">
-                        {/* Icon */}
-                        <div className="p-2 rounded-lg flex-shrink-0" style={getTagInlineStyle(item.tagColor)}>
-                          <Icon className="w-4 h-4" />
-                        </div>
-                        
-                        {/* Title and Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <h4 className={`text-sm ${item.isNew ? 'font-semibold' : 'font-medium'} leading-tight`} style={{ color: '#111827' }}>
-                              {item.title}
-                            </h4>
-                            {item.isNew && (
-                              <span className="px-1.5 py-0.5 text-white text-xs font-semibold rounded flex-shrink-0" style={{ backgroundColor: '#dc2626' }}>
-                                {t.new || 'Mới'}
-                              </span>
-                            )}
-                          </div>
-                          
-                          {/* Category Tag */}
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold" style={getTagInlineStyle(item.tagColor)}>
-                              <Icon className="w-3 h-3" />
-                              {item.tag}
-                            </span>
-                            <span className="text-xs" style={{ color: '#6b7280' }}>{item.date}</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Action Icon */}
-                      <div className="flex-shrink-0">
-                        <ExternalLink className="w-4 h-4" style={{ color: '#dc2626' }} />
-                      </div>
-                    </div>
-                    
-                    {/* Description */}
-                    {item.description && (
-                      <p className="text-xs leading-relaxed line-clamp-2 mt-2" style={{ color: '#6b7280' }}>
-                        {item.description}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          
-          {/* Load More Button */}
-          {hasMore && (
-            <div className="border-t px-4 py-3" style={{ borderColor: '#e5e7eb', backgroundColor: '#f9fafb' }}>
-              <button
-                onClick={loadMore}
-                disabled={loadingMore}
-                onMouseEnter={() => setHoveredLoadMoreButton(true)}
-                onMouseLeave={() => setHoveredLoadMoreButton(false)}
-                className="w-full px-4 py-2 text-sm font-medium border rounded-lg transition-colors disabled:cursor-not-allowed"
+      {/* Job pick up: flat cards gọn, tone đỏ */}
+      {jobPickups.length > 0 && (
+        <div className="px-2 pt-2 pb-1.5 border-b" style={{ borderColor: '#f3f4f6', backgroundColor: 'white' }}>
+          <h3 className="text-[11px] font-bold mb-1.5 flex items-center gap-1" style={{ color: '#b91c1c' }}>
+            <Star className="w-3.5 h-3.5" />
+            Job pick up
+          </h3>
+          <div className="flex gap-2 overflow-x-auto pb-0.5 schedule-date-scroll">
+            {jobPickups.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => handleRowClick(item)}
+                onMouseEnter={() => setHoveredCardIndex(item.id)}
+                onMouseLeave={() => setHoveredCardIndex(null)}
+                className="flex-shrink-0 w-[148px] sm:w-[168px] rounded-lg border p-2 transition-all cursor-pointer"
                 style={{
-                  color: '#dc2626',
-                  backgroundColor: hoveredLoadMoreButton ? '#fef2f2' : 'white',
-                  borderColor: '#dc2626',
-                  opacity: loadingMore ? 0.5 : 1
+                  backgroundColor: '#fef2f2',
+                  borderColor: hoveredCardIndex === item.id ? '#dc2626' : '#fecaca',
+                  boxShadow: hoveredCardIndex === item.id ? '0 2px 8px rgba(220, 38, 38, 0.2)' : '0 1px 2px rgba(0,0,0,0.05)'
                 }}
               >
-                {loadingMore 
-                  ? (language === 'vi' ? 'Đang tải...' : language === 'en' ? 'Loading...' : '読み込み中...')
-                  : (language === 'vi' ? 'Xem thêm' : language === 'en' ? 'Load More' : 'もっと見る')
-                }
-              </button>
-            </div>
-          )}
-        </>
-      ) : (
-        <div className="p-8 text-center">
-          <p style={{ color: '#6b7280' }}>{t.noData || 'Không có dữ liệu'}</p>
+                <div className="flex items-start gap-1.5">
+                  <div className="p-1 rounded flex-shrink-0" style={{ backgroundColor: '#fee2e2', color: '#dc2626' }}>
+                    <Star className="w-3 h-3" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className={`text-[11px] ${item.isNew ? 'font-semibold' : 'font-medium'} leading-tight line-clamp-2`} style={{ color: '#111827' }}>{item.title}</h4>
+                    <span className="text-[10px] mt-0.5 block" style={{ color: '#6b7280' }}>{item.date}</span>
+                    {item.description && (
+                      <p className="text-[10px] leading-snug line-clamp-2 mt-0.5" style={{ color: '#6b7280' }}>{item.description}</p>
+                    )}
+                    {item.isNew && (
+                      <span className="inline-block mt-1 px-1 py-0.5 text-white text-[9px] font-semibold rounded" style={{ backgroundColor: '#dc2626' }}>{t.new || 'Mới'}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-          {/* Jobs Modal */}
+      {/* Campaign | News - 2 cột bên dưới */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 p-2 border-b" style={{ borderColor: '#e5e7eb', backgroundColor: '#fafafa' }}>
+        {renderBlock(t.campaign || 'Campaign', campaigns, Target)}
+        {renderBlock(t.news || 'News', newsItems, FileText)}
+      </div>
+
+      {/* Load More - gọn, tone đỏ */}
+      {hasMore && (
+        <div className="px-2 py-1.5" style={{ backgroundColor: '#fff' }}>
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            onMouseEnter={() => setHoveredLoadMoreButton(true)}
+            onMouseLeave={() => setHoveredLoadMoreButton(false)}
+            className="w-full px-2 py-1.5 text-[11px] font-medium border rounded-md transition-colors disabled:cursor-not-allowed"
+            style={{
+              color: '#dc2626',
+              backgroundColor: hoveredLoadMoreButton ? '#fef2f2' : 'white',
+              borderColor: '#fecaca',
+              opacity: loadingMore ? 0.5 : 1
+            }}
+          >
+            {loadingMore
+              ? (language === 'vi' ? 'Đang tải...' : language === 'en' ? 'Loading...' : '読み込み中...')
+              : (language === 'vi' ? 'Xem thêm' : language === 'en' ? 'Load More' : 'もっと見る')}
+          </button>
+        </div>
+      )}
+
+      {/* Jobs Modal */}
           {showModal && selectedItem && (
             <div 
               className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4"

@@ -138,6 +138,8 @@ export const jobController = {
 
       const { count, rows } = await Job.findAndCountAll({
         where,
+        // IMPORTANT: tránh đếm trùng khi join nhiều bảng 1-n
+        distinct: true, // Sequelize sẽ tự dùng khóa chính của Job
         include: [
           {
             model: JobCategory,
