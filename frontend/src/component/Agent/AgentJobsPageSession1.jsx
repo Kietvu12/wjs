@@ -1848,6 +1848,7 @@ const SearchHistoryContent = () => {
 
 // Saved Criteria Content
 const SavedCriteriaContent = () => {
+  const [hoveredSavedCriteriaButtonIndex, setHoveredSavedCriteriaButtonIndex] = useState(null);
   const mockSavedCriteria = [
     { 
       id: 1, 
