@@ -43,6 +43,17 @@ const PaymentHistoryPage = () => {
     totalPages: 1
   });
 
+  // Hover states
+  const [hoveredSearchButton, setHoveredSearchButton] = useState(false);
+  const [hoveredResetButton, setHoveredResetButton] = useState(false);
+  const [hoveredExportButton, setHoveredExportButton] = useState(false);
+  const [hoveredPaginationButton, setHoveredPaginationButton] = useState(null);
+  const [hoveredTableRow, setHoveredTableRow] = useState(null);
+  const [hoveredViewButton, setHoveredViewButton] = useState(null);
+  const [hoveredMoreButton, setHoveredMoreButton] = useState(null);
+  const [focusedInput, setFocusedInput] = useState(null);
+  const [focusedSelect, setFocusedSelect] = useState(null);
+
   // Map status từ số sang string
   // Theo model: 0: Chờ duyệt, 1: Đã duyệt, 2: Từ chối, 3: Đã thanh toán
   const mapStatus = (status) => {
@@ -148,15 +159,15 @@ const PaymentHistoryPage = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return { backgroundColor: '#fef9c3', color: '#854d0e' };
       case 'approved':
-        return 'bg-blue-100 text-blue-800';
+        return { backgroundColor: '#dbeafe', color: '#1e40af' };
       case 'paid':
-        return 'bg-green-100 text-green-800';
+        return { backgroundColor: '#dcfce7', color: '#166534' };
       case 'rejected':
-        return 'bg-red-100 text-red-800';
+        return { backgroundColor: '#fee2e2', color: '#991b1b' };
       default:
-        return 'bg-gray-100 text-gray-800';
+        return { backgroundColor: '#f3f4f6', color: '#1f2937' };
     }
   };
 
@@ -217,35 +228,61 @@ const PaymentHistoryPage = () => {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Filter Section */}
-      <div className="bg-white rounded-2xl p-4 border border-gray-200 mb-4 flex-shrink-0">
+      <div className="rounded-2xl p-4 border mb-4 flex-shrink-0" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         {/* Search Bar */}
         <div className="flex items-center gap-3 flex-wrap mb-4">
           <div className="flex-1 min-w-[300px]">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#9ca3af' }} />
               <input
                 type="text"
                 placeholder="Tìm kiếm theo tên ứng viên, job title, công ty, ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 text-sm"
+                onFocus={() => setFocusedInput('search')}
+                onBlur={() => setFocusedInput(null)}
+                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none text-sm"
+                style={{
+                  borderColor: focusedInput === 'search' ? '#dc2626' : '#d1d5db',
+                  boxShadow: focusedInput === 'search' ? '0 0 0 2px rgba(220, 38, 38, 0.2)' : 'none'
+                }}
               />
             </div>
           </div>
           <button
             onClick={handleSearch}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors flex items-center gap-2"
+            onMouseEnter={() => setHoveredSearchButton(true)}
+            onMouseLeave={() => setHoveredSearchButton(false)}
+            className="px-6 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2"
+            style={{
+              backgroundColor: hoveredSearchButton ? '#1d4ed8' : '#2563eb',
+              color: 'white'
+            }}
           >
             <Search className="w-4 h-4" />
             Tìm kiếm
           </button>
           <button
             onClick={handleReset}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-bold text-sm hover:bg-gray-200 transition-colors"
+            onMouseEnter={() => setHoveredResetButton(true)}
+            onMouseLeave={() => setHoveredResetButton(false)}
+            className="px-4 py-2 rounded-lg font-bold text-sm transition-colors"
+            style={{
+              backgroundColor: hoveredResetButton ? '#e5e7eb' : '#f3f4f6',
+              color: '#374151'
+            }}
           >
             Reset
           </button>
-          <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-bold text-sm hover:bg-gray-200 transition-colors flex items-center gap-2">
+          <button 
+            onMouseEnter={() => setHoveredExportButton(true)}
+            onMouseLeave={() => setHoveredExportButton(false)}
+            className="px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2"
+            style={{
+              backgroundColor: hoveredExportButton ? '#e5e7eb' : '#f3f4f6',
+              color: '#374151'
+            }}
+          >
             <Download className="w-4 h-4" />
             Xuất Excel
           </button>
@@ -254,12 +291,18 @@ const PaymentHistoryPage = () => {
         {/* Additional Filters */}
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-gray-500" />
-            <label className="text-sm font-bold text-gray-900">Trạng thái:</label>
+            <Filter className="w-4 h-4" style={{ color: '#6b7280' }} />
+            <label className="text-sm font-bold" style={{ color: '#111827' }}>Trạng thái:</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+              onFocus={() => setFocusedSelect('status')}
+              onBlur={() => setFocusedSelect(null)}
+              className="px-3 py-2 border rounded-lg text-sm focus:outline-none"
+              style={{
+                borderColor: focusedSelect === 'status' ? '#dc2626' : '#d1d5db',
+                boxShadow: focusedSelect === 'status' ? '0 0 0 2px rgba(220, 38, 38, 0.2)' : 'none'
+              }}
             >
               <option value="">Tất cả</option>
               <option value="pending">Chờ duyệt</option>
@@ -269,41 +312,53 @@ const PaymentHistoryPage = () => {
             </select>
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-sm font-bold text-gray-900">Từ ngày:</label>
+            <label className="text-sm font-bold" style={{ color: '#111827' }}>Từ ngày:</label>
             <input
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+              onFocus={() => setFocusedInput('dateFrom')}
+              onBlur={() => setFocusedInput(null)}
+              className="px-3 py-2 border rounded-lg text-sm focus:outline-none"
+              style={{
+                borderColor: focusedInput === 'dateFrom' ? '#dc2626' : '#d1d5db',
+                boxShadow: focusedInput === 'dateFrom' ? '0 0 0 2px rgba(220, 38, 38, 0.2)' : 'none'
+              }}
             />
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-sm font-bold text-gray-900">Đến ngày:</label>
+            <label className="text-sm font-bold" style={{ color: '#111827' }}>Đến ngày:</label>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+              onFocus={() => setFocusedInput('dateTo')}
+              onBlur={() => setFocusedInput(null)}
+              className="px-3 py-2 border rounded-lg text-sm focus:outline-none"
+              style={{
+                borderColor: focusedInput === 'dateTo' ? '#dc2626' : '#d1d5db',
+                boxShadow: focusedInput === 'dateTo' ? '0 0 0 2px rgba(220, 38, 38, 0.2)' : 'none'
+              }}
             />
           </div>
         </div>
 
         {/* Summary */}
-        <div className="mt-4 pt-4 border-t border-gray-200 flex items-center gap-6 flex-wrap">
+        <div className="mt-4 pt-4 border-t flex items-center gap-6 flex-wrap" style={{ borderColor: '#e5e7eb' }}>
           <div className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-green-600" />
+            <DollarSign className="w-5 h-5" style={{ color: '#16a34a' }} />
             <div>
-              <p className="text-xs text-gray-600">Tổng đã thanh toán</p>
-              <p className="text-lg font-bold text-green-600">
+              <p className="text-xs" style={{ color: '#4b5563' }}>Tổng đã thanh toán</p>
+              <p className="text-lg font-bold" style={{ color: '#16a34a' }}>
                 {totalAmount.toLocaleString('vi-VN')}đ
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Clock className="w-5 h-5 text-yellow-600" />
+            <Clock className="w-5 h-5" style={{ color: '#ca8a04' }} />
             <div>
-              <p className="text-xs text-gray-600">Chờ thanh toán</p>
-              <p className="text-lg font-bold text-yellow-600">
+              <p className="text-xs" style={{ color: '#4b5563' }}>Chờ thanh toán</p>
+              <p className="text-lg font-bold" style={{ color: '#ca8a04' }}>
                 {pendingAmount.toLocaleString('vi-VN')}đ
               </p>
             </div>
@@ -317,14 +372,28 @@ const PaymentHistoryPage = () => {
           <button
             onClick={() => setCurrentPage(1)}
             disabled={currentPage === 1}
-            className="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage !== 1 && setHoveredPaginationButton('first')}
+            onMouseLeave={() => setHoveredPaginationButton(null)}
+            className="px-2 py-1 border rounded text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              backgroundColor: hoveredPaginationButton === 'first' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151'
+            }}
           >
             <ChevronsLeft className="w-4 h-4" />
           </button>
           <button
             onClick={() => setCurrentPage(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage !== 1 && setHoveredPaginationButton('prev')}
+            onMouseLeave={() => setHoveredPaginationButton(null)}
+            className="px-2 py-1 border rounded text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              backgroundColor: hoveredPaginationButton === 'prev' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151'
+            }}
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -341,15 +410,21 @@ const PaymentHistoryPage = () => {
                 pageNum = currentPage - 3 + i;
               }
             }
+            const isActive = currentPage === pageNum;
+            const isHovered = hoveredPaginationButton === `page-${pageNum}`;
             return (
               <button
                 key={pageNum}
                 onClick={() => setCurrentPage(pageNum)}
-                className={`px-3 py-1 rounded text-sm font-bold transition-colors ${
-                  currentPage === pageNum
-                    ? 'bg-red-600 text-white'
-                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
+                onMouseEnter={() => !isActive && setHoveredPaginationButton(`page-${pageNum}`)}
+                onMouseLeave={() => setHoveredPaginationButton(null)}
+                className="px-3 py-1 rounded text-sm font-bold transition-colors"
+                style={{
+                  backgroundColor: isActive ? '#dc2626' : isHovered ? '#f9fafb' : 'white',
+                  color: isActive ? 'white' : '#374151',
+                  border: isActive ? 'none' : '1px solid #d1d5db',
+                  borderColor: isActive ? 'transparent' : '#d1d5db'
+                }}
               >
                 {pageNum}
               </button>
@@ -358,14 +433,28 @@ const PaymentHistoryPage = () => {
           <button
             onClick={() => setCurrentPage(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage !== totalPages && setHoveredPaginationButton('next')}
+            onMouseLeave={() => setHoveredPaginationButton(null)}
+            className="px-2 py-1 border rounded text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              backgroundColor: hoveredPaginationButton === 'next' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151'
+            }}
           >
             <ChevronRight className="w-4 h-4" />
           </button>
           <button
             onClick={() => setCurrentPage(totalPages)}
             disabled={currentPage === totalPages}
-            className="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage !== totalPages && setHoveredPaginationButton('last')}
+            onMouseLeave={() => setHoveredPaginationButton(null)}
+            className="px-2 py-1 border rounded text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              backgroundColor: hoveredPaginationButton === 'last' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151'
+            }}
           >
             <ChevronsRight className="w-4 h-4" />
           </button>
@@ -377,81 +466,108 @@ const PaymentHistoryPage = () => {
               setItemsPerPage(Number(e.target.value));
               setCurrentPage(1);
             }}
-            className="px-3 py-1 border border-gray-300 rounded text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-600"
+            onFocus={() => setFocusedSelect('itemsPerPage')}
+            onBlur={() => setFocusedSelect(null)}
+            className="px-3 py-1 border rounded text-sm font-bold focus:outline-none"
+            style={{
+              borderColor: focusedSelect === 'itemsPerPage' ? '#dc2626' : '#d1d5db',
+              color: '#374151',
+              boxShadow: focusedSelect === 'itemsPerPage' ? '0 0 0 2px rgba(220, 38, 38, 0.2)' : 'none'
+            }}
           >
             <option value="20">20</option>
             <option value="50">50</option>
             <option value="100">100</option>
           </select>
-          <span className="text-sm text-gray-700 font-bold">{totalItems} items</span>
+          <span className="text-sm font-bold" style={{ color: '#374151' }}>{totalItems} items</span>
         </div>
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-y-auto bg-white rounded-2xl border border-gray-200 min-h-0 relative">
+      <div className="flex-1 overflow-y-auto rounded-2xl border min-h-0 relative" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div className="overflow-x-auto h-full">
           <table className="w-full">
-            <thead className="bg-gray-50 sticky top-0 z-10">
+            <thead className="sticky top-0 z-10" style={{ backgroundColor: '#f9fafb' }}>
               <tr>
-                <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 border-b border-gray-200 w-12">
+                <th className="px-4 py-3 text-center text-xs font-bold border-b w-12" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
                   <input
                     type="checkbox"
                     checked={selectedRows.size === payments.length && payments.length > 0}
                     onChange={handleSelectAll}
-                    className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-600"
+                    className="w-4 h-4 rounded"
+                    style={{ 
+                      accentColor: '#dc2626',
+                      borderColor: '#d1d5db'
+                    }}
                   />
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">ID</th>
-                <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Mã yêu cầu</th>
-                <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Ứng viên</th>
-                <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Job</th>
-                <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Công ty</th>
-                <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Số tiền</th>
-                <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Trạng thái</th>
-                <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Ngày yêu cầu</th>
-                <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Ngày duyệt</th>
-                <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Ngày thanh toán</th>
-                <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 border-b border-gray-200">Phương thức</th>
-                <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 border-b border-gray-200">Thao tác</th>
+                <th className="px-4 py-3 text-left text-xs font-bold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>ID</th>
+                <th className="px-4 py-3 text-left text-xs font-bold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Mã yêu cầu</th>
+                <th className="px-4 py-3 text-left text-xs font-bold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Ứng viên</th>
+                <th className="px-4 py-3 text-left text-xs font-bold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Job</th>
+                <th className="px-4 py-3 text-left text-xs font-bold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Công ty</th>
+                <th className="px-4 py-3 text-left text-xs font-bold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Số tiền</th>
+                <th className="px-4 py-3 text-left text-xs font-bold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Trạng thái</th>
+                <th className="px-4 py-3 text-left text-xs font-bold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Ngày yêu cầu</th>
+                <th className="px-4 py-3 text-left text-xs font-bold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Ngày duyệt</th>
+                <th className="px-4 py-3 text-left text-xs font-bold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Ngày thanh toán</th>
+                <th className="px-4 py-3 text-left text-xs font-bold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Phương thức</th>
+                <th className="px-4 py-3 text-center text-xs font-bold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y" style={{ borderColor: '#e5e7eb' }}>
               {loading ? (
                 <tr>
-                  <td colSpan="13" className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan="13" className="px-4 py-8 text-center" style={{ color: '#6b7280' }}>
                     Đang tải dữ liệu...
                   </td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan="13" className="px-4 py-8 text-center text-red-500">
+                  <td colSpan="13" className="px-4 py-8 text-center" style={{ color: '#ef4444' }}>
                     {error}
                   </td>
                 </tr>
               ) : payments.length === 0 ? (
                 <tr>
-                  <td colSpan="13" className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan="13" className="px-4 py-8 text-center" style={{ color: '#6b7280' }}>
                     Không tìm thấy yêu cầu thanh toán nào
                   </td>
                 </tr>
               ) : (
-                payments.map((payment, index) => (
+                payments.map((payment, index) => {
+                  const isRowHovered = hoveredTableRow === payment.id;
+                  return (
                 <tr
                   key={payment.id}
-                  className="hover:bg-gray-50 transition-colors"
+                  onMouseEnter={() => setHoveredTableRow(payment.id)}
+                  onMouseLeave={() => setHoveredTableRow(null)}
+                  className="transition-colors"
+                  style={{
+                    backgroundColor: isRowHovered ? '#f9fafb' : 'transparent'
+                  }}
                 >
                   <td className="px-4 py-3 text-center">
                     <input
                       type="checkbox"
                       checked={selectedRows.has(index)}
                       onChange={() => handleSelectRow(index)}
-                      className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-600"
+                      className="w-4 h-4 rounded"
+                      style={{ 
+                        accentColor: '#dc2626',
+                        borderColor: '#d1d5db'
+                      }}
                     />
                   </td>
                   <td className="px-4 py-3">
                     <button
                       onClick={() => navigate(`/agent/payment-history/${payment.id}`)}
-                      className="text-blue-600 hover:text-blue-800 font-medium text-xs flex items-center gap-1"
+                      onMouseEnter={() => setHoveredViewButton(`id-${payment.id}`)}
+                      onMouseLeave={() => setHoveredViewButton(null)}
+                      className="font-medium text-xs flex items-center gap-1 transition-colors"
+                      style={{
+                        color: hoveredViewButton === `id-${payment.id}` ? '#1e40af' : '#2563eb'
+                      }}
                     >
                       {payment.id}
                       <ExternalLink className="w-3 h-3" />
@@ -460,30 +576,40 @@ const PaymentHistoryPage = () => {
                   <td className="px-4 py-3">
                     <button
                       onClick={() => navigate(`/agent/nominations/${payment.applicationId}`)}
-                      className="text-blue-600 hover:text-blue-800 font-medium text-xs"
+                      onMouseEnter={() => setHoveredViewButton(`request-${payment.id}`)}
+                      onMouseLeave={() => setHoveredViewButton(null)}
+                      className="font-medium text-xs transition-colors"
+                      style={{
+                        color: hoveredViewButton === `request-${payment.id}` ? '#1e40af' : '#2563eb'
+                      }}
                     >
                       {payment.requestId}
                     </button>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-xs">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-xs" style={{ backgroundColor: '#a855f7' }}>
                         {payment.candidateName.charAt(0)}
                       </div>
                       <div>
                         {payment.cvId ? (
                           <button
                             onClick={() => navigate(`/agent/candidates/${payment.cvId}`)}
-                            className="text-sm font-semibold text-gray-900 hover:text-blue-600"
+                            onMouseEnter={() => setHoveredViewButton(`candidate-${payment.id}`)}
+                            onMouseLeave={() => setHoveredViewButton(null)}
+                            className="text-sm font-semibold transition-colors"
+                            style={{
+                              color: hoveredViewButton === `candidate-${payment.id}` ? '#2563eb' : '#111827'
+                            }}
                           >
                             {payment.candidateName}
                           </button>
                         ) : (
-                          <span className="text-sm font-semibold text-gray-900">
+                          <span className="text-sm font-semibold" style={{ color: '#111827' }}>
                             {payment.candidateName}
                           </span>
                         )}
-                        <p className="text-xs text-gray-500">{payment.candidateId}</p>
+                        <p className="text-xs" style={{ color: '#6b7280' }}>{payment.candidateId}</p>
                       </div>
                     </div>
                   </td>
@@ -491,83 +617,103 @@ const PaymentHistoryPage = () => {
                     {payment.jobId ? (
                       <button
                         onClick={() => navigate(`/agent/jobs/${payment.jobId}${payment.jobSlug ? `?slug=${payment.jobSlug}` : ''}`)}
-                        className="text-sm font-medium text-gray-900 hover:text-blue-600 flex items-center gap-1"
+                        onMouseEnter={() => setHoveredViewButton(`job-${payment.id}`)}
+                        onMouseLeave={() => setHoveredViewButton(null)}
+                        className="text-sm font-medium flex items-center gap-1 transition-colors"
+                        style={{
+                          color: hoveredViewButton === `job-${payment.id}` ? '#2563eb' : '#111827'
+                        }}
                       >
                         <Briefcase className="w-3 h-3" />
                         {payment.jobTitle}
                       </button>
                     ) : (
-                      <span className="text-sm font-medium text-gray-900 flex items-center gap-1">
+                      <span className="text-sm font-medium flex items-center gap-1" style={{ color: '#111827' }}>
                         <Briefcase className="w-3 h-3" />
                         {payment.jobTitle}
                       </span>
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-1 text-sm text-gray-700">
-                      <Building2 className="w-3 h-3 text-gray-400" />
+                    <div className="flex items-center gap-1 text-sm" style={{ color: '#374151' }}>
+                      <Building2 className="w-3 h-3" style={{ color: '#9ca3af' }} />
                       {payment.companyName}
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-1 text-sm font-bold text-gray-900">
-                      <DollarSign className="w-4 h-4 text-green-600" />
+                    <div className="flex items-center gap-1 text-sm font-bold" style={{ color: '#111827' }}>
+                      <DollarSign className="w-4 h-4" style={{ color: '#16a34a' }} />
                       {payment.amount.toLocaleString('vi-VN')}đ
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusColor(payment.status)}`}>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold" style={getStatusColor(payment.status)}>
                       {getStatusIcon(payment.status)}
                       {payment.statusLabel}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-700">
+                  <td className="px-4 py-3 text-sm" style={{ color: '#374151' }}>
                     {payment.requestDate ? (
                       <div className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-gray-400" />
+                        <Calendar className="w-3 h-3" style={{ color: '#9ca3af' }} />
                         {new Date(payment.requestDate).toLocaleDateString('vi-VN')}
                       </div>
                     ) : (
-                      <span className="text-gray-400">—</span>
+                      <span style={{ color: '#9ca3af' }}>—</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-700">
+                  <td className="px-4 py-3 text-sm" style={{ color: '#374151' }}>
                     {payment.approvedDate && payment.approvedDate !== '—' ? (
                       <div className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-gray-400" />
+                        <Calendar className="w-3 h-3" style={{ color: '#9ca3af' }} />
                         {new Date(payment.approvedDate).toLocaleDateString('vi-VN')}
                       </div>
                     ) : (
-                      <span className="text-gray-400">—</span>
+                      <span style={{ color: '#9ca3af' }}>—</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-700">
+                  <td className="px-4 py-3 text-sm" style={{ color: '#374151' }}>
                     {payment.paidDate && payment.paidDate !== '—' ? (
                       <div className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-gray-400" />
+                        <Calendar className="w-3 h-3" style={{ color: '#9ca3af' }} />
                         {new Date(payment.paidDate).toLocaleDateString('vi-VN')}
                       </div>
                     ) : (
-                      <span className="text-gray-400">—</span>
+                      <span style={{ color: '#9ca3af' }}>—</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-700">{payment.paymentMethod}</td>
+                  <td className="px-4 py-3 text-sm" style={{ color: '#374151' }}>{payment.paymentMethod}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-center gap-2">
                       <button
                         onClick={() => navigate(`/agent/payment-history/${payment.id}`)}
-                        className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors"
+                        onMouseEnter={() => setHoveredViewButton(`view-${payment.id}`)}
+                        onMouseLeave={() => setHoveredViewButton(null)}
+                        className="p-1 rounded transition-colors"
                         title="Xem chi tiết"
+                        style={{
+                          color: hoveredViewButton === `view-${payment.id}` ? '#1e40af' : '#2563eb',
+                          backgroundColor: hoveredViewButton === `view-${payment.id}` ? '#eff6ff' : 'transparent'
+                        }}
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button className="text-gray-600 hover:text-gray-800 p-1 rounded hover:bg-gray-100 transition-colors">
+                      <button 
+                        onMouseEnter={() => setHoveredMoreButton(payment.id)}
+                        onMouseLeave={() => setHoveredMoreButton(null)}
+                        className="p-1 rounded transition-colors"
+                        style={{
+                          color: hoveredMoreButton === payment.id ? '#1f2937' : '#4b5563',
+                          backgroundColor: hoveredMoreButton === payment.id ? '#f3f4f6' : 'transparent'
+                        }}
+                      >
                         <MoreVertical className="w-4 h-4" />
                       </button>
                     </div>
                   </td>
                 </tr>
-                ))
+                );
+              })
               )}
             </tbody>
           </table>

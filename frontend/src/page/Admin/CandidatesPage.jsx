@@ -39,6 +39,24 @@ const AdminCandidatesPage = () => {
     limit: 20,
     totalPages: 0
   });
+  
+  // Hover states
+  const [hoveredSearchModeOR, setHoveredSearchModeOR] = useState(false);
+  const [hoveredSearchModeAND, setHoveredSearchModeAND] = useState(false);
+  const [hoveredSearchButton, setHoveredSearchButton] = useState(false);
+  const [hoveredResetButton, setHoveredResetButton] = useState(false);
+  const [hoveredAdvancedSearchButton, setHoveredAdvancedSearchButton] = useState(false);
+  const [hoveredInfoButton, setHoveredInfoButton] = useState(false);
+  const [hoveredAddCandidateButton, setHoveredAddCandidateButton] = useState(false);
+  const [hoveredSettingsButton, setHoveredSettingsButton] = useState(false);
+  const [hoveredPaginationNavButton, setHoveredPaginationNavButton] = useState(null);
+  const [hoveredPaginationButtonIndex, setHoveredPaginationButtonIndex] = useState(null);
+  const [hoveredRowIndex, setHoveredRowIndex] = useState(null);
+  const [hoveredCandidateIdLinkIndex, setHoveredCandidateIdLinkIndex] = useState(null);
+  const [hoveredCollaboratorLinkIndex, setHoveredCollaboratorLinkIndex] = useState(null);
+  const [hoveredRecommendationsLinkIndex, setHoveredRecommendationsLinkIndex] = useState(null);
+  const [hoveredSendButtonIndex, setHoveredSendButtonIndex] = useState(null);
+  const [hoveredMoreButtonIndex, setHoveredMoreButtonIndex] = useState(null);
 
   useEffect(() => {
     loadCandidates();
@@ -147,27 +165,31 @@ const AdminCandidatesPage = () => {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Filter Section */}
-      <div className="bg-white rounded-lg p-3 border border-gray-200 mb-3 flex-shrink-0">
+      <div className="rounded-lg p-3 border mb-3 flex-shrink-0" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         {/* Search Bar */}
         <div className="flex items-center gap-2 flex-wrap mb-3">
           <div className="flex gap-1">
             <button
               onClick={() => setSearchMode('OR')}
-              className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${
-                searchMode === 'OR'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              onMouseEnter={() => searchMode !== 'OR' && setHoveredSearchModeOR(true)}
+              onMouseLeave={() => setHoveredSearchModeOR(false)}
+              className="px-3 py-1.5 rounded text-xs font-semibold transition-colors"
+              style={{
+                backgroundColor: searchMode === 'OR' ? '#2563eb' : (hoveredSearchModeOR ? '#e5e7eb' : '#f3f4f6'),
+                color: searchMode === 'OR' ? 'white' : '#374151'
+              }}
             >
               OR
             </button>
             <button
               onClick={() => setSearchMode('AND')}
-              className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${
-                searchMode === 'AND'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              onMouseEnter={() => searchMode !== 'AND' && setHoveredSearchModeAND(true)}
+              onMouseLeave={() => setHoveredSearchModeAND(false)}
+              className="px-3 py-1.5 rounded text-xs font-semibold transition-colors"
+              style={{
+                backgroundColor: searchMode === 'AND' ? '#2563eb' : (hoveredSearchModeAND ? '#e5e7eb' : '#f3f4f6'),
+                color: searchMode === 'AND' ? 'white' : '#374151'
+              }}
             >
               AND
             </button>
@@ -178,36 +200,89 @@ const AdminCandidatesPage = () => {
               placeholder="ID, tên ứng viên, email, số điện thoại, học vấn, kinh nghiệm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-3 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full px-3 py-1.5 border rounded text-xs"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
           <button
             onClick={handleSearch}
-            className="px-4 py-1.5 bg-blue-600 text-white rounded text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+            onMouseEnter={() => setHoveredSearchButton(true)}
+            onMouseLeave={() => setHoveredSearchButton(false)}
+            className="px-4 py-1.5 rounded text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredSearchButton ? '#1d4ed8' : '#2563eb',
+              color: 'white'
+            }}
           >
             <Search className="w-3.5 h-3.5" />
             Tìm kiếm
           </button>
           <button
             onClick={handleReset}
-            className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded text-xs font-semibold hover:bg-gray-200 transition-colors"
+            onMouseEnter={() => setHoveredResetButton(true)}
+            onMouseLeave={() => setHoveredResetButton(false)}
+            className="px-3 py-1.5 rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredResetButton ? '#e5e7eb' : '#f3f4f6',
+              color: '#374151'
+            }}
           >
             Reset
           </button>
-          <button className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded text-xs font-semibold hover:bg-gray-200 transition-colors">
+          <button
+            onMouseEnter={() => setHoveredAdvancedSearchButton(true)}
+            onMouseLeave={() => setHoveredAdvancedSearchButton(false)}
+            className="px-3 py-1.5 rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredAdvancedSearchButton ? '#e5e7eb' : '#f3f4f6',
+              color: '#374151'
+            }}
+          >
             Tìm kiếm nâng cao
           </button>
-          <button className="text-gray-600 hover:text-gray-800 p-1.5">
+          <button
+            onMouseEnter={() => setHoveredInfoButton(true)}
+            onMouseLeave={() => setHoveredInfoButton(false)}
+            className="p-1.5"
+            style={{
+              color: hoveredInfoButton ? '#1f2937' : '#4b5563'
+            }}
+          >
             <Info className="w-4 h-4" />
           </button>
           <button
             onClick={() => navigate('/admin/candidates/create')}
-            className="px-3 py-1.5 bg-yellow-400 text-gray-900 rounded text-xs font-semibold hover:bg-yellow-500 transition-colors flex items-center gap-1.5"
+            onMouseEnter={() => setHoveredAddCandidateButton(true)}
+            onMouseLeave={() => setHoveredAddCandidateButton(false)}
+            className="px-3 py-1.5 rounded text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredAddCandidateButton ? '#eab308' : '#facc15',
+              color: '#111827'
+            }}
           >
             <Plus className="w-3.5 h-3.5" />
             + Thêm ứng viên
           </button>
-          <button className="px-3 py-1.5 bg-gray-800 text-white rounded text-xs font-semibold hover:bg-gray-900 transition-colors flex items-center gap-1.5">
+          <button
+            onMouseEnter={() => setHoveredSettingsButton(true)}
+            onMouseLeave={() => setHoveredSettingsButton(false)}
+            className="px-3 py-1.5 rounded text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredSettingsButton ? '#111827' : '#1f2937',
+              color: 'white'
+            }}
+          >
             <Settings className="w-3.5 h-3.5" />
             Cài đặt
           </button>
@@ -216,11 +291,23 @@ const AdminCandidatesPage = () => {
         {/* Additional Filters */}
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <label className="text-xs font-semibold text-gray-900">Phase</label>
+            <label className="text-xs font-semibold" style={{ color: '#111827' }}>Phase</label>
             <select
               value={selectedPhase}
               onChange={(e) => setSelectedPhase(e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="px-2 py-1 border rounded text-xs"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             >
               <option value="">Tất cả</option>
               <option value="phase1">Phase 1</option>
@@ -229,11 +316,23 @@ const AdminCandidatesPage = () => {
             </select>
           </div>
           <div className="flex items-center gap-1.5">
-            <label className="text-xs font-semibold text-gray-900">Trạng thái</label>
+            <label className="text-xs font-semibold" style={{ color: '#111827' }}>Trạng thái</label>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="px-2 py-1 border rounded text-xs"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             >
               <option value="">Tất cả</option>
               <option value="active">Đang hoạt động</option>
@@ -241,12 +340,24 @@ const AdminCandidatesPage = () => {
             </select>
           </div>
           <div className="flex items-center gap-1.5">
-            <label className="text-xs font-semibold text-gray-900">Ngày phỏng vấn đầu</label>
+            <label className="text-xs font-semibold" style={{ color: '#111827' }}>Ngày phỏng vấn đầu</label>
             <input
               type="date"
               value={firstInterviewDate}
               onChange={(e) => setFirstInterviewDate(e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="px-2 py-1 border rounded text-xs"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
           <label className="flex items-center gap-1.5 cursor-pointer">
@@ -254,9 +365,13 @@ const AdminCandidatesPage = () => {
               type="checkbox"
               checked={showArchiveOnly}
               onChange={(e) => setShowArchiveOnly(e.target.checked)}
-              className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+              className="w-3.5 h-3.5 rounded"
+              style={{
+                accentColor: '#2563eb',
+                borderColor: '#d1d5db'
+              }}
             />
-            <span className="text-xs text-gray-700 font-semibold">Chỉ hiển thị đã lưu trữ</span>
+            <span className="text-xs font-semibold" style={{ color: '#374151' }}>Chỉ hiển thị đã lưu trữ</span>
           </label>
         </div>
       </div>
@@ -267,14 +382,32 @@ const AdminCandidatesPage = () => {
           <button
             onClick={() => setCurrentPage(1)}
             disabled={currentPage === 1}
-            className="px-1.5 py-1 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage !== 1 && setHoveredPaginationNavButton('first')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-1.5 py-1 border rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'first' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: currentPage === 1 ? 0.5 : 1,
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronsLeft className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setCurrentPage(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-1.5 py-1 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage !== 1 && setHoveredPaginationNavButton('prev')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-1.5 py-1 border rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'prev' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: currentPage === 1 ? 0.5 : 1,
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
@@ -293,11 +426,16 @@ const AdminCandidatesPage = () => {
               <button
                 key={pageNum}
                 onClick={() => setCurrentPage(pageNum)}
-                className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors ${
-                  currentPage === pageNum
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
+                onMouseEnter={() => currentPage !== pageNum && setHoveredPaginationButtonIndex(pageNum)}
+                onMouseLeave={() => setHoveredPaginationButtonIndex(null)}
+                className="px-2.5 py-1 rounded text-xs font-semibold transition-colors"
+                style={{
+                  backgroundColor: currentPage === pageNum
+                    ? '#2563eb'
+                    : (hoveredPaginationButtonIndex === pageNum ? '#f9fafb' : 'white'),
+                  border: currentPage === pageNum ? 'none' : '1px solid #d1d5db',
+                  color: currentPage === pageNum ? 'white' : '#374151'
+                }}
               >
                 {pageNum}
               </button>
@@ -306,14 +444,32 @@ const AdminCandidatesPage = () => {
           <button
             onClick={() => setCurrentPage(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-1.5 py-1 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage !== totalPages && setHoveredPaginationNavButton('next')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-1.5 py-1 border rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'next' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: currentPage === totalPages ? 0.5 : 1,
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setCurrentPage(totalPages)}
             disabled={currentPage === totalPages}
-            className="px-1.5 py-1 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage !== totalPages && setHoveredPaginationNavButton('last')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-1.5 py-1 border rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'last' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: currentPage === totalPages ? 0.5 : 1,
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronsRight className="w-3.5 h-3.5" />
           </button>
@@ -325,53 +481,70 @@ const AdminCandidatesPage = () => {
               setItemsPerPage(Number(e.target.value));
               setCurrentPage(1);
             }}
-            className="px-2.5 py-1 border border-gray-300 rounded text-xs font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="px-2.5 py-1 border rounded text-xs font-semibold"
+            style={{
+              borderColor: '#d1d5db',
+              color: '#374151',
+              outline: 'none'
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#2563eb';
+              e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#d1d5db';
+              e.target.style.boxShadow = 'none';
+            }}
           >
             <option value="20">20</option>
             <option value="50">50</option>
             <option value="100">100</option>
           </select>
-          <span className="text-xs text-gray-700 font-semibold">{totalItems} items</span>
+          <span className="text-xs font-semibold" style={{ color: '#374151' }}>{totalItems} items</span>
         </div>
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-y-auto bg-white rounded-lg border border-gray-200 min-h-0 relative">
+      <div className="flex-1 overflow-y-auto rounded-lg border min-h-0 relative" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div className="overflow-x-auto h-full">
           <table className="w-full">
-            <thead className="bg-gray-50 sticky top-0 z-10">
+            <thead className="sticky top-0 z-10" style={{ backgroundColor: '#f9fafb' }}>
               <tr>
-                <th className="px-3 py-2 text-center text-[10px] font-semibold text-gray-900 border-b border-gray-200 w-10">
+                <th className="px-3 py-2 text-center text-[10px] font-semibold border-b w-10" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
                   <input
                     type="checkbox"
                     checked={selectedRows.size === candidates.length && candidates.length > 0}
                     onChange={handleSelectAll}
-                    className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+                    className="w-3.5 h-3.5 rounded"
+                    style={{
+                      accentColor: '#2563eb',
+                      borderColor: '#d1d5db'
+                    }}
                   />
                 </th>
-                <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">ID</th>
-                <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">Tên ứng viên</th>
-                <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">Email</th>
-                <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">Số điện thoại</th>
-                <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">CTV</th>
-                <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">Ngày PV đầu</th>
-                <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">Phase</th>
-                <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">Số tiến cử</th>
-                <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">Số Scouts</th>
-                <th className="px-3 py-2 text-left text-[10px] font-semibold text-gray-900 border-b border-gray-200">Trạng thái</th>
-                <th className="px-3 py-2 text-center text-[10px] font-semibold text-gray-900 border-b border-gray-200">Actions</th>
+                <th className="px-3 py-2 text-left text-[10px] font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>ID</th>
+                <th className="px-3 py-2 text-left text-[10px] font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Tên ứng viên</th>
+                <th className="px-3 py-2 text-left text-[10px] font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Email</th>
+                <th className="px-3 py-2 text-left text-[10px] font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Số điện thoại</th>
+                <th className="px-3 py-2 text-left text-[10px] font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>CTV</th>
+                <th className="px-3 py-2 text-left text-[10px] font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Ngày PV đầu</th>
+                <th className="px-3 py-2 text-left text-[10px] font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Phase</th>
+                <th className="px-3 py-2 text-left text-[10px] font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Số tiến cử</th>
+                <th className="px-3 py-2 text-left text-[10px] font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Số Scouts</th>
+                <th className="px-3 py-2 text-left text-[10px] font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Trạng thái</th>
+                <th className="px-3 py-2 text-center text-[10px] font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y" style={{ borderColor: '#e5e7eb' }}>
               {loading ? (
                 <tr>
-                  <td colSpan="11" className="px-3 py-8 text-center text-xs text-gray-500">
+                  <td colSpan="11" className="px-3 py-8 text-center text-xs" style={{ color: '#6b7280' }}>
                     Đang tải dữ liệu...
                   </td>
                 </tr>
               ) : candidates.length === 0 ? (
                 <tr>
-                  <td colSpan="11" className="px-3 py-8 text-center text-xs text-gray-500">
+                  <td colSpan="11" className="px-3 py-8 text-center text-xs" style={{ color: '#6b7280' }}>
                     Không có dữ liệu
                   </td>
                 </tr>
@@ -387,61 +560,89 @@ const AdminCandidatesPage = () => {
                   return (
                     <tr
                       key={candidate.id}
-                      className="hover:bg-gray-50 transition-colors cursor-pointer"
+                      className="transition-colors cursor-pointer"
+                      onMouseEnter={() => setHoveredRowIndex(index)}
+                      onMouseLeave={() => setHoveredRowIndex(null)}
+                      style={{
+                        backgroundColor: hoveredRowIndex === index ? '#f9fafb' : 'transparent'
+                      }}
                     >
                       <td className="px-3 py-2 text-center">
                         <input
                           type="checkbox"
                           checked={selectedRows.has(index)}
                           onChange={() => handleSelectRow(index)}
-                          className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+                          className="w-3.5 h-3.5 rounded"
+                          style={{
+                            accentColor: '#2563eb',
+                            borderColor: '#d1d5db'
+                          }}
                         />
                       </td>
                       <td className="px-3 py-2">
                         <button
                           onClick={() => navigate(`/admin/candidates/${candidate.id}`)}
-                          className="text-blue-600 hover:text-blue-800 font-medium text-[11px] flex items-center gap-1"
+                          onMouseEnter={() => setHoveredCandidateIdLinkIndex(index)}
+                          onMouseLeave={() => setHoveredCandidateIdLinkIndex(null)}
+                          className="font-medium text-[11px] flex items-center gap-1"
+                          style={{
+                            color: hoveredCandidateIdLinkIndex === index ? '#1e40af' : '#2563eb'
+                          }}
                         >
                           {candidate.code || candidate.id}
                           <ExternalLink className="w-2.5 h-2.5" />
                         </button>
                       </td>
-                      <td className="px-3 py-2 text-[11px] text-gray-900 font-medium">{candidate.name || candidate.fullName || '-'}</td>
-                      <td className="px-3 py-2 text-[11px] text-gray-700">
+                      <td className="px-3 py-2 text-[11px] font-medium" style={{ color: '#111827' }}>{candidate.name || candidate.fullName || '-'}</td>
+                      <td className="px-3 py-2 text-[11px]" style={{ color: '#374151' }}>
                         {candidate.email && candidate.email.includes('@') ? (
                           <div className="flex items-center gap-1">
-                            <Mail className="w-2.5 h-2.5 text-gray-400 flex-shrink-0" />
+                            <Mail className="w-2.5 h-2.5 flex-shrink-0" style={{ color: '#9ca3af' }} />
                             <span className="truncate">{candidate.email}</span>
                           </div>
                         ) : (
-                          <span className="text-gray-500">—</span>
+                          <span style={{ color: '#6b7280' }}>—</span>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-[11px] text-gray-700">
+                      <td className="px-3 py-2 text-[11px]" style={{ color: '#374151' }}>
                         {candidate.phone ? (
                           <div className="flex items-center gap-1">
-                            <Phone className="w-2.5 h-2.5 text-gray-400 flex-shrink-0" />
+                            <Phone className="w-2.5 h-2.5 flex-shrink-0" style={{ color: '#9ca3af' }} />
                             <span className="truncate">{candidate.phone}</span>
                           </div>
                         ) : (
-                          <span className="text-gray-500">—</span>
+                          <span style={{ color: '#6b7280' }}>—</span>
                         )}
                       </td>
                       <td className="px-3 py-2">
                         {candidate.collaborator ? (
                           <button
                             onClick={() => navigate(`/admin/collaborators/${candidate.collaborator.id}`)}
-                            className="text-blue-600 hover:text-blue-800 text-[11px] font-medium"
+                            onMouseEnter={() => setHoveredCollaboratorLinkIndex(index)}
+                            onMouseLeave={() => setHoveredCollaboratorLinkIndex(null)}
+                            className="text-[11px] font-medium"
+                            style={{
+                              color: hoveredCollaboratorLinkIndex === index ? '#1e40af' : '#2563eb'
+                            }}
                           >
                             {candidate.collaborator.code || candidate.collaborator.name}
                           </button>
                         ) : (
-                          <span className="text-[11px] text-gray-500">—</span>
+                          <span className="text-[11px]" style={{ color: '#6b7280' }}>—</span>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-[11px] text-gray-700">{receiveDate}</td>
+                      <td className="px-3 py-2 text-[11px]" style={{ color: '#374151' }}>{receiveDate}</td>
                       <td className="px-3 py-2">
-                        <select className="px-1.5 py-0.5 border border-gray-300 rounded text-[10px] text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-600 w-full">
+                        <select className="px-1.5 py-0.5 border rounded text-[10px] w-full" style={{ borderColor: '#d1d5db', color: '#374151', outline: 'none' }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = '#2563eb';
+                            e.target.style.boxShadow = '0 0 0 1px rgba(37, 99, 235, 0.5)';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                            e.target.style.boxShadow = 'none';
+                          }}
+                        >
                           <option value="">Chọn</option>
                           <option value="phase1">Phase 1</option>
                           <option value="phase2">Phase 2</option>
@@ -450,24 +651,36 @@ const AdminCandidatesPage = () => {
                       </td>
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-1">
-                          <span className="text-[11px] text-gray-900 font-medium">0</span>
+                          <span className="text-[11px] font-medium" style={{ color: '#111827' }}>0</span>
                           <button
                             onClick={() => navigate(`/admin/candidates/${candidate.id}/recommendations`)}
-                            className="text-blue-600 hover:text-blue-800"
+                            onMouseEnter={() => setHoveredRecommendationsLinkIndex(index)}
+                            onMouseLeave={() => setHoveredRecommendationsLinkIndex(null)}
+                            style={{
+                              color: hoveredRecommendationsLinkIndex === index ? '#1e40af' : '#2563eb'
+                            }}
                           >
                             <ExternalLink className="w-2.5 h-2.5" />
                           </button>
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-[11px] text-gray-700">0</td>
+                      <td className="px-3 py-2 text-[11px]" style={{ color: '#374151' }}>0</td>
                       <td className="px-3 py-2">
                         <select 
                           value={statusLabel}
-                          className={`px-1.5 py-0.5 rounded text-[10px] font-medium focus:outline-none focus:ring-1 focus:ring-blue-600 ${
-                            statusLabel === 'active'
-                              ? 'bg-green-100 text-green-800 border border-green-300'
-                              : 'bg-red-100 text-red-800 border border-red-300'
-                          }`}
+                          className="px-1.5 py-0.5 rounded text-[10px] font-medium"
+                          style={{
+                            backgroundColor: statusLabel === 'active' ? '#dcfce7' : '#fee2e2',
+                            color: statusLabel === 'active' ? '#166534' : '#991b1b',
+                            border: statusLabel === 'active' ? '1px solid #86efac' : '1px solid #fca5a5',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.boxShadow = '0 0 0 1px rgba(37, 99, 235, 0.5)';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.boxShadow = 'none';
+                          }}
                         >
                           <option value="active">Đang hoạt động</option>
                           <option value="inactive">Ngừng hoạt động</option>
@@ -475,10 +688,26 @@ const AdminCandidatesPage = () => {
                       </td>
                       <td className="px-3 py-2">
                         <div className="flex items-center justify-center gap-1.5">
-                          <button className="text-blue-600 hover:text-blue-800 p-0.5 rounded hover:bg-blue-50 transition-colors">
+                          <button
+                            onMouseEnter={() => setHoveredSendButtonIndex(index)}
+                            onMouseLeave={() => setHoveredSendButtonIndex(null)}
+                            className="p-0.5 rounded transition-colors"
+                            style={{
+                              color: hoveredSendButtonIndex === index ? '#1e40af' : '#2563eb',
+                              backgroundColor: hoveredSendButtonIndex === index ? '#eff6ff' : 'transparent'
+                            }}
+                          >
                             <Send className="w-3.5 h-3.5" />
                           </button>
-                          <button className="text-gray-600 hover:text-gray-800 p-0.5 rounded hover:bg-gray-100 transition-colors">
+                          <button
+                            onMouseEnter={() => setHoveredMoreButtonIndex(index)}
+                            onMouseLeave={() => setHoveredMoreButtonIndex(null)}
+                            className="p-0.5 rounded transition-colors"
+                            style={{
+                              color: hoveredMoreButtonIndex === index ? '#1f2937' : '#4b5563',
+                              backgroundColor: hoveredMoreButtonIndex === index ? '#f3f4f6' : 'transparent'
+                            }}
+                          >
                             <MoreVertical className="w-3.5 h-3.5" />
                           </button>
                         </div>

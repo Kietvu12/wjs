@@ -47,6 +47,21 @@ const CandidatesPage = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [isDuplicateFilter, setIsDuplicateFilter] = useState(''); // Filter by duplicate status
 
+  // Hover states
+  const [hoveredResetButton, setHoveredResetButton] = useState(false);
+  const [hoveredInfoButton, setHoveredInfoButton] = useState(false);
+  const [hoveredAddCandidateButton, setHoveredAddCandidateButton] = useState(false);
+  const [hoveredSettingsButton, setHoveredSettingsButton] = useState(false);
+  const [hoveredPaginationNavButton, setHoveredPaginationNavButton] = useState(null);
+  const [hoveredPaginationPageButton, setHoveredPaginationPageButton] = useState(null);
+  const [hoveredTableHeader, setHoveredTableHeader] = useState(null);
+  const [hoveredRowIndex, setHoveredRowIndex] = useState(null);
+  const [hoveredApplicationsLinkIndex, setHoveredApplicationsLinkIndex] = useState(null);
+  const [hoveredViewButtonIndex, setHoveredViewButtonIndex] = useState(null);
+  const [hoveredEditButtonIndex, setHoveredEditButtonIndex] = useState(null);
+  const [hoveredDeleteButtonIndex, setHoveredDeleteButtonIndex] = useState(null);
+  const [hoveredMoreButtonIndex, setHoveredMoreButtonIndex] = useState(null);
+
   // Load candidates data
   useEffect(() => {
     loadCandidates();
@@ -178,11 +193,11 @@ const CandidatesPage = () => {
 
   const getSortIcon = (column) => {
     if (sortColumn !== column) {
-      return <ChevronUp className="w-3 h-3 text-gray-400 opacity-50" />;
+      return <ChevronUp className="w-3 h-3" style={{ color: '#9ca3af', opacity: 0.5 }} />;
     }
     return sortDirection === 'asc' 
-      ? <ChevronUp className="w-3 h-3 text-gray-700" />
-      : <ChevronDown className="w-3 h-3 text-gray-700" />;
+      ? <ChevronUp className="w-3 h-3" style={{ color: '#374151' }} />
+      : <ChevronDown className="w-3 h-3" style={{ color: '#374151' }} />;
   };
 
   const formatDate = (dateString) => {
@@ -251,28 +266,50 @@ const CandidatesPage = () => {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Filter Section */}
-      <div className="bg-white rounded-2xl p-4 border border-gray-200 mb-4 flex-shrink-0">
+      <div className="rounded-2xl p-4 border mb-4 flex-shrink-0" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         {/* Search Bar */}
         <div className="flex items-center gap-3 flex-wrap mb-4">
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-xs font-bold text-gray-700 mb-1">Tên ứng viên</label>
+            <label className="block text-xs font-bold mb-1" style={{ color: '#374151' }}>Tên ứng viên</label>
             <input
               type="text"
               placeholder="Nhập tên ứng viên"
               value={nameFilter}
               onChange={(e) => setNameFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 text-sm"
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none text-sm"
+              style={{
+                borderColor: '#d1d5db'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#ef4444';
+                e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.2)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
           <div className="min-w-[150px]">
-            <label className="block text-xs font-bold text-gray-700 mb-1">Status</label>
+            <label className="block text-xs font-bold mb-1" style={{ color: '#374151' }}>Status</label>
             <select
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+              className="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none"
+              style={{
+                borderColor: '#d1d5db'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#ef4444';
+                e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.2)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             >
               <option value="">Tất cả</option>
               <option value="0">{t.draft || 'Draft'}</option>
@@ -281,7 +318,7 @@ const CandidatesPage = () => {
             </select>
           </div>
           <div className="min-w-[150px]">
-            <label className="block text-xs font-bold text-gray-700 mb-1">Ngày tạo hồ sơ</label>
+            <label className="block text-xs font-bold mb-1" style={{ color: '#374151' }}>Ngày tạo hồ sơ</label>
             <input
               type="date"
               value={createdDateFilter}
@@ -289,27 +326,65 @@ const CandidatesPage = () => {
                 setCreatedDateFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+              className="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none"
+              style={{
+                borderColor: '#d1d5db'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#ef4444';
+                e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.2)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
           <button
             onClick={handleReset}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-bold text-sm hover:bg-gray-200 transition-colors self-end"
+            onMouseEnter={() => setHoveredResetButton(true)}
+            onMouseLeave={() => setHoveredResetButton(false)}
+            className="px-4 py-2 rounded-lg font-bold text-sm transition-colors self-end"
+            style={{
+              backgroundColor: hoveredResetButton ? '#e5e7eb' : '#f3f4f6',
+              color: '#374151'
+            }}
           >
             {t.reset || 'Reset'}
           </button>
-          <button className="text-gray-600 hover:text-gray-800 p-2 self-end">
+          <button 
+            onMouseEnter={() => setHoveredInfoButton(true)}
+            onMouseLeave={() => setHoveredInfoButton(false)}
+            className="p-2 self-end"
+            style={{
+              color: hoveredInfoButton ? '#1f2937' : '#4b5563'
+            }}
+          >
             <Info className="w-5 h-5" />
           </button>
           <button
             onClick={() => navigate('/agent/candidates/create')}
-            className="px-4 py-2 bg-yellow-400 text-gray-900 rounded-lg font-bold text-sm hover:bg-yellow-500 transition-colors flex items-center gap-2 self-end"
+            onMouseEnter={() => setHoveredAddCandidateButton(true)}
+            onMouseLeave={() => setHoveredAddCandidateButton(false)}
+            className="px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 self-end"
+            style={{
+              backgroundColor: hoveredAddCandidateButton ? '#facc15' : '#fbbf24',
+              color: '#111827'
+            }}
           >
             <Plus className="w-4 h-4" />
             <Plus className="w-4 h-4" />
             {t.addCandidate || '+ Add a candidate'}
           </button>
-          <button className="px-4 py-2 bg-gray-800 text-white rounded-lg font-bold text-sm hover:bg-gray-900 transition-colors flex items-center gap-2 self-end">
+          <button 
+            onMouseEnter={() => setHoveredSettingsButton(true)}
+            onMouseLeave={() => setHoveredSettingsButton(false)}
+            className="px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 self-end"
+            style={{
+              backgroundColor: hoveredSettingsButton ? '#111827' : '#1f2937',
+              color: 'white'
+            }}
+          >
             <Settings className="w-4 h-4" />
             {t.displaySettings || 'Display Settings'}
           </button>
@@ -318,14 +393,25 @@ const CandidatesPage = () => {
         {/* Additional Filters */}
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-bold text-gray-900">{t.duplicate || 'Duplicate'}</label>
+            <label className="text-sm font-bold" style={{ color: '#111827' }}>{t.duplicate || 'Duplicate'}</label>
             <select
               value={isDuplicateFilter}
               onChange={(e) => {
                 setIsDuplicateFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+              className="px-3 py-2 border rounded-lg text-sm focus:outline-none"
+              style={{
+                borderColor: '#d1d5db'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#ef4444';
+                e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.2)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             >
               <option value="">{t.all || 'All'}</option>
               <option value="0">{t.notDuplicate || 'Not Duplicate'}</option>
@@ -337,10 +423,14 @@ const CandidatesPage = () => {
               type="checkbox"
               checked={onlyMyCandidates}
               onChange={(e) => setOnlyMyCandidates(e.target.checked)}
-              className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-600"
+              className="w-4 h-4 rounded"
+              style={{
+                accentColor: '#ef4444',
+                borderColor: '#d1d5db'
+              }}
               disabled
             />
-            <span className="text-sm text-gray-700 font-bold">{t.onlyMyCandidates || 'Only show your candidates'}</span>
+            <span className="text-sm font-bold" style={{ color: '#374151' }}>{t.onlyMyCandidates || 'Only show your candidates'}</span>
           </label>
         </div>
       </div>
@@ -351,14 +441,32 @@ const CandidatesPage = () => {
           <button
             onClick={() => setCurrentPage(1)}
             disabled={currentPage === 1}
-            className="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage !== 1 && setHoveredPaginationNavButton('first')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-2 py-1 border rounded text-sm font-bold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'first' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: currentPage === 1 ? 0.5 : 1,
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronsLeft className="w-4 h-4" />
           </button>
           <button
             onClick={() => setCurrentPage(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage !== 1 && setHoveredPaginationNavButton('prev')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-2 py-1 border rounded text-sm font-bold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'prev' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: currentPage === 1 ? 0.5 : 1,
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -377,15 +485,22 @@ const CandidatesPage = () => {
             
             if (pageNum < 1 || pageNum > totalPages) return null;
             
+            const isActive = currentPage === pageNum;
+            
             return (
               <button
                 key={pageNum}
                 onClick={() => setCurrentPage(pageNum)}
-                className={`px-3 py-1 rounded text-sm font-bold transition-colors ${
-                  currentPage === pageNum
-                    ? 'bg-red-600 text-white'
-                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
+                onMouseEnter={() => !isActive && setHoveredPaginationPageButton(pageNum)}
+                onMouseLeave={() => setHoveredPaginationPageButton(null)}
+                className="px-3 py-1 rounded text-sm font-bold transition-colors"
+                style={{
+                  backgroundColor: isActive ? '#ef4444' : (hoveredPaginationPageButton === pageNum ? '#f9fafb' : 'white'),
+                  borderColor: isActive ? 'transparent' : '#d1d5db',
+                  borderWidth: isActive ? 0 : '1px',
+                  borderStyle: isActive ? 'none' : 'solid',
+                  color: isActive ? 'white' : '#374151'
+                }}
               >
                 {pageNum}
               </button>
@@ -394,14 +509,32 @@ const CandidatesPage = () => {
           <button
             onClick={() => setCurrentPage(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage < totalPages && setHoveredPaginationNavButton('next')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-2 py-1 border rounded text-sm font-bold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'next' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: currentPage === totalPages ? 0.5 : 1,
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronRight className="w-4 h-4" />
           </button>
           <button
             onClick={() => setCurrentPage(totalPages)}
             disabled={currentPage === totalPages}
-            className="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage < totalPages && setHoveredPaginationNavButton('last')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-2 py-1 border rounded text-sm font-bold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'last' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: currentPage === totalPages ? 0.5 : 1,
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronsRight className="w-4 h-4" />
           </button>
@@ -413,43 +546,73 @@ const CandidatesPage = () => {
               setItemsPerPage(Number(e.target.value));
               setCurrentPage(1);
             }}
-            className="px-3 py-1 border border-gray-300 rounded text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-600"
+            className="px-3 py-1 border rounded text-sm font-bold focus:outline-none"
+            style={{
+              borderColor: '#d1d5db',
+              color: '#374151'
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#ef4444';
+              e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.2)';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#d1d5db';
+              e.target.style.boxShadow = 'none';
+            }}
           >
             <option value="20">20</option>
             <option value="50">50</option>
             <option value="100">100</option>
           </select>
-          <span className="text-sm text-gray-700 font-bold">{totalItems} {t.items || 'items'}</span>
+          <span className="text-sm font-bold" style={{ color: '#374151' }}>{totalItems} {t.items || 'items'}</span>
         </div>
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-y-auto bg-white rounded-xl border border-gray-200 min-h-0 relative">
+      <div className="flex-1 overflow-y-auto rounded-xl border min-h-0 relative" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div className="overflow-x-auto h-full">
           <table className="w-full table-auto">
-            <thead className="bg-gray-50 sticky top-0 z-10">
+            <thead className="sticky top-0 z-10" style={{ backgroundColor: '#f9fafb' }}>
               <tr>
-                <th className="px-2 py-2 text-center text-xs font-bold text-gray-900 border-b border-gray-200 w-10">
+                <th className="px-2 py-2 text-center text-xs font-bold border-b w-10" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
                   <input
                     type="checkbox"
                     checked={selectedRows.size === candidates.length && candidates.length > 0}
                     onChange={handleSelectAll}
-                    className="w-3.5 h-3.5 text-red-600 border-gray-300 rounded focus:ring-red-600"
+                    className="w-3.5 h-3.5 rounded"
+                    style={{
+                      accentColor: '#ef4444',
+                      borderColor: '#d1d5db'
+                    }}
                   />
                 </th>
                 <th 
-                  className="px-3 py-2 text-left text-xs font-bold text-gray-900 border-b border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors min-w-[180px]"
+                  className="px-3 py-2 text-left text-xs font-bold border-b cursor-pointer transition-colors min-w-[180px]"
+                  style={{
+                    color: '#111827',
+                    borderColor: '#e5e7eb',
+                    backgroundColor: hoveredTableHeader === 'name' ? '#f3f4f6' : 'transparent'
+                  }}
                   onClick={() => handleSort('name')}
+                  onMouseEnter={() => setHoveredTableHeader('name')}
+                  onMouseLeave={() => setHoveredTableHeader(null)}
                 >
                   <div className="flex items-center gap-1">
                     {t.candidateName || 'Tên ứng viên'}
                     {getSortIcon('name')}
                   </div>
                 </th>
-                <th className="px-3 py-2 text-left text-xs font-bold text-gray-900 border-b border-gray-200 min-w-[120px]">{t.phase || 'Loại hồ sơ'}</th>
+                <th className="px-3 py-2 text-left text-xs font-bold border-b min-w-[120px]" style={{ color: '#111827', borderColor: '#e5e7eb' }}>{t.phase || 'Loại hồ sơ'}</th>
                 <th 
-                  className="px-3 py-2 text-left text-xs font-bold text-gray-900 border-b border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors min-w-[140px]"
+                  className="px-3 py-2 text-left text-xs font-bold border-b cursor-pointer transition-colors min-w-[140px]"
+                  style={{
+                    color: '#111827',
+                    borderColor: '#e5e7eb',
+                    backgroundColor: hoveredTableHeader === 'applicationsCount' ? '#f3f4f6' : 'transparent'
+                  }}
                   onClick={() => handleSort('applicationsCount')}
+                  onMouseEnter={() => setHoveredTableHeader('applicationsCount')}
+                  onMouseLeave={() => setHoveredTableHeader(null)}
                 >
                   <div className="flex items-center gap-1">
                     {t.numberOfApplications || 'Số lượt ứng tuyển'}
@@ -457,28 +620,35 @@ const CandidatesPage = () => {
                   </div>
                 </th>
                 <th 
-                  className="px-3 py-2 text-left text-xs font-bold text-gray-900 border-b border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors min-w-[130px]"
+                  className="px-3 py-2 text-left text-xs font-bold border-b cursor-pointer transition-colors min-w-[130px]"
+                  style={{
+                    color: '#111827',
+                    borderColor: '#e5e7eb',
+                    backgroundColor: hoveredTableHeader === 'createdAt' ? '#f3f4f6' : 'transparent'
+                  }}
                   onClick={() => handleSort('createdAt')}
+                  onMouseEnter={() => setHoveredTableHeader('createdAt')}
+                  onMouseLeave={() => setHoveredTableHeader(null)}
                 >
                   <div className="flex items-center gap-1">
                     Ngày tạo hồ sơ
                     {getSortIcon('createdAt')}
                   </div>
                 </th>
-                <th className="px-3 py-2 text-left text-xs font-bold text-gray-900 border-b border-gray-200 min-w-[140px]">{t.scoutStatus || 'Scout Status'}</th>
-                <th className="px-3 py-2 text-center text-xs font-bold text-gray-900 border-b border-gray-200 min-w-[140px]">{t.actions || 'Thao tác'}</th>
+                <th className="px-3 py-2 text-left text-xs font-bold border-b min-w-[140px]" style={{ color: '#111827', borderColor: '#e5e7eb' }}>{t.scoutStatus || 'Scout Status'}</th>
+                <th className="px-3 py-2 text-center text-xs font-bold border-b min-w-[140px]" style={{ color: '#111827', borderColor: '#e5e7eb' }}>{t.actions || 'Thao tác'}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y" style={{ borderColor: '#e5e7eb' }}>
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="px-3 py-6 text-center text-gray-500 text-xs">
+                  <td colSpan="7" className="px-3 py-6 text-center text-xs" style={{ color: '#6b7280' }}>
                     {t.loadingCandidates || 'Đang tải dữ liệu...'}
                   </td>
                 </tr>
               ) : candidates.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="px-3 py-6 text-center text-gray-500 text-xs">
+                  <td colSpan="7" className="px-3 py-6 text-center text-xs" style={{ color: '#6b7280' }}>
                     {t.noCandidatesFound || 'Không tìm thấy ứng viên nào'}
                   </td>
                 </tr>
@@ -486,26 +656,35 @@ const CandidatesPage = () => {
                 candidates.map((candidate, index) => (
                   <tr
                     key={candidate.id}
-                    className="hover:bg-gray-50 transition-colors"
+                    className="transition-colors"
+                    style={{
+                      backgroundColor: hoveredRowIndex === index ? '#f9fafb' : 'transparent'
+                    }}
                     onClick={() => navigate(`/agent/candidates/${candidate.id}`)}
+                    onMouseEnter={() => setHoveredRowIndex(index)}
+                    onMouseLeave={() => setHoveredRowIndex(null)}
                   >
                     <td className="px-2 py-2 text-center" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         checked={selectedRows.has(index)}
                         onChange={() => handleSelectRow(index)}
-                        className="w-3.5 h-3.5 text-red-600 border-gray-300 rounded focus:ring-red-600"
+                        className="w-3.5 h-3.5 rounded"
+                        style={{
+                          accentColor: '#ef4444',
+                          borderColor: '#d1d5db'
+                        }}
                       />
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-900 cursor-pointer">
+                    <td className="px-3 py-2 text-xs cursor-pointer" style={{ color: '#111827' }}>
                       <div>
                         <div className="flex items-center gap-1.5 mb-0.5">
                           <span className="font-medium">{candidate.name || candidate.nameKanji || 'N/A'}</span>
                           {candidate.isDuplicate && (
-                            <AlertTriangle className="w-3 h-3 text-orange-500 flex-shrink-0" title="Duplicate" />
+                            <AlertTriangle className="w-3 h-3 flex-shrink-0" style={{ color: '#f97316' }} title="Duplicate" />
                           )}
                         </div>
-                        <div className="text-[10px] text-gray-500">
+                        <div className="text-[10px]" style={{ color: '#6b7280' }}>
                           ID: {candidate.code || candidate.id}
                         </div>
                       </div>
@@ -534,7 +713,19 @@ const CandidatesPage = () => {
                             e.target.value = candidate.status; // Revert
                           }
                         }}
-                        className="px-2 py-1 border border-gray-300 rounded text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-red-600 w-full cursor-pointer"
+                        className="px-2 py-1 border rounded text-xs focus:outline-none w-full cursor-pointer"
+                        style={{
+                          borderColor: '#d1d5db',
+                          color: '#374151'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#ef4444';
+                          e.target.style.boxShadow = '0 0 0 1px rgba(239, 68, 68, 0.2)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       >
                         <option value="0">{t.draft || 'Draft'}</option>
                         <option value="1">{t.active || 'Active'}</option>
@@ -543,29 +734,34 @@ const CandidatesPage = () => {
                     </td>
                     <td className="px-3 py-2">
                       <div className="flex items-center gap-1">
-                        <span className="text-xs text-gray-900 font-medium">{candidate.applicationsCount || 0}</span>
+                        <span className="text-xs font-medium" style={{ color: '#111827' }}>{candidate.applicationsCount || 0}</span>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(`/agent/candidates/${candidate.id}/applications`);
                           }}
-                          className="text-blue-600 hover:text-blue-800 p-0.5"
+                          onMouseEnter={() => setHoveredApplicationsLinkIndex(index)}
+                          onMouseLeave={() => setHoveredApplicationsLinkIndex(null)}
+                          className="p-0.5"
+                          style={{
+                            color: hoveredApplicationsLinkIndex === index ? '#1e40af' : '#2563eb'
+                          }}
                           title="Xem danh sách ứng tuyển"
                         >
                           <ExternalLink className="w-3 h-3" />
                         </button>
                       </div>
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-700">
+                    <td className="px-3 py-2 text-xs" style={{ color: '#374151' }}>
                       {formatDate(candidate.createdAt)}
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-700">
+                    <td className="px-3 py-2 text-xs" style={{ color: '#374151' }}>
                       {candidate.latestApplicationStatus ? (
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium inline-block ${
+                        <span className="px-2 py-0.5 rounded text-xs font-medium inline-block" style={
                           candidate.latestApplicationStatus >= 2 && candidate.latestApplicationStatus <= 11
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
+                            ? { backgroundColor: '#dbeafe', color: '#1e40af' }
+                            : { backgroundColor: '#f3f4f6', color: '#1f2937' }
+                        }>
                           {getScoutStatusLabel(candidate.latestApplicationStatus)}
                         </span>
                       ) : '—'}
@@ -577,28 +773,52 @@ const CandidatesPage = () => {
                             e.stopPropagation();
                             navigate(`/agent/candidates/${candidate.id}`);
                           }}
-                          className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors"
+                          onMouseEnter={() => setHoveredViewButtonIndex(index)}
+                          onMouseLeave={() => setHoveredViewButtonIndex(null)}
+                          className="p-1 rounded transition-colors"
+                          style={{
+                            color: hoveredViewButtonIndex === index ? '#1e40af' : '#2563eb',
+                            backgroundColor: hoveredViewButtonIndex === index ? '#eff6ff' : 'transparent'
+                          }}
                           title="Xem chi tiết"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                         </button>
                         <button 
                           onClick={(e) => handleEdit(candidate.id, e)}
-                          className="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50 transition-colors"
+                          onMouseEnter={() => setHoveredEditButtonIndex(index)}
+                          onMouseLeave={() => setHoveredEditButtonIndex(null)}
+                          className="p-1 rounded transition-colors"
+                          style={{
+                            color: hoveredEditButtonIndex === index ? '#15803d' : '#16a34a',
+                            backgroundColor: hoveredEditButtonIndex === index ? '#dcfce7' : 'transparent'
+                          }}
                           title="Sửa"
                         >
                           <Edit className="w-3.5 h-3.5" />
                         </button>
                         <button 
                           onClick={(e) => handleDelete(candidate.id, e)}
-                          className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
+                          onMouseEnter={() => setHoveredDeleteButtonIndex(index)}
+                          onMouseLeave={() => setHoveredDeleteButtonIndex(null)}
+                          className="p-1 rounded transition-colors"
+                          style={{
+                            color: hoveredDeleteButtonIndex === index ? '#dc2626' : '#ef4444',
+                            backgroundColor: hoveredDeleteButtonIndex === index ? '#fee2e2' : 'transparent'
+                          }}
                           title="Xóa"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                         <button 
                           onClick={(e) => e.stopPropagation()}
-                          className="text-gray-600 hover:text-gray-800 p-1 rounded hover:bg-gray-100 transition-colors"
+                          onMouseEnter={() => setHoveredMoreButtonIndex(index)}
+                          onMouseLeave={() => setHoveredMoreButtonIndex(null)}
+                          className="p-1 rounded transition-colors"
+                          style={{
+                            color: hoveredMoreButtonIndex === index ? '#1f2937' : '#4b5563',
+                            backgroundColor: hoveredMoreButtonIndex === index ? '#f3f4f6' : 'transparent'
+                          }}
                           title="Thêm tùy chọn"
                         >
                           <MoreVertical className="w-3.5 h-3.5" />

@@ -73,6 +73,26 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
   const [parseError, setParseError] = useState(null);
   const [parseSuccess, setParseSuccess] = useState(null);
 
+  // Hover states
+  const [hoveredBackButton, setHoveredBackButton] = useState(false);
+  const [hoveredCancelButton, setHoveredCancelButton] = useState(false);
+  const [hoveredSaveButton, setHoveredSaveButton] = useState(false);
+  const [hoveredCancelNominationButton, setHoveredCancelNominationButton] = useState(false);
+  const [hoveredSubmitNominationButton, setHoveredSubmitNominationButton] = useState(false);
+  const [hoveredRemoveEducationButton, setHoveredRemoveEducationButton] = useState({});
+  const [hoveredAddEducationButton, setHoveredAddEducationButton] = useState(false);
+  const [hoveredRemoveEmploymentButton, setHoveredRemoveEmploymentButton] = useState({});
+  const [hoveredAddEmploymentButton, setHoveredAddEmploymentButton] = useState(false);
+  const [hoveredRemoveCVButton, setHoveredRemoveCVButton] = useState({});
+  const [hoveredAddMoreFilesButton, setHoveredAddMoreFilesButton] = useState(false);
+  const [hoveredClearAllFilesButton, setHoveredClearAllFilesButton] = useState(false);
+  const [hoveredRemoveCertificateButton, setHoveredRemoveCertificateButton] = useState({});
+  const [hoveredAddCertificateButton, setHoveredAddCertificateButton] = useState(false);
+  const [hoveredRemoveLearnedToolButton, setHoveredRemoveLearnedToolButton] = useState({});
+  const [hoveredAddLearnedToolButton, setHoveredAddLearnedToolButton] = useState(false);
+  const [hoveredRemoveExperienceToolButton, setHoveredRemoveExperienceToolButton] = useState({});
+  const [hoveredAddExperienceToolButton, setHoveredAddExperienceToolButton] = useState(false);
+
   // API Base URL for CV parsing
   const API_BASE_URL = 'https://unboiled-nonprescriptive-hiedi.ngrok-free.dev';
 
@@ -535,29 +555,47 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
     <div className="space-y-4">
       {/* Header - Only show if not in nomination mode */}
       {!jobId && (
-        <div className="bg-white rounded-2xl p-4 border border-gray-200 flex items-center justify-between">
+        <div className="rounded-2xl p-4 border flex items-center justify-between" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/agent/candidates')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              onMouseEnter={() => setHoveredBackButton(true)}
+              onMouseLeave={() => setHoveredBackButton(false)}
+              className="p-2 rounded-lg transition-colors"
+              style={{
+                backgroundColor: hoveredBackButton ? '#f3f4f6' : 'transparent'
+              }}
             >
-              <ArrowLeft className="w-5 h-5 text-gray-700" />
+              <ArrowLeft className="w-5 h-5" style={{ color: '#374151' }} />
             </button>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Tạo ứng viên</h1>
-              <p className="text-sm text-gray-600 mt-1">Thêm thông tin ứng viên mới vào hệ thống</p>
+              <h1 className="text-xl font-bold" style={{ color: '#111827' }}>Tạo ứng viên</h1>
+              <p className="text-sm mt-1" style={{ color: '#4b5563' }}>Thêm thông tin ứng viên mới vào hệ thống</p>
             </div>
           </div>
           <div className="flex gap-2">
             <button
               onClick={handleCancel}
-              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-bold text-sm hover:bg-gray-50 transition-colors"
+              onMouseEnter={() => setHoveredCancelButton(true)}
+              onMouseLeave={() => setHoveredCancelButton(false)}
+              className="px-4 py-2 border rounded-lg font-bold text-sm transition-colors"
+              style={{
+                backgroundColor: hoveredCancelButton ? '#f9fafb' : 'white',
+                borderColor: '#d1d5db',
+                color: '#374151'
+              }}
             >
               Hủy
             </button>
             <button
               onClick={handleSubmit}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg font-bold text-sm hover:bg-red-700 transition-colors"
+              onMouseEnter={() => setHoveredSaveButton(true)}
+              onMouseLeave={() => setHoveredSaveButton(false)}
+              className="px-4 py-2 rounded-lg font-bold text-sm transition-colors"
+              style={{
+                backgroundColor: hoveredSaveButton ? '#dc2626' : '#ef4444',
+                color: 'white'
+              }}
             >
               Lưu ứng viên
             </button>
@@ -567,16 +605,29 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
 
       {/* Submit Button for Nomination Mode */}
       {jobId && (
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+        <div className="flex justify-end gap-3 pt-4 border-t" style={{ borderColor: '#e5e7eb' }}>
           <button
             onClick={handleCancel}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+            onMouseEnter={() => setHoveredCancelNominationButton(true)}
+            onMouseLeave={() => setHoveredCancelNominationButton(false)}
+            className="px-4 py-2 border rounded-lg font-medium transition-colors"
+            style={{
+              borderColor: '#d1d5db',
+              color: '#374151',
+              backgroundColor: hoveredCancelNominationButton ? '#f3f4f6' : 'transparent'
+            }}
           >
             Hủy
           </button>
           <button
             onClick={handleSubmit}
-            className="px-6 py-2 bg-yellow-400 text-blue-700 rounded-lg font-semibold hover:bg-yellow-500 transition-colors"
+            onMouseEnter={() => setHoveredSubmitNominationButton(true)}
+            onMouseLeave={() => setHoveredSubmitNominationButton(false)}
+            className="px-6 py-2 rounded-lg font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredSubmitNominationButton ? '#eab308' : '#facc15',
+              color: '#1e3a8a'
+            }}
           >
             Tiến cử ứng viên
           </button>
@@ -588,15 +639,15 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
         {/* Left Column */}
         <div className="space-y-4">
           {/* Personal Information */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-200">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <User className="w-5 h-5 text-red-600" />
+          <div className="rounded-2xl p-5 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: '#111827' }}>
+              <User className="w-5 h-5" style={{ color: '#ef4444' }} />
               Thông tin cá nhân (個人情報)
             </h2>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                  <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                     Họ tên (Kanji) - 氏名 *
                   </label>
                   <input
@@ -606,11 +657,23 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                     onChange={handleInputChange}
                     placeholder="VD: 山田 太郎"
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#ef4444';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                  <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                     Họ tên (Kana) - ふりがな
                   </label>
                   <input
@@ -619,24 +682,40 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                     value={formData.nameKana}
                     onChange={handleInputChange}
                     placeholder="VD: やまだ たろう"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#ef4444';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                  <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                     Ngày sinh - 生年月日
                   </label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 z-10 pointer-events-none" />
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 z-10 pointer-events-none" style={{ color: '#9ca3af' }} />
                     <DatePicker
                       selected={formData.birthDate ? new Date(formData.birthDate) : null}
                       onChange={handleBirthDateChange}
                       dateFormat="yyyy-MM-dd"
                       maxDate={new Date()}
                       placeholderText="Chọn ngày sinh"
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                      className="w-full pl-10 pr-3 py-2 border rounded-lg text-sm"
+                      style={{
+                        borderColor: '#d1d5db',
+                        outline: 'none'
+                      }}
                       showYearDropdown
                       showMonthDropdown
                       dropdownMode="select"
@@ -650,7 +729,7 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                  <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                     Tuổi - 満歳
                   </label>
                   <input
@@ -660,18 +739,35 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                     onChange={handleInputChange}
                     placeholder="30"
                     readOnly
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-600 cursor-not-allowed"
+                    className="w-full px-3 py-2 border rounded-lg text-sm cursor-not-allowed"
+                    style={{
+                      borderColor: '#d1d5db',
+                      backgroundColor: '#f9fafb',
+                      outline: 'none'
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                  <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                     Giới tính - 性別
                   </label>
                   <select
                     name="gender"
                     value={formData.gender}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#ef4444';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   >
                     <option value="">Chọn</option>
                     <option value="男">Nam (男)</option>
@@ -681,14 +777,14 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
               </div>
 
               {/* Contact Information */}
-              <div className="border-t pt-4 mt-4">
-                <h3 className="text-sm font-bold text-gray-700 mb-3">
+              <div className="border-t pt-4 mt-4" style={{ borderColor: '#e5e7eb' }}>
+                <h3 className="text-sm font-bold mb-3" style={{ color: '#374151' }}>
                   Thông tin liên hệ (連絡先)
                 </h3>
                 <div className="space-y-3">
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-gray-900 mb-1">
+                      <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                         Mã bưu điện - 〒
                       </label>
                       <input
@@ -697,56 +793,104 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                         value={formData.postalCode}
                         onChange={handleInputChange}
                         placeholder="123-4567"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                        className="w-full px-3 py-2 border rounded-lg text-sm"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#ef4444';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                     </div>
                     <div className="col-span-2">
-                      <label className="block text-xs font-bold text-gray-900 mb-1">
+                      <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                         Địa chỉ - 現住所
                       </label>
                       <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: '#9ca3af' }} />
                         <input
                           type="text"
                           name="address"
                           value={formData.address}
                           onChange={handleInputChange}
                           placeholder="東京都渋谷区..."
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                          className="w-full pl-10 pr-3 py-2 border rounded-lg text-sm"
+                          style={{
+                            borderColor: '#d1d5db',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = '#ef4444';
+                            e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                            e.target.style.boxShadow = 'none';
+                          }}
                         />
                       </div>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-gray-900 mb-1">
+                      <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                         Điện thoại - 電話
                       </label>
                       <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: '#9ca3af' }} />
                         <input
                           type="tel"
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
                           placeholder="090-1234-5678"
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                          className="w-full pl-10 pr-3 py-2 border rounded-lg text-sm"
+                          style={{
+                            borderColor: '#d1d5db',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = '#ef4444';
+                            e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                            e.target.style.boxShadow = 'none';
+                          }}
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-900 mb-1">
+                      <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                         Email
                       </label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: '#9ca3af' }} />
                         <input
                           type="email"
                           name="email"
                           value={formData.email}
                           onChange={handleInputChange}
                           placeholder="email@example.com"
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                          className="w-full pl-10 pr-3 py-2 border rounded-lg text-sm"
+                          style={{
+                            borderColor: '#d1d5db',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = '#ef4444';
+                            e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                            e.target.style.boxShadow = 'none';
+                          }}
                         />
                       </div>
                     </div>
@@ -755,13 +899,13 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
               </div>
               
               {/* Residence & Visa Information */}
-              <div className="border-t pt-4 mt-4">
-                <h3 className="text-sm font-bold text-gray-700 mb-3">
+              <div className="border-t pt-4 mt-4" style={{ borderColor: '#e5e7eb' }}>
+                <h3 className="text-sm font-bold mb-3" style={{ color: '#374151' }}>
                   Thông tin cư trú & Visa (在留情報)
                 </h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-bold text-gray-900 mb-1">
+                    <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                       Địa chỉ gốc - 出身地
                     </label>
                     <input
@@ -770,19 +914,43 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                       value={formData.addressOrigin}
                       onChange={handleInputChange}
                       placeholder="VD: ベトナム ホーチミン市"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                      className="w-full px-3 py-2 border rounded-lg text-sm"
+                      style={{
+                        borderColor: '#d1d5db',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#ef4444';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#d1d5db';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-gray-900 mb-1">
+                      <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                         Passport - パスポート
                       </label>
                       <select
                         name="passport"
                         value={formData.passport}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                        className="w-full px-3 py-2 border rounded-lg text-sm"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#ef4444';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       >
                         <option value="">Chọn</option>
                         <option value="1">Có</option>
@@ -790,14 +958,26 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-900 mb-1">
+                      <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                         Nơi cư trú hiện tại - 現在の居住地
                       </label>
                       <select
                         name="currentResidence"
                         value={formData.currentResidence}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                        className="w-full px-3 py-2 border rounded-lg text-sm"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#ef4444';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       >
                         <option value="">Chọn</option>
                         <option value="1">Nhật Bản</option>
@@ -808,14 +988,26 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-gray-900 mb-1">
+                      <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                         Tình trạng cư trú tại Nhật - 在留資格
                       </label>
                       <select
                         name="jpResidenceStatus"
                         value={formData.jpResidenceStatus}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                        className="w-full px-3 py-2 border rounded-lg text-sm"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#ef4444';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       >
                         <option value="">Chọn</option>
                         <option value="1">技術・人文知識・国際業務</option>
@@ -828,7 +1020,7 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-900 mb-1">
+                      <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                         Ngày hết hạn Visa - 在留期限
                       </label>
                       <DatePicker
@@ -848,13 +1040,17 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                         }}
                         dateFormat="yyyy-MM-dd"
                         placeholderText="Chọn ngày hết hạn"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                        className="w-full px-3 py-2 border rounded-lg text-sm"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
                         isClearable
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-900 mb-1">
+                    <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                       Quốc gia khác - その他の国
                     </label>
                     <input
@@ -863,7 +1059,19 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                       value={formData.otherCountry}
                       onChange={handleInputChange}
                       placeholder="VD: アメリカ"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                      className="w-full px-3 py-2 border rounded-lg text-sm"
+                      style={{
+                        borderColor: '#d1d5db',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#ef4444';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#d1d5db';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
                 </div>
@@ -872,20 +1080,24 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
           </div>
 
           {/* Education */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-200">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-red-600" />
+          <div className="rounded-2xl p-5 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: '#111827' }}>
+              <GraduationCap className="w-5 h-5" style={{ color: '#ef4444' }} />
               Học vấn (学歴)
             </h2>
             <div className="space-y-3">
               {formData.educations.map((edu, index) => (
-                <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div key={index} className="p-3 rounded-lg border" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
                   <div className="flex justify-between items-start mb-2">
-                    <span className="text-xs font-bold text-gray-500">#{index + 1}</span>
+                    <span className="text-xs font-bold" style={{ color: '#6b7280' }}>#{index + 1}</span>
                     <button
                       type="button"
                       onClick={() => removeEducation(index)}
-                      className="text-red-500 hover:text-red-700"
+                      onMouseEnter={() => setHoveredRemoveEducationButton(prev => ({ ...prev, [index]: true }))}
+                      onMouseLeave={() => setHoveredRemoveEducationButton(prev => ({ ...prev, [index]: false }))}
+                      style={{
+                        color: hoveredRemoveEducationButton[index] ? '#b91c1c' : '#ef4444'
+                      }}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -896,21 +1108,57 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                       value={edu.year}
                       onChange={(e) => updateEducation(index, 'year', e.target.value)}
                       placeholder="Năm (年)"
-                      className="px-2 py-1.5 border border-gray-300 rounded text-sm"
+                      className="px-2 py-1.5 border rounded text-sm"
+                      style={{
+                        borderColor: '#d1d5db',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#ef4444';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#d1d5db';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                     <input
                       type="text"
                       value={edu.month}
                       onChange={(e) => updateEducation(index, 'month', e.target.value)}
                       placeholder="Tháng (月)"
-                      className="px-2 py-1.5 border border-gray-300 rounded text-sm"
+                      className="px-2 py-1.5 border rounded text-sm"
+                      style={{
+                        borderColor: '#d1d5db',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#ef4444';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#d1d5db';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                     <input
                       type="text"
                       value={edu.content}
                       onChange={(e) => updateEducation(index, 'content', e.target.value)}
                       placeholder="Tên trường, ngành học..."
-                      className="col-span-2 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                      className="col-span-2 px-2 py-1.5 border rounded text-sm"
+                      style={{
+                        borderColor: '#d1d5db',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#ef4444';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#d1d5db';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
                 </div>
@@ -918,7 +1166,13 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
               <button
                 type="button"
                 onClick={handleAddEducation}
-                className="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:border-red-600 hover:text-red-600 transition-colors flex items-center justify-center gap-2"
+                onMouseEnter={() => setHoveredAddEducationButton(true)}
+                onMouseLeave={() => setHoveredAddEducationButton(false)}
+                className="w-full px-4 py-2 border-2 border-dashed rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                style={{
+                  borderColor: hoveredAddEducationButton ? '#ef4444' : '#d1d5db',
+                  color: hoveredAddEducationButton ? '#ef4444' : '#4b5563'
+                }}
               >
                 <Plus className="w-4 h-4" />
                 Thêm học vấn
@@ -927,20 +1181,24 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
           </div>
 
           {/* Work Experience */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-200">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-red-600" />
+          <div className="rounded-2xl p-5 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: '#111827' }}>
+              <Briefcase className="w-5 h-5" style={{ color: '#ef4444' }} />
               Kinh nghiệm làm việc (職歴)
             </h2>
             <div className="space-y-3">
               {formData.workExperiences.map((emp, index) => (
-                <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div key={index} className="p-3 rounded-lg border" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
                   <div className="flex justify-between items-start mb-2">
-                    <span className="text-xs font-bold text-gray-500">#{index + 1}</span>
+                    <span className="text-xs font-bold" style={{ color: '#6b7280' }}>#{index + 1}</span>
                     <button
                       type="button"
                       onClick={() => removeEmployment(index)}
-                      className="text-red-500 hover:text-red-700"
+                      onMouseEnter={() => setHoveredRemoveEmploymentButton(prev => ({ ...prev, [index]: true }))}
+                      onMouseLeave={() => setHoveredRemoveEmploymentButton(prev => ({ ...prev, [index]: false }))}
+                      style={{
+                        color: hoveredRemoveEmploymentButton[index] ? '#b91c1c' : '#ef4444'
+                      }}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -952,14 +1210,38 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                         value={emp.period}
                         onChange={(e) => updateEmployment(index, 'period', e.target.value)}
                         placeholder="Thời gian (YYYY/MM - YYYY/MM)"
-                        className="px-2 py-1.5 border border-gray-300 rounded text-sm"
+                        className="px-2 py-1.5 border rounded text-sm"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#ef4444';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                       <input
                         type="text"
                         value={emp.company_name}
                         onChange={(e) => updateEmployment(index, 'company_name', e.target.value)}
                         placeholder="Tên công ty"
-                        className="px-2 py-1.5 border border-gray-300 rounded text-sm"
+                        className="px-2 py-1.5 border rounded text-sm"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#ef4444';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -968,14 +1250,38 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                         value={emp.business_purpose}
                         onChange={(e) => updateEmployment(index, 'business_purpose', e.target.value)}
                         placeholder="Lĩnh vực kinh doanh (事業目的)"
-                        className="px-2 py-1.5 border border-gray-300 rounded text-sm"
+                        className="px-2 py-1.5 border rounded text-sm"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#ef4444';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                       <input
                         type="text"
                         value={emp.scale_role}
                         onChange={(e) => updateEmployment(index, 'scale_role', e.target.value)}
                         placeholder="Quy mô / Vai trò (規模／役割)"
-                        className="px-2 py-1.5 border border-gray-300 rounded text-sm"
+                        className="px-2 py-1.5 border rounded text-sm"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#ef4444';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                     </div>
                     <textarea
@@ -983,14 +1289,38 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                       onChange={(e) => updateEmployment(index, 'description', e.target.value)}
                       placeholder="Mô tả công việc (業務内容)"
                       rows={2}
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
+                      className="w-full px-2 py-1.5 border rounded text-sm"
+                      style={{
+                        borderColor: '#d1d5db',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#ef4444';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#d1d5db';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                     <input
                       type="text"
                       value={emp.tools_tech}
                       onChange={(e) => updateEmployment(index, 'tools_tech', e.target.value)}
                       placeholder="Công cụ, công nghệ (ツール)"
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
+                      className="w-full px-2 py-1.5 border rounded text-sm"
+                      style={{
+                        borderColor: '#d1d5db',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#ef4444';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#d1d5db';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
                 </div>
@@ -998,7 +1328,13 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
               <button
                 type="button"
                 onClick={handleAddWorkExperience}
-                className="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:border-red-600 hover:text-red-600 transition-colors flex items-center justify-center gap-2"
+                onMouseEnter={() => setHoveredAddEmploymentButton(true)}
+                onMouseLeave={() => setHoveredAddEmploymentButton(false)}
+                className="w-full px-4 py-2 border-2 border-dashed rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                style={{
+                  borderColor: hoveredAddEmploymentButton ? '#ef4444' : '#d1d5db',
+                  color: hoveredAddEmploymentButton ? '#ef4444' : '#4b5563'
+                }}
               >
                 <Plus className="w-4 h-4" />
                 Thêm kinh nghiệm
@@ -1010,24 +1346,24 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
         {/* Right Column */}
         <div className="space-y-4">
           {/* Upload CV */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-200">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-red-600" />
+          <div className="rounded-2xl p-5 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: '#111827' }}>
+              <FileText className="w-5 h-5" style={{ color: '#ef4444' }} />
               Upload CV
             </h2>
             {cvFiles.length === 0 ? (
-              <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-red-600 transition-colors">
+              <div className="border-2 border-dashed rounded-xl p-8 text-center transition-colors" style={{ borderColor: '#d1d5db' }}>
                 <label htmlFor="cv-upload" className="cursor-pointer">
                   <div className="flex flex-col items-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
-                      <Upload className="w-8 h-8 text-gray-400" />
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: '#f3f4f6' }}>
+                      <Upload className="w-8 h-8" style={{ color: '#9ca3af' }} />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-gray-900 mb-1">Kéo thả file CV vào đây</p>
-                      <p className="text-xs text-gray-500">hoặc</p>
-                      <p className="text-sm text-red-600 font-medium mt-1">Chọn file từ máy tính</p>
+                      <p className="text-sm font-bold mb-1" style={{ color: '#111827' }}>Kéo thả file CV vào đây</p>
+                      <p className="text-xs" style={{ color: '#6b7280' }}>hoặc</p>
+                      <p className="text-sm font-medium mt-1" style={{ color: '#ef4444' }}>Chọn file từ máy tính</p>
                     </div>
-                    <p className="text-xs text-gray-500">Hỗ trợ nhiều file PDF - Tự động trích xuất dữ liệu</p>
+                    <p className="text-xs" style={{ color: '#6b7280' }}>Hỗ trợ nhiều file PDF - Tự động trích xuất dữ liệu</p>
                   </div>
                   <input
                     id="cv-upload"
@@ -1044,21 +1380,26 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                 {/* File List */}
                 <div className="space-y-2">
                   {cvFiles.map((file, index) => (
-                    <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    <div key={index} className="rounded-lg p-3 border" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
-                            <FileText className="w-4 h-4 text-red-600" />
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#fee2e2' }}>
+                            <FileText className="w-4 h-4" style={{ color: '#ef4444' }} />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                            <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                            <p className="text-sm font-medium" style={{ color: '#111827' }}>{file.name}</p>
+                            <p className="text-xs" style={{ color: '#6b7280' }}>{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                           </div>
                         </div>
                         <button
                           type="button"
                           onClick={() => handleRemoveCV(index)}
-                          className="text-gray-400 hover:text-red-600 p-1"
+                          onMouseEnter={() => setHoveredRemoveCVButton(prev => ({ ...prev, [index]: true }))}
+                          onMouseLeave={() => setHoveredRemoveCVButton(prev => ({ ...prev, [index]: false }))}
+                          className="p-1"
+                          style={{
+                            color: hoveredRemoveCVButton[index] ? '#ef4444' : '#9ca3af'
+                          }}
                           disabled={isParsing}
                         >
                           <X className="w-4 h-4" />
@@ -1070,7 +1411,15 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
 
                 {/* Add More Files Button */}
                 <label htmlFor="cv-upload-more" className="block">
-                  <div className="w-full px-4 py-2 border border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:border-red-600 hover:text-red-600 transition-colors text-center cursor-pointer flex items-center justify-center gap-2">
+                  <div
+                    onMouseEnter={() => setHoveredAddMoreFilesButton(true)}
+                    onMouseLeave={() => setHoveredAddMoreFilesButton(false)}
+                    className="w-full px-4 py-2 border border-dashed rounded-lg text-sm font-medium transition-colors text-center cursor-pointer flex items-center justify-center gap-2"
+                    style={{
+                      borderColor: hoveredAddMoreFilesButton ? '#ef4444' : '#d1d5db',
+                      color: hoveredAddMoreFilesButton ? '#ef4444' : '#4b5563'
+                    }}
+                  >
                     <Plus className="w-4 h-4" /> Thêm file PDF
                   </div>
                   <input
@@ -1086,17 +1435,20 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
 
                 {/* Parsing Progress */}
                 {isParsing && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="rounded-lg p-4 border" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-                      <p className="text-sm font-medium text-blue-800">
+                      <div className="animate-spin w-5 h-5 border-2 rounded-full" style={{ borderColor: '#2563eb', borderTopColor: 'transparent' }}></div>
+                      <p className="text-sm font-medium" style={{ color: '#1e40af' }}>
                         Đang phân tích CV bằng AI... ({parseProgress.current}/{parseProgress.total})
                       </p>
                     </div>
-                    <div className="w-full bg-blue-200 rounded-full h-2">
+                    <div className="w-full rounded-full h-2" style={{ backgroundColor: '#bfdbfe' }}>
                       <div
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${(parseProgress.current / parseProgress.total) * 100}%` }}
+                        className="h-2 rounded-full transition-all duration-300"
+                        style={{ 
+                          width: `${(parseProgress.current / parseProgress.total) * 100}%`,
+                          backgroundColor: '#2563eb'
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -1104,18 +1456,24 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
 
                 {/* Parse Error */}
                 {parseError && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                    <span className="text-red-600 mt-0.5">⚠️</span>
-                    <pre className="flex-1 text-sm font-medium text-red-800 whitespace-pre-wrap">{parseError}</pre>
-                    <button type="button" onClick={() => setParseError(null)} className="text-red-600 hover:text-red-800">✕</button>
+                  <div className="rounded-lg p-4 border flex items-start gap-3" style={{ backgroundColor: '#fef2f2', borderColor: '#fecaca' }}>
+                    <span className="mt-0.5" style={{ color: '#ef4444' }}>⚠️</span>
+                    <pre className="flex-1 text-sm font-medium whitespace-pre-wrap" style={{ color: '#991b1b' }}>{parseError}</pre>
+                    <button 
+                      type="button" 
+                      onClick={() => setParseError(null)} 
+                      style={{ color: '#991b1b' }}
+                      onMouseEnter={(e) => e.target.style.color = '#7f1d1d'}
+                      onMouseLeave={(e) => e.target.style.color = '#991b1b'}
+                    >✕</button>
                   </div>
                 )}
 
                 {/* Parse Success */}
                 {parseSuccess && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
-                    <span className="text-green-600">✓</span>
-                    <p className="flex-1 text-sm font-medium text-green-800">{parseSuccess}</p>
+                  <div className="rounded-lg p-4 border flex items-center gap-3" style={{ backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' }}>
+                    <span style={{ color: '#16a34a' }}>✓</span>
+                    <p className="flex-1 text-sm font-medium" style={{ color: '#166534' }}>{parseSuccess}</p>
                   </div>
                 )}
 
@@ -1124,7 +1482,13 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                   <button
                     type="button"
                     onClick={() => handleRemoveCV()}
-                    className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    onMouseEnter={() => setHoveredClearAllFilesButton(true)}
+                    onMouseLeave={() => setHoveredClearAllFilesButton(false)}
+                    className="w-full px-4 py-2 text-sm rounded-lg transition-colors"
+                    style={{
+                      color: '#ef4444',
+                      backgroundColor: hoveredClearAllFilesButton ? '#fee2e2' : 'transparent'
+                    }}
                   >
                     Xóa tất cả file
                   </button>
@@ -1134,19 +1498,19 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
           </div>
 
           {/* Skills & Certificates */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-200">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Award className="w-5 h-5 text-red-600" />
+          <div className="rounded-2xl p-5 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: '#111827' }}>
+              <Award className="w-5 h-5" style={{ color: '#ef4444' }} />
               Kỹ năng & Chứng chỉ (資格)
             </h2>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                  <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                     JLPT Level - 日本語能力試験
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm font-semibold text-gray-600 pointer-events-none">N</span>
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm font-semibold pointer-events-none" style={{ color: '#4b5563' }}>N</span>
                     <input
                       type="number"
                       name="jlptLevel"
@@ -1155,13 +1519,25 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                       min="1"
                       max="5"
                       placeholder="1-5"
-                      className="w-full pl-6 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                      className="w-full pl-6 pr-3 py-2 border rounded-lg text-sm"
+                      style={{
+                        borderColor: '#d1d5db',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#ef4444';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#d1d5db';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
-                  <p className="text-[10px] text-gray-500 mt-1">Nhập số từ 1 (N1) đến 5 (N5)</p>
+                  <p className="text-[10px] mt-1" style={{ color: '#6b7280' }}>Nhập số từ 1 (N1) đến 5 (N5)</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                  <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                     Số năm kinh nghiệm - 経験年数
                   </label>
                   <input
@@ -1171,13 +1547,25 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                     onChange={handleInputChange}
                     placeholder="VD: 3"
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#ef4444';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                  <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                     Chuyên ngành - 専門分野
                   </label>
                   <input
@@ -1187,11 +1575,23 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                     onChange={handleInputChange}
                     placeholder="ID chuyên ngành"
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#ef4444';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                  <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                     Bằng cấp - 資格
                   </label>
                   <input
@@ -1201,12 +1601,24 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                     onChange={handleInputChange}
                     placeholder="ID bằng cấp"
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#ef4444';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-900 mb-1">
+                <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                   Kỹ năng kỹ thuật (活かせる経験・知識・技術)
                 </label>
                 <textarea
@@ -1215,11 +1627,23 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                   onChange={handleInputChange}
                   placeholder="VD: Project Management, React, Python..."
                   rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#ef4444';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-900 mb-2">
+                <label className="block text-xs font-bold mb-2" style={{ color: '#111827' }}>
                   Chứng chỉ (免許・資格)
                 </label>
                 <div className="space-y-2">
@@ -1230,26 +1654,66 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                         value={cert.year}
                         onChange={(e) => updateCertificate(index, 'year', e.target.value)}
                         placeholder="Năm"
-                        className="w-16 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                        className="w-16 px-2 py-1.5 border rounded text-sm"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#ef4444';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                       <input
                         type="text"
                         value={cert.month}
                         onChange={(e) => updateCertificate(index, 'month', e.target.value)}
                         placeholder="Tháng"
-                        className="w-16 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                        className="w-16 px-2 py-1.5 border rounded text-sm"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#ef4444';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                       <input
                         type="text"
                         value={cert.name}
                         onChange={(e) => updateCertificate(index, 'name', e.target.value)}
                         placeholder="Tên chứng chỉ"
-                        className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                        className="flex-1 px-2 py-1.5 border rounded text-sm"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#ef4444';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                       <button
                         type="button"
                         onClick={() => removeCertificate(index)}
-                        className="text-red-500 hover:text-red-700"
+                        onMouseEnter={() => setHoveredRemoveCertificateButton(prev => ({ ...prev, [index]: true }))}
+                        onMouseLeave={() => setHoveredRemoveCertificateButton(prev => ({ ...prev, [index]: false }))}
+                        style={{
+                          color: hoveredRemoveCertificateButton[index] ? '#b91c1c' : '#ef4444'
+                        }}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -1258,7 +1722,12 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                   <button
                     type="button"
                     onClick={handleAddCertificate}
-                    className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1"
+                    onMouseEnter={() => setHoveredAddCertificateButton(true)}
+                    onMouseLeave={() => setHoveredAddCertificateButton(false)}
+                    className="text-sm flex items-center gap-1"
+                    style={{
+                      color: hoveredAddCertificateButton ? '#b91c1c' : '#ef4444'
+                    }}
                   >
                     <Plus className="w-4 h-4" />
                     Thêm chứng chỉ
@@ -1266,7 +1735,7 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-900 mb-2">
+                <label className="block text-xs font-bold mb-2" style={{ color: '#111827' }}>
                   Công cụ đã học - 学習したツール
                 </label>
                 <div className="space-y-2">
@@ -1277,12 +1746,28 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                         value={tool}
                         onChange={(e) => updateLearnedTool(index, e.target.value)}
                         placeholder="VD: React, Python, Docker..."
-                        className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                        className="flex-1 px-2 py-1.5 border rounded text-sm"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#ef4444';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                       <button
                         type="button"
                         onClick={() => removeLearnedTool(index)}
-                        className="text-red-500 hover:text-red-700"
+                        onMouseEnter={() => setHoveredRemoveLearnedToolButton(prev => ({ ...prev, [index]: true }))}
+                        onMouseLeave={() => setHoveredRemoveLearnedToolButton(prev => ({ ...prev, [index]: false }))}
+                        style={{
+                          color: hoveredRemoveLearnedToolButton[index] ? '#b91c1c' : '#ef4444'
+                        }}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -1291,7 +1776,12 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                   <button
                     type="button"
                     onClick={handleAddLearnedTool}
-                    className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1"
+                    onMouseEnter={() => setHoveredAddLearnedToolButton(true)}
+                    onMouseLeave={() => setHoveredAddLearnedToolButton(false)}
+                    className="text-sm flex items-center gap-1"
+                    style={{
+                      color: hoveredAddLearnedToolButton ? '#b91c1c' : '#ef4444'
+                    }}
                   >
                     <Plus className="w-4 h-4" />
                     Thêm công cụ đã học
@@ -1299,7 +1789,7 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-900 mb-2">
+                <label className="block text-xs font-bold mb-2" style={{ color: '#111827' }}>
                   Công cụ có kinh nghiệm - 経験のあるツール
                 </label>
                 <div className="space-y-2">
@@ -1310,12 +1800,28 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                         value={tool}
                         onChange={(e) => updateExperienceTool(index, e.target.value)}
                         placeholder="VD: AWS, Kubernetes, TypeScript..."
-                        className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                        className="flex-1 px-2 py-1.5 border rounded text-sm"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#ef4444';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                       <button
                         type="button"
                         onClick={() => removeExperienceTool(index)}
-                        className="text-red-500 hover:text-red-700"
+                        onMouseEnter={() => setHoveredRemoveExperienceToolButton(prev => ({ ...prev, [index]: true }))}
+                        onMouseLeave={() => setHoveredRemoveExperienceToolButton(prev => ({ ...prev, [index]: false }))}
+                        style={{
+                          color: hoveredRemoveExperienceToolButton[index] ? '#b91c1c' : '#ef4444'
+                        }}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -1324,7 +1830,12 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                   <button
                     type="button"
                     onClick={handleAddExperienceTool}
-                    className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1"
+                    onMouseEnter={() => setHoveredAddExperienceToolButton(true)}
+                    onMouseLeave={() => setHoveredAddExperienceToolButton(false)}
+                    className="text-sm flex items-center gap-1"
+                    style={{
+                      color: hoveredAddExperienceToolButton ? '#b91c1c' : '#ef4444'
+                    }}
                   >
                     <Plus className="w-4 h-4" />
                     Thêm công cụ có kinh nghiệm
@@ -1335,14 +1846,14 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
           </div>
 
           {/* Self Introduction */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-200">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <UserCircle className="w-5 h-5 text-red-600" />
+          <div className="rounded-2xl p-5 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: '#111827' }}>
+              <UserCircle className="w-5 h-5" style={{ color: '#ef4444' }} />
               Giới thiệu bản thân (自己PR)
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-bold text-gray-900 mb-1">
+                <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                   Tóm tắt nghề nghiệp (職務要約)
                 </label>
                 <textarea
@@ -1351,11 +1862,23 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                   onChange={handleInputChange}
                   placeholder="Tóm tắt kinh nghiệm làm việc..."
                   rows="2"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#ef4444';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-900 mb-1">
+                <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                   Điểm mạnh (自己PR)
                 </label>
                 <textarea
@@ -1364,11 +1887,23 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                   onChange={handleInputChange}
                   placeholder="Điểm mạnh của bạn..."
                   rows="2"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#ef4444';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-900 mb-1">
+                <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                   Động lực ứng tuyển (志望動機)
                 </label>
                 <textarea
@@ -1377,19 +1912,31 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                   onChange={handleInputChange}
                   placeholder="Lý do muốn ứng tuyển..."
                   rows="2"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#ef4444';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
             </div>
           </div>
 
           {/* Preferences */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-200">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Mong muốn (希望)</h2>
+          <div className="rounded-2xl p-5 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-lg font-bold mb-4" style={{ color: '#111827' }}>Mong muốn (希望)</h2>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                  <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                     Lương hiện tại (現在年収)
                   </label>
                   <input
@@ -1398,11 +1945,23 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                     value={formData.currentSalary}
                     onChange={handleInputChange}
                     placeholder="VD: 500万円"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#ef4444';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                  <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                     Lương mong muốn (希望年収)
                   </label>
                   <input
@@ -1411,12 +1970,24 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                     value={formData.desiredSalary}
                     onChange={handleInputChange}
                     placeholder="VD: 600万円"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#ef4444';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-900 mb-1">
+                <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                   Vị trí mong muốn (希望職種)
                 </label>
                 <input
@@ -1425,12 +1996,24 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                   value={formData.desiredPosition}
                   onChange={handleInputChange}
                   placeholder="VD: Software Engineer"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#ef4444';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                  <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                     Địa điểm (希望勤務地)
                   </label>
                   <input
@@ -1439,11 +2022,23 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                     value={formData.desiredLocation}
                     onChange={handleInputChange}
                     placeholder="VD: Tokyo"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#ef4444';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-900 mb-1">
+                  <label className="block text-xs font-bold mb-1" style={{ color: '#111827' }}>
                     Ngày bắt đầu (希望入社日)
                   </label>
                   <input
@@ -1452,7 +2047,19 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
                     value={formData.desiredStartDate}
                     onChange={handleInputChange}
                     placeholder="VD: 2025年4月"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#ef4444';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
@@ -1463,16 +2070,29 @@ const AddCandidate = ({ jobId, onSuccess, onCancel }) => {
 
       {/* Submit Button for Nomination Mode */}
       {jobId && (
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 bg-white rounded-2xl p-4 mt-4">
+        <div className="flex justify-end gap-3 pt-4 border-t rounded-2xl p-4 mt-4" style={{ borderColor: '#e5e7eb', backgroundColor: 'white' }}>
           <button
             onClick={handleCancel}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+            onMouseEnter={() => setHoveredCancelNominationButton(true)}
+            onMouseLeave={() => setHoveredCancelNominationButton(false)}
+            className="px-4 py-2 border rounded-lg font-medium transition-colors"
+            style={{
+              borderColor: '#d1d5db',
+              color: '#374151',
+              backgroundColor: hoveredCancelNominationButton ? '#f3f4f6' : 'transparent'
+            }}
           >
             Hủy
           </button>
           <button
             onClick={handleSubmit}
-            className="px-6 py-2 bg-yellow-400 text-blue-700 rounded-lg font-semibold hover:bg-yellow-500 transition-colors"
+            onMouseEnter={() => setHoveredSubmitNominationButton(true)}
+            onMouseLeave={() => setHoveredSubmitNominationButton(false)}
+            className="px-6 py-2 rounded-lg font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredSubmitNominationButton ? '#eab308' : '#facc15',
+              color: '#1e3a8a'
+            }}
           >
             Tiến cử ứng viên
           </button>

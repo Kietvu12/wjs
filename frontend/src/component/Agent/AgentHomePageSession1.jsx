@@ -97,19 +97,21 @@ const AgentHomePageSession1 = () => {
           const height = maxValue > 0 ? (value / maxValue) * 100 : 0;
           const isLast = index === data.length - 1;
           
+          let backgroundColor;
+          if (isLast) {
+            backgroundColor = isPositive ? '#16a34a' : '#dc2626';
+          } else {
+            backgroundColor = isPositive ? '#bbf7d0' : '#fecaca';
+          }
+          
           return (
             <div
               key={index}
-              className={`w-3 rounded-t ${
-                isLast
-                  ? isPositive
-                    ? 'bg-green-600'
-                    : 'bg-red-600'
-                  : isPositive
-                  ? 'bg-green-200'
-                  : 'bg-red-200'
-              }`}
-              style={{ height: `${height}%` }}
+              className="w-3 rounded-t"
+              style={{ 
+                height: `${height}%`,
+                backgroundColor: backgroundColor
+              }}
             />
           );
         })}
@@ -124,11 +126,15 @@ const AgentHomePageSession1 = () => {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-gray-100 flex flex-col gap-4"
+              className="rounded-lg shadow-sm p-4 sm:p-6 border flex flex-col gap-4"
+              style={{
+                backgroundColor: 'white',
+                borderColor: '#f3f4f6'
+              }}
             >
               <div className="animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 rounded w-3/4 mb-4" style={{ backgroundColor: '#e5e7eb' }}></div>
+                <div className="h-8 rounded w-1/2" style={{ backgroundColor: '#e5e7eb' }}></div>
               </div>
             </div>
           ))}
@@ -146,14 +152,18 @@ const AgentHomePageSession1 = () => {
           return (
             <div
               key={index}
-              className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-gray-100 flex flex-col gap-4"
+              className="rounded-lg shadow-sm p-4 sm:p-6 border flex flex-col gap-4"
+              style={{
+                backgroundColor: 'white',
+                borderColor: '#f3f4f6'
+              }}
             >
               {/* Row 1: Icon + Title */}
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#f3e8ff' }}>
+                  <Icon className="w-6 h-6" style={{ color: '#9333ea' }} />
                 </div>
-                <h3 className="text-sm font-medium text-gray-600">
+                <h3 className="text-sm font-medium" style={{ color: '#4b5563' }}>
                   {metric.title}
                 </h3>
               </div>
@@ -161,16 +171,17 @@ const AgentHomePageSession1 = () => {
               {/* Row 2: Value + Chart */}
               <div className="flex items-center justify-between gap-4 sm:gap-6">
                 <div className="flex flex-col flex-1 min-w-0">
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">{metric.value}</p>
+                  <p className="text-2xl sm:text-3xl font-bold" style={{ color: '#111827' }}>{metric.value}</p>
                   <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                     <span
-                      className={`text-xs sm:text-sm font-medium ${
-                        metric.isPositive ? 'text-green-600' : 'text-red-600'
-                      }`}
+                      className="text-xs sm:text-sm font-medium"
+                      style={{
+                        color: metric.isPositive ? '#16a34a' : '#dc2626'
+                      }}
                     >
                       {metric.isPositive ? '▲' : '▼'} {metric.trend}
                     </span>
-                    <span className="text-xs sm:text-sm text-gray-500">
+                    <span className="text-xs sm:text-sm" style={{ color: '#6b7280' }}>
                       {metric.trendText}
                     </span>
                   </div>

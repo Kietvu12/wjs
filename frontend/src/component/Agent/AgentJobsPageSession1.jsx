@@ -78,7 +78,9 @@ const HeaderNavigationButtons = ({
   onSearchHistoryClick, 
   onSavedCriteriaClick, 
   onSavedListClick,
-  compact = false
+  compact = false,
+  hoveredNavButtonIndex,
+  setHoveredNavButtonIndex
 }) => {
   if (compact) {
     return (
@@ -86,26 +88,41 @@ const HeaderNavigationButtons = ({
         <div className="flex items-center gap-0">
           <button
             onClick={onSearchHistoryClick}
-            className="flex items-center gap-1.5 px-2 py-1.5 transition-colors justify-center text-xs hover:bg-gray-50"
+            onMouseEnter={() => setHoveredNavButtonIndex('history-compact')}
+            onMouseLeave={() => setHoveredNavButtonIndex(null)}
+            className="flex items-center gap-1.5 px-2 py-1.5 transition-colors justify-center text-xs"
+            style={{
+              backgroundColor: hoveredNavButtonIndex === 'history-compact' ? '#f9fafb' : 'transparent'
+            }}
           >
-            <Clock className="w-4 h-4 text-orange-500" />
-            <span className="font-medium text-blue-900 truncate">Lịch sử</span>
+            <Clock className="w-4 h-4" style={{ color: '#f97316' }} />
+            <span className="font-medium truncate" style={{ color: '#1e3a8a' }}>Lịch sử</span>
           </button>
-          <span className="text-gray-300 text-xs">|</span>
+          <span className="text-xs" style={{ color: '#d1d5db' }}>|</span>
           <button
             onClick={onSavedCriteriaClick}
-            className="flex items-center gap-1.5 px-2 py-1.5 transition-colors justify-center text-xs hover:bg-gray-50"
+            onMouseEnter={() => setHoveredNavButtonIndex('criteria-compact')}
+            onMouseLeave={() => setHoveredNavButtonIndex(null)}
+            className="flex items-center gap-1.5 px-2 py-1.5 transition-colors justify-center text-xs"
+            style={{
+              backgroundColor: hoveredNavButtonIndex === 'criteria-compact' ? '#f9fafb' : 'transparent'
+            }}
           >
-            <Bookmark className="w-4 h-4 text-blue-400" />
-            <span className="font-medium text-blue-900 truncate">Tiêu chí đã lưu</span>
+            <Bookmark className="w-4 h-4" style={{ color: '#60a5fa' }} />
+            <span className="font-medium truncate" style={{ color: '#1e3a8a' }}>Tiêu chí đã lưu</span>
           </button>
-          <span className="text-gray-300 text-xs">|</span>
+          <span className="text-xs" style={{ color: '#d1d5db' }}>|</span>
           <button
             onClick={onSavedListClick}
-            className="flex items-center gap-1.5 px-2 py-1.5 transition-colors justify-center text-xs hover:bg-gray-50"
+            onMouseEnter={() => setHoveredNavButtonIndex('list-compact')}
+            onMouseLeave={() => setHoveredNavButtonIndex(null)}
+            className="flex items-center gap-1.5 px-2 py-1.5 transition-colors justify-center text-xs"
+            style={{
+              backgroundColor: hoveredNavButtonIndex === 'list-compact' ? '#f9fafb' : 'transparent'
+            }}
           >
-            <Heart className="w-4 h-4 text-red-500" />
-            <span className="font-medium text-blue-900 truncate">Danh sách (61)</span>
+            <Heart className="w-4 h-4" style={{ color: '#ef4444' }} />
+            <span className="font-medium truncate" style={{ color: '#1e3a8a' }}>Danh sách (61)</span>
           </button>
         </div>
       </div>
@@ -117,26 +134,41 @@ const HeaderNavigationButtons = ({
       <div className="flex items-center gap-0">
         <button
           onClick={onSearchHistoryClick}
-          className="flex items-center gap-2 px-4 py-2 transition-colors justify-center hover:bg-gray-50"
+          onMouseEnter={() => setHoveredNavButtonIndex('history')}
+          onMouseLeave={() => setHoveredNavButtonIndex(null)}
+          className="flex items-center gap-2 px-4 py-2 transition-colors justify-center"
+          style={{
+            backgroundColor: hoveredNavButtonIndex === 'history' ? '#f9fafb' : 'transparent'
+          }}
         >
-          <Clock className="w-5 h-5 text-orange-500" />
-          <span className="text-xs font-medium text-blue-900 whitespace-nowrap">Lịch sử tìm kiếm</span>
+          <Clock className="w-5 h-5" style={{ color: '#f97316' }} />
+          <span className="text-xs font-medium whitespace-nowrap" style={{ color: '#1e3a8a' }}>Lịch sử tìm kiếm</span>
         </button>
-        <span className="text-gray-300 text-sm">|</span>
+        <span className="text-sm" style={{ color: '#d1d5db' }}>|</span>
         <button
           onClick={onSavedCriteriaClick}
-          className="flex items-center gap-2 px-4 py-2 transition-colors justify-center hover:bg-gray-50"
+          onMouseEnter={() => setHoveredNavButtonIndex('criteria')}
+          onMouseLeave={() => setHoveredNavButtonIndex(null)}
+          className="flex items-center gap-2 px-4 py-2 transition-colors justify-center"
+          style={{
+            backgroundColor: hoveredNavButtonIndex === 'criteria' ? '#f9fafb' : 'transparent'
+          }}
         >
-          <Bookmark className="w-5 h-5 text-blue-400" />
-          <span className="text-xs font-medium text-blue-900 whitespace-nowrap">Tiêu chí tìm kiếm đã lưu</span>
+          <Bookmark className="w-5 h-5" style={{ color: '#60a5fa' }} />
+          <span className="text-xs font-medium whitespace-nowrap" style={{ color: '#1e3a8a' }}>Tiêu chí tìm kiếm đã lưu</span>
         </button>
-        <span className="text-gray-300 text-sm">|</span>
+        <span className="text-sm" style={{ color: '#d1d5db' }}>|</span>
         <button
           onClick={onSavedListClick}
-          className="flex items-center gap-2 px-4 py-2 transition-colors justify-center hover:bg-gray-50"
+          onMouseEnter={() => setHoveredNavButtonIndex('list')}
+          onMouseLeave={() => setHoveredNavButtonIndex(null)}
+          className="flex items-center gap-2 px-4 py-2 transition-colors justify-center"
+          style={{
+            backgroundColor: hoveredNavButtonIndex === 'list' ? '#f9fafb' : 'transparent'
+          }}
         >
-          <Heart className="w-5 h-5 text-red-500" />
-          <span className="text-xs font-medium text-blue-900 whitespace-nowrap">
+          <Heart className="w-5 h-5" style={{ color: '#ef4444' }} />
+          <span className="text-xs font-medium whitespace-nowrap" style={{ color: '#1e3a8a' }}>
             Danh sách lưu giữ <span className="font-bold">61 miếng</span>
           </span>
         </button>
@@ -199,6 +231,24 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
   const [showSearchHistoryModal, setShowSearchHistoryModal] = useState(false);
   const [showSavedCriteriaModal, setShowSavedCriteriaModal] = useState(false);
   const [showSavedListModal, setShowSavedListModal] = useState(false);
+  
+  // Hover states
+  const [hoveredNavButtonIndex, setHoveredNavButtonIndex] = useState(null);
+  const [hoveredKeywordModeButton, setHoveredKeywordModeButton] = useState(false);
+  const [hoveredLocationButton, setHoveredLocationButton] = useState(false);
+  const [hoveredFieldButton, setHoveredFieldButton] = useState(false);
+  const [hoveredJobTypeButton, setHoveredJobTypeButton] = useState(false);
+  const [hoveredHighlightButton, setHoveredHighlightButton] = useState(false);
+  const [hoveredCheckboxIndex, setHoveredCheckboxIndex] = useState(null);
+  const [hoveredClearButton, setHoveredClearButton] = useState(false);
+  const [hoveredSearchButton, setHoveredSearchButton] = useState(false);
+  const [hoveredModalCloseButton, setHoveredModalCloseButton] = useState(null);
+  const [hoveredModalConfirmButton, setHoveredModalConfirmButton] = useState(null);
+  const [hoveredModalItemIndex, setHoveredModalItemIndex] = useState(null);
+  const [hoveredSlideModalCloseButton, setHoveredSlideModalCloseButton] = useState(false);
+  const [hoveredSearchHistoryButtonIndex, setHoveredSearchHistoryButtonIndex] = useState(null);
+  const [hoveredSavedCriteriaButtonIndex, setHoveredSavedCriteriaButtonIndex] = useState(null);
+  const [hoveredSavedListButtonIndex, setHoveredSavedListButtonIndex] = useState(null);
 
   // Load data on mount
   useEffect(() => {
@@ -646,11 +696,19 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
         style={{ backgroundColor: 'rgba(0, 0, 0, 0.1)' }}
         onClick={onClose}
       >
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h3 className="text-base font-semibold text-gray-900">{title}</h3>
-            <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded transition-colors">
-              <X className="w-5 h-5 text-gray-600" />
+        <div className="rounded-lg shadow-xl w-full max-w-md max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'white', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
+          <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: '#e5e7eb' }}>
+            <h3 className="text-base font-semibold" style={{ color: '#111827' }}>{title}</h3>
+            <button 
+              onClick={onClose} 
+              onMouseEnter={() => setHoveredModalCloseButton('multiselect')}
+              onMouseLeave={() => setHoveredModalCloseButton(null)}
+              className="p-1 rounded transition-colors"
+              style={{
+                backgroundColor: hoveredModalCloseButton === 'multiselect' ? '#f3f4f6' : 'transparent'
+              }}
+            >
+              <X className="w-5 h-5" style={{ color: '#4b5563' }} />
             </button>
           </div>
           <div className="p-4 overflow-y-auto max-h-[60vh]">
@@ -712,10 +770,16 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
             )}
           </div>
           {!isSingleSelect && (
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-4 border-t" style={{ borderColor: '#e5e7eb' }}>
             <button
               onClick={onClose}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              onMouseEnter={() => setHoveredModalConfirmButton('multiselect')}
+              onMouseLeave={() => setHoveredModalConfirmButton(null)}
+              className="w-full py-2 px-4 rounded-lg transition-colors font-medium"
+              style={{
+                backgroundColor: hoveredModalConfirmButton === 'multiselect' ? '#2563eb' : '#2563eb',
+                color: 'white'
+              }}
             >
               {language === 'vi' ? 'Xác nhận' : language === 'en' ? 'Confirm' : '確認'}
             </button>
@@ -780,6 +844,8 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
             onSavedCriteriaClick={() => setShowSavedCriteriaModal(true)}
             onSavedListClick={() => setShowSavedListModal(true)}
             compact={compact}
+            hoveredNavButtonIndex={hoveredNavButtonIndex}
+            setHoveredNavButtonIndex={setHoveredNavButtonIndex}
           />
         </div>
 
@@ -793,7 +859,13 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
               <div className="relative">
                 <button
                   onClick={() => setShowKeywordMode(!showKeywordMode)}
-                  className={`flex items-center gap-0.5 ${compact ? 'px-2 py-1 sm:px-2.5 sm:py-1.5' : 'px-3 py-1.5'} ${compact ? 'text-xs sm:text-sm' : 'text-sm'} font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors`}
+                  onMouseEnter={() => setHoveredKeywordModeButton(true)}
+                  onMouseLeave={() => setHoveredKeywordModeButton(false)}
+                  className={`flex items-center gap-0.5 ${compact ? 'px-2 py-1 sm:px-2.5 sm:py-1.5' : 'px-3 py-1.5'} ${compact ? 'text-xs sm:text-sm' : 'text-sm'} font-medium rounded transition-colors`}
+                  style={{
+                    color: '#374151',
+                    backgroundColor: hoveredKeywordModeButton ? '#e5e7eb' : '#f3f4f6'
+                  }}
                 >
                   {filters.keywordMode}
                   <ChevronDown className={compact ? "w-3 h-3 sm:w-3.5 sm:h-3.5" : "w-4 h-4"} />
@@ -845,9 +917,15 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
             />
             <button
               onClick={() => setShowLocationModal(true)}
-              className={`${compact ? 'px-2 sm:px-2.5 py-2 sm:py-2.5' : 'px-4 py-3'} border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex-shrink-0`}
+              onMouseEnter={() => setHoveredLocationButton(true)}
+              onMouseLeave={() => setHoveredLocationButton(false)}
+              className={`${compact ? 'px-2 sm:px-2.5 py-2 sm:py-2.5' : 'px-4 py-3'} border rounded-lg transition-colors flex-shrink-0`}
+              style={{
+                borderColor: '#d1d5db',
+                backgroundColor: hoveredLocationButton ? '#f9fafb' : 'transparent'
+              }}
             >
-              <Plus className={compact ? "w-4 h-4 sm:w-5 sm:h-5 text-gray-600" : "w-5 h-5 text-gray-600"} />
+              <Plus className={compact ? "w-4 h-4 sm:w-5 sm:h-5" : "w-5 h-5"} style={{ color: '#4b5563' }} />
             </button>
           </div>
         </FilterBlock>
@@ -1049,23 +1127,35 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
             <div className={`flex ${compact ? 'gap-1.5 sm:gap-2' : 'gap-2'} flex-col sm:flex-row`}>
               <button
                 onClick={handleClearAll}
-                className={`flex-1 ${compact ? 'py-2 sm:py-2.5 px-3 sm:px-4 text-xs sm:text-sm' : 'py-3 px-5 text-sm'} font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors`}
+                onMouseEnter={() => setHoveredClearButton(true)}
+                onMouseLeave={() => setHoveredClearButton(false)}
+                className={`flex-1 ${compact ? 'py-2 sm:py-2.5 px-3 sm:px-4 text-xs sm:text-sm' : 'py-3 px-5 text-sm'} font-medium rounded-lg transition-colors`}
+                style={{
+                  color: '#374151',
+                  backgroundColor: hoveredClearButton ? '#e5e7eb' : '#f3f4f6'
+                }}
               >
                 {language === 'vi' ? 'Xóa tất cả' : language === 'en' ? 'Clear All' : 'すべてクリア'}
               </button>
               <button
                 onClick={handleSearch}
                 disabled={loading}
-                className={`flex-1 ${compact ? 'h-10 sm:h-11' : 'h-12'} bg-red-600 hover:bg-red-700 rounded-lg flex items-center justify-center ${compact ? 'gap-1.5 sm:gap-2' : 'gap-2'} transition-colors shadow-md ${
-                  loading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+                onMouseEnter={() => setHoveredSearchButton(true)}
+                onMouseLeave={() => setHoveredSearchButton(false)}
+                className={`flex-1 ${compact ? 'h-10 sm:h-11' : 'h-12'} rounded-lg flex items-center justify-center ${compact ? 'gap-1.5 sm:gap-2' : 'gap-2'} transition-colors shadow-md`}
+                style={{
+                  backgroundColor: hoveredSearchButton ? '#b91c1c' : '#dc2626',
+                  opacity: loading ? 0.5 : 1,
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                }}
               >
                 {loading ? (
-                  <RotateCw className={compact ? "w-4 h-4 sm:w-5 sm:h-5 text-white animate-spin" : "w-5 h-5 text-white animate-spin"} />
+                  <RotateCw className={compact ? "w-4 h-4 sm:w-5 sm:h-5 animate-spin" : "w-5 h-5 animate-spin"} style={{ color: 'white' }} />
                 ) : (
-                  <Search className={compact ? "w-4 h-4 sm:w-5 sm:h-5 text-white" : "w-5 h-5 text-white"} />
+                  <Search className={compact ? "w-4 h-4 sm:w-5 sm:h-5" : "w-5 h-5"} style={{ color: 'white' }} />
                 )}
-                <span className={compact ? "text-xs sm:text-sm font-semibold text-white" : "text-base font-semibold text-white"}>
+                <span className={compact ? "text-xs sm:text-sm font-semibold" : "text-base font-semibold"} style={{ color: 'white' }}>
                   {language === 'vi' ? 'Tìm kiếm' : language === 'en' ? 'Search' : '検索'}
                 </span>
               </button>
@@ -1094,23 +1184,29 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
           }}
         >
           <div 
-            className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[80vh] overflow-hidden flex" 
+            className="rounded-lg shadow-xl w-full max-w-4xl max-h-[80vh] overflow-hidden flex" 
             onClick={(e) => e.stopPropagation()}
+            style={{ backgroundColor: 'white', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}
           >
             {/* Left Panel: Country Selection */}
-            <div className="w-1/2 border-r border-gray-200 flex flex-col">
-              <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                <h3 className="text-base font-semibold text-gray-900">
+            <div className="w-1/2 border-r flex flex-col" style={{ borderColor: '#e5e7eb' }}>
+              <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: '#e5e7eb' }}>
+                <h3 className="text-base font-semibold" style={{ color: '#111827' }}>
                   {language === 'vi' ? 'Chọn quốc gia' : language === 'en' ? 'Select Country' : '国を選択'}
                 </h3>
                 <button 
                   onClick={() => {
                     setShowLocationModal(false);
                     setSelectedCountries([]);
-                  }} 
-                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  }}
+                  onMouseEnter={() => setHoveredModalCloseButton('location')}
+                  onMouseLeave={() => setHoveredModalCloseButton(null)}
+                  className="p-1 rounded transition-colors"
+                  style={{
+                    backgroundColor: hoveredModalCloseButton === 'location' ? '#f3f4f6' : 'transparent'
+                  }}
                 >
-                  <X className="w-5 h-5 text-gray-600" />
+                  <X className="w-5 h-5" style={{ color: '#4b5563' }} />
                 </button>
               </div>
               <div className="flex-1 overflow-y-auto p-4">
@@ -1192,13 +1288,19 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
                   </div>
                 )}
               </div>
-              <div className="p-4 border-t border-gray-200">
+              <div className="p-4 border-t" style={{ borderColor: '#e5e7eb' }}>
                 <button
                   onClick={() => {
                     setShowLocationModal(false);
                     setSelectedCountries([]);
                   }}
-                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  onMouseEnter={() => setHoveredModalConfirmButton('location')}
+                  onMouseLeave={() => setHoveredModalConfirmButton(null)}
+                  className="w-full py-2 px-4 rounded-lg transition-colors font-medium"
+                  style={{
+                    backgroundColor: hoveredModalConfirmButton === 'location' ? '#2563eb' : '#2563eb',
+                    color: 'white'
+                  }}
                 >
                   {language === 'vi' ? 'Xác nhận' : language === 'en' ? 'Confirm' : '確認'}
                 </button>
@@ -1437,13 +1539,19 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
                   </div>
                 )}
               </div>
-              <div className="p-4 border-t border-gray-200">
+              <div className="p-4 border-t" style={{ borderColor: '#e5e7eb' }}>
                 <button
                   onClick={() => {
                     setShowFieldJobTypeModal(false);
                     setSelectedFields([]);
                   }}
-                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  onMouseEnter={() => setHoveredModalConfirmButton('field')}
+                  onMouseLeave={() => setHoveredModalConfirmButton(null)}
+                  className="w-full py-2 px-4 rounded-lg transition-colors font-medium"
+                  style={{
+                    backgroundColor: hoveredModalConfirmButton === 'field' ? '#2563eb' : '#2563eb',
+                    color: 'white'
+                  }}
                 >
                   {language === 'vi' ? 'Xác nhận' : language === 'en' ? 'Confirm' : '確認'}
                 </button>
@@ -1467,6 +1575,8 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
         isOpen={showSearchHistoryModal}
         onClose={() => setShowSearchHistoryModal(false)}
         title="Lịch sử tìm kiếm"
+        hoveredSlideModalCloseButton={hoveredSlideModalCloseButton}
+        setHoveredSlideModalCloseButton={setHoveredSlideModalCloseButton}
       >
         <SearchHistoryContent />
       </SlideInModal>
@@ -1476,6 +1586,8 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
         isOpen={showSavedCriteriaModal}
         onClose={() => setShowSavedCriteriaModal(false)}
         title="Tiêu chí tìm kiếm đã lưu"
+        hoveredSlideModalCloseButton={hoveredSlideModalCloseButton}
+        setHoveredSlideModalCloseButton={setHoveredSlideModalCloseButton}
       >
         <SavedCriteriaContent />
       </SlideInModal>
@@ -1485,6 +1597,8 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
         isOpen={showSavedListModal}
         onClose={() => setShowSavedListModal(false)}
         title="Danh sách lưu giữ"
+        hoveredSlideModalCloseButton={hoveredSlideModalCloseButton}
+        setHoveredSlideModalCloseButton={setHoveredSlideModalCloseButton}
       >
         <SavedListContent />
       </SlideInModal>
@@ -1494,7 +1608,7 @@ const AgentJobsPageSession1 = ({ onSearch, onFiltersChange, compact = false }) =
 };
 
 // Slide In Modal Component
-const SlideInModal = ({ isOpen, onClose, title, children }) => {
+const SlideInModal = ({ isOpen, onClose, title, children, hoveredSlideModalCloseButton, setHoveredSlideModalCloseButton }) => {
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
@@ -1528,13 +1642,18 @@ const SlideInModal = ({ isOpen, onClose, title, children }) => {
       >
         <div className="h-full flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+          <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: '#e5e7eb' }}>
+            <h2 className="text-lg font-semibold" style={{ color: '#111827' }}>{title}</h2>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              onMouseEnter={() => setHoveredSlideModalCloseButton(true)}
+              onMouseLeave={() => setHoveredSlideModalCloseButton(false)}
+              className="p-2 rounded-full transition-colors"
+              style={{
+                backgroundColor: hoveredSlideModalCloseButton ? '#f3f4f6' : 'transparent'
+              }}
             >
-              <X className="w-5 h-5 text-gray-600" />
+              <X className="w-5 h-5" style={{ color: '#4b5563' }} />
             </button>
           </div>
           
@@ -1625,11 +1744,11 @@ const SearchHistoryContent = () => {
   return (
     <div className="space-y-4">
       {/* Info Banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
-        <div className="bg-blue-500 rounded-full p-1 flex-shrink-0 mt-0.5">
-          <Info className="w-3 h-3 text-white" />
+      <div className="rounded-lg p-3 flex items-start gap-2" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe', borderWidth: '1px', borderStyle: 'solid' }}>
+        <div className="rounded-full p-1 flex-shrink-0 mt-0.5" style={{ backgroundColor: '#3b82f6' }}>
+          <Info className="w-3 h-3" style={{ color: 'white' }} />
         </div>
-        <p className="text-xs text-blue-900">
+        <p className="text-xs" style={{ color: '#1e3a8a' }}>
           50 tiêu chí tìm kiếm gần đây nhất được hiển thị.
         </p>
       </div>
@@ -1679,7 +1798,15 @@ const SearchHistoryContent = () => {
               </div>
 
               {/* Search Button */}
-              <button className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-xs font-medium whitespace-nowrap flex-shrink-0">
+              <button 
+                onMouseEnter={() => setHoveredSearchHistoryButtonIndex(item.id)}
+                onMouseLeave={() => setHoveredSearchHistoryButtonIndex(null)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-xs font-medium whitespace-nowrap flex-shrink-0"
+                style={{
+                  backgroundColor: hoveredSearchHistoryButtonIndex === item.id ? '#bfdbfe' : '#dbeafe',
+                  color: '#1e40af'
+                }}
+              >
                 <Search className="w-4 h-4" />
                 <span>Tìm kiếm theo tiêu chí này</span>
               </button>
@@ -1727,11 +1854,11 @@ const SavedCriteriaContent = () => {
   return (
     <div className="space-y-4">
       {/* Info Banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
-        <div className="bg-blue-500 rounded-full p-1 flex-shrink-0 mt-0.5">
-          <Info className="w-3 h-3 text-white" />
+      <div className="rounded-lg p-3 flex items-start gap-2" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe', borderWidth: '1px', borderStyle: 'solid' }}>
+        <div className="rounded-full p-1 flex-shrink-0 mt-0.5" style={{ backgroundColor: '#3b82f6' }}>
+          <Info className="w-3 h-3" style={{ color: 'white' }} />
         </div>
-        <p className="text-xs text-blue-900">
+        <p className="text-xs" style={{ color: '#1e3a8a' }}>
           Các tiêu chí tìm kiếm đã lưu của bạn.
         </p>
       </div>
@@ -1778,7 +1905,15 @@ const SavedCriteriaContent = () => {
               </div>
 
               {/* Apply Button */}
-              <button className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-xs font-medium whitespace-nowrap flex-shrink-0">
+              <button 
+                onMouseEnter={() => setHoveredSavedCriteriaButtonIndex(item.id)}
+                onMouseLeave={() => setHoveredSavedCriteriaButtonIndex(null)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-xs font-medium whitespace-nowrap flex-shrink-0"
+                style={{
+                  backgroundColor: hoveredSavedCriteriaButtonIndex === item.id ? '#bfdbfe' : '#dbeafe',
+                  color: '#1e40af'
+                }}
+              >
                 <Search className="w-4 h-4" />
                 <span>Áp dụng tiêu chí này</span>
               </button>
@@ -1824,11 +1959,11 @@ const SavedListContent = () => {
   return (
     <div className="space-y-4">
       {/* Info Banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
-        <div className="bg-blue-500 rounded-full p-1 flex-shrink-0 mt-0.5">
-          <Info className="w-3 h-3 text-white" />
+      <div className="rounded-lg p-3 flex items-start gap-2" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe', borderWidth: '1px', borderStyle: 'solid' }}>
+        <div className="rounded-full p-1 flex-shrink-0 mt-0.5" style={{ backgroundColor: '#3b82f6' }}>
+          <Info className="w-3 h-3" style={{ color: 'white' }} />
         </div>
-        <p className="text-xs text-blue-900">
+        <p className="text-xs" style={{ color: '#1e3a8a' }}>
           <span className="font-semibold">61</span> công việc đã lưu trong danh sách của bạn.
         </p>
       </div>
@@ -1870,7 +2005,15 @@ const SavedListContent = () => {
               </div>
 
               {/* View Detail Button */}
-              <button className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-xs font-medium whitespace-nowrap flex-shrink-0">
+              <button 
+                onMouseEnter={() => setHoveredSavedListButtonIndex(job.id)}
+                onMouseLeave={() => setHoveredSavedListButtonIndex(null)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-xs font-medium whitespace-nowrap flex-shrink-0"
+                style={{
+                  backgroundColor: hoveredSavedListButtonIndex === job.id ? '#bfdbfe' : '#dbeafe',
+                  color: '#1e40af'
+                }}
+              >
                 <Search className="w-4 h-4" />
                 <span>Xem chi tiết</span>
               </button>

@@ -60,11 +60,11 @@ const GroupJobsPage = () => {
   return (
     <div className="p-6">
       {groupInfo && (
-        <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h2 className="text-lg font-semibold text-blue-900 mb-1">
+        <div className="mb-4 rounded-lg p-4" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe', border: '1px solid' }}>
+          <h2 className="text-lg font-semibold mb-1" style={{ color: '#1e3a8a' }}>
             Nhóm: {groupInfo.name}
           </h2>
-          <p className="text-sm text-blue-700">
+          <p className="text-sm" style={{ color: '#1d4ed8' }}>
             Mã nhóm: {groupInfo.code} | Số admin: {groupInfo.admins?.length || 0}
           </p>
         </div>

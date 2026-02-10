@@ -10,6 +10,7 @@ const AgentHomePageSession2 = () => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [hoveredPointIndex, setHoveredPointIndex] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isFilterButtonHovered, setIsFilterButtonHovered] = useState(false);
   const [donutData, setDonutData] = useState([]);
   const [totalApplications, setTotalApplications] = useState(0);
   const [chartData, setChartData] = useState({
@@ -210,10 +211,10 @@ const AgentHomePageSession2 = () => {
     return (
       <div className="w-full">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-4 sm:gap-6">
-          <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-100">
+          <div className="rounded-lg shadow-sm p-3 border" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
             <div className="animate-pulse h-64"></div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-100">
+          <div className="rounded-lg shadow-sm p-3 border" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
             <div className="animate-pulse h-64"></div>
           </div>
         </div>
@@ -225,8 +226,8 @@ const AgentHomePageSession2 = () => {
     <div className="w-full">
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-4 sm:gap-6">
         {/* Card 1: Phân bố theo nhóm ngành nghề */}
-        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100 flex flex-col">
-          <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2">
+        <div className="rounded-lg shadow-sm p-3 sm:p-4 border flex flex-col" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
+          <h3 className="text-sm sm:text-base font-semibold mb-2" style={{ color: '#111827' }}>
             {language === 'vi' ? 'Phân bố theo nhóm ngành nghề' : language === 'en' ? 'Distribution by Job Category' : '職種別分布'}
           </h3>
           
@@ -277,8 +278,8 @@ const AgentHomePageSession2 = () => {
                 
                 {/* Center text */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <p className="text-3xl font-bold text-gray-900">{totalApplications}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-3xl font-bold" style={{ color: '#111827' }}>{totalApplications}</p>
+                  <p className="text-sm" style={{ color: '#6b7280' }}>
                     {language === 'vi' ? 'Đơn ứng tuyển' : language === 'en' ? 'Applications' : '応募'}
                   </p>
                 </div>
@@ -286,12 +287,14 @@ const AgentHomePageSession2 = () => {
                 {/* Tooltip Card */}
                 {hoveredIndex !== null && hoveredIndex < donutData.length && (
                   <div 
-                    className="absolute bg-white rounded-lg shadow-xl border border-gray-200 p-2.5 z-10 pointer-events-none animate-fadeIn"
+                    className="absolute rounded-lg shadow-xl border p-2.5 z-10 pointer-events-none animate-fadeIn"
                     style={{
                       top: '50%',
                       left: '50%',
                       transform: 'translate(-50%, -130%)',
                       minWidth: '110px',
+                      backgroundColor: 'white',
+                      borderColor: '#e5e7eb'
                     }}
                   >
                     <div className="flex flex-col items-center gap-1">
@@ -300,15 +303,15 @@ const AgentHomePageSession2 = () => {
                           className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                           style={{ backgroundColor: donutData[hoveredIndex].color }}
                         />
-                        <span className="text-xs font-medium text-gray-700">
+                        <span className="text-xs font-medium" style={{ color: '#374151' }}>
                           {donutData[hoveredIndex].label}
                         </span>
                       </div>
                       <div className="flex items-baseline gap-2">
-                        <p className="text-xl font-bold text-gray-900">
+                        <p className="text-xl font-bold" style={{ color: '#111827' }}>
                           {donutData[hoveredIndex].value}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs" style={{ color: '#6b7280' }}>
                           {totalApplications > 0 ? ((donutData[hoveredIndex].value / totalApplications) * 100).toFixed(1) : 0}%
                         </p>
                       </div>
@@ -326,9 +329,9 @@ const AgentHomePageSession2 = () => {
                         className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                         style={{ backgroundColor: item.color }}
                       />
-                      <span className="text-xs font-medium text-gray-900">{item.value}</span>
+                      <span className="text-xs font-medium" style={{ color: '#111827' }}>{item.value}</span>
                     </div>
-                    <span className="text-xs text-gray-600 text-center leading-tight">
+                    <span className="text-xs text-center leading-tight" style={{ color: '#4b5563' }}>
                       {item.label}
                     </span>
                   </div>
@@ -336,19 +339,27 @@ const AgentHomePageSession2 = () => {
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-64 text-gray-500">
+            <div className="flex items-center justify-center h-64" style={{ color: '#6b7280' }}>
               {t.noData}
             </div>
           )}
         </div>
 
         {/* Card 2: Offer và Rejection */}
-        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 border border-gray-100" style={{ overflow: 'visible' }}>
+        <div className="rounded-lg shadow-sm p-3 sm:p-4 border" style={{ overflow: 'visible', backgroundColor: 'white', borderColor: '#f3f4f6' }}>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 gap-2">
-            <h3 className="text-sm sm:text-base font-semibold text-gray-900">
+            <h3 className="text-sm sm:text-base font-semibold" style={{ color: '#111827' }}>
               {language === 'vi' ? 'Đơn được Offer và Bị Từ chối' : language === 'en' ? 'Offers and Rejections' : 'オファーと拒否'}
             </h3>
-            <button className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+            <button 
+              onMouseEnter={() => setIsFilterButtonHovered(true)}
+              onMouseLeave={() => setIsFilterButtonHovered(false)}
+              className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
+              style={{
+                color: '#374151',
+                backgroundColor: isFilterButtonHovered ? '#e5e7eb' : '#f3f4f6'
+              }}
+            >
               <Filter className="w-3.5 h-3.5" />
               {t.filters || 'Filters'}
             </button>
@@ -357,14 +368,14 @@ const AgentHomePageSession2 = () => {
           {/* Legend */}
           <div className="flex items-center gap-4 mb-2">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-0.5 bg-green-600"></div>
-              <span className="text-xs text-gray-600">
+              <div className="w-3 h-0.5" style={{ backgroundColor: '#16a34a' }}></div>
+              <span className="text-xs" style={{ color: '#4b5563' }}>
                 {language === 'vi' ? 'Được Offer (Status 8)' : language === 'en' ? 'Offered (Status 8)' : 'オファー (ステータス8)'}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-0.5 bg-red-600"></div>
-              <span className="text-xs text-gray-600">
+              <div className="w-3 h-0.5" style={{ backgroundColor: '#dc2626' }}></div>
+              <span className="text-xs" style={{ color: '#4b5563' }}>
                 {language === 'vi' ? 'Bị Từ chối (Status 15, 16)' : language === 'en' ? 'Rejected (Status 15, 16)' : '拒否 (ステータス15, 16)'}
               </span>
             </div>
@@ -515,7 +526,7 @@ const AgentHomePageSession2 = () => {
               </svg>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-64 text-gray-500">
+            <div className="flex items-center justify-center h-64" style={{ color: '#6b7280' }}>
               {t.noData || 'No data'}
             </div>
           )}

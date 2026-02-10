@@ -43,6 +43,24 @@ const CampaignsPage = () => {
     limit: 20,
     totalPages: 0
   });
+  
+  // Hover states
+  const [hoveredSearchModeOR, setHoveredSearchModeOR] = useState(false);
+  const [hoveredSearchModeAND, setHoveredSearchModeAND] = useState(false);
+  const [hoveredSearchButton, setHoveredSearchButton] = useState(false);
+  const [hoveredResetButton, setHoveredResetButton] = useState(false);
+  const [hoveredInfoButton, setHoveredInfoButton] = useState(false);
+  const [hoveredAddCampaignButton, setHoveredAddCampaignButton] = useState(false);
+  const [hoveredSettingsButton, setHoveredSettingsButton] = useState(false);
+  const [hoveredPaginationNavButton, setHoveredPaginationNavButton] = useState(null);
+  const [hoveredPaginationButtonIndex, setHoveredPaginationButtonIndex] = useState(null);
+  const [hoveredRowIndex, setHoveredRowIndex] = useState(null);
+  const [hoveredCampaignIdLinkIndex, setHoveredCampaignIdLinkIndex] = useState(null);
+  const [hoveredCampaignNameLinkIndex, setHoveredCampaignNameLinkIndex] = useState(null);
+  const [hoveredJobCountLinkIndex, setHoveredJobCountLinkIndex] = useState(null);
+  const [hoveredViewButtonIndex, setHoveredViewButtonIndex] = useState(null);
+  const [hoveredEditButtonIndex, setHoveredEditButtonIndex] = useState(null);
+  const [hoveredDeleteButtonIndex, setHoveredDeleteButtonIndex] = useState(null);
 
   useEffect(() => {
     loadCampaigns();
@@ -292,26 +310,22 @@ const CampaignsPage = () => {
     const statusConfig = {
       active: {
         label: 'Đang hoạt động',
-        bg: 'bg-green-100',
-        text: 'text-green-800',
+        style: { backgroundColor: '#dcfce7', color: '#166534' },
         icon: CheckCircle,
       },
       upcoming: {
         label: 'Sắp diễn ra',
-        bg: 'bg-blue-100',
-        text: 'text-blue-800',
+        style: { backgroundColor: '#dbeafe', color: '#1e40af' },
         icon: Clock,
       },
       ended: {
         label: 'Đã kết thúc',
-        bg: 'bg-gray-100',
-        text: 'text-gray-800',
+        style: { backgroundColor: '#f3f4f6', color: '#1f2937' },
         icon: XCircle,
       },
       inactive: {
         label: 'Ngừng hoạt động',
-        bg: 'bg-red-100',
-        text: 'text-red-800',
+        style: { backgroundColor: '#fee2e2', color: '#991b1b' },
         icon: XCircle,
       },
     };
@@ -320,7 +334,7 @@ const CampaignsPage = () => {
     const Icon = config.icon;
 
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${config.bg} ${config.text}`}>
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={config.style}>
         <Icon className="w-3 h-3" />
         {config.label}
       </span>
@@ -338,27 +352,31 @@ const CampaignsPage = () => {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Filter Section */}
-      <div className="bg-white rounded-lg p-3 border border-gray-200 mb-3 flex-shrink-0">
+      <div className="rounded-lg p-3 border mb-3 flex-shrink-0" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         {/* Search Bar */}
         <div className="flex items-center gap-2 flex-wrap mb-3">
           <div className="flex gap-1">
             <button
               onClick={() => setSearchMode('OR')}
-              className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${
-                searchMode === 'OR'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              onMouseEnter={() => searchMode !== 'OR' && setHoveredSearchModeOR(true)}
+              onMouseLeave={() => setHoveredSearchModeOR(false)}
+              className="px-3 py-1.5 rounded text-xs font-semibold transition-colors"
+              style={{
+                backgroundColor: searchMode === 'OR' ? '#2563eb' : (hoveredSearchModeOR ? '#e5e7eb' : '#f3f4f6'),
+                color: searchMode === 'OR' ? 'white' : '#374151'
+              }}
             >
               OR
             </button>
             <button
               onClick={() => setSearchMode('AND')}
-              className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${
-                searchMode === 'AND'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              onMouseEnter={() => searchMode !== 'AND' && setHoveredSearchModeAND(true)}
+              onMouseLeave={() => setHoveredSearchModeAND(false)}
+              className="px-3 py-1.5 rounded text-xs font-semibold transition-colors"
+              style={{
+                backgroundColor: searchMode === 'AND' ? '#2563eb' : (hoveredSearchModeAND ? '#e5e7eb' : '#f3f4f6'),
+                color: searchMode === 'AND' ? 'white' : '#374151'
+              }}
             >
               AND
             </button>
@@ -369,33 +387,78 @@ const CampaignsPage = () => {
               placeholder="ID, tên chiến dịch, mô tả"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-3 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full px-3 py-1.5 border rounded text-xs"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
           <button
             onClick={handleSearch}
-            className="px-4 py-1.5 bg-blue-600 text-white rounded text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+            onMouseEnter={() => setHoveredSearchButton(true)}
+            onMouseLeave={() => setHoveredSearchButton(false)}
+            className="px-4 py-1.5 rounded text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredSearchButton ? '#1d4ed8' : '#2563eb',
+              color: 'white'
+            }}
           >
             <Search className="w-3.5 h-3.5" />
             Tìm kiếm
           </button>
           <button
             onClick={handleReset}
-            className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded text-xs font-semibold hover:bg-gray-200 transition-colors"
+            onMouseEnter={() => setHoveredResetButton(true)}
+            onMouseLeave={() => setHoveredResetButton(false)}
+            className="px-3 py-1.5 rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredResetButton ? '#e5e7eb' : '#f3f4f6',
+              color: '#374151'
+            }}
           >
             Reset
           </button>
-          <button className="text-gray-600 hover:text-gray-800 p-1.5">
+          <button
+            onMouseEnter={() => setHoveredInfoButton(true)}
+            onMouseLeave={() => setHoveredInfoButton(false)}
+            className="p-1.5"
+            style={{
+              color: hoveredInfoButton ? '#1f2937' : '#4b5563'
+            }}
+          >
             <Info className="w-4 h-4" />
           </button>
           <button
             onClick={() => navigate('/admin/campaigns/create')}
-            className="px-3 py-1.5 bg-yellow-400 text-gray-900 rounded text-xs font-semibold hover:bg-yellow-500 transition-colors flex items-center gap-1.5"
+            onMouseEnter={() => setHoveredAddCampaignButton(true)}
+            onMouseLeave={() => setHoveredAddCampaignButton(false)}
+            className="px-3 py-1.5 rounded text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredAddCampaignButton ? '#eab308' : '#facc15',
+              color: '#111827'
+            }}
           >
             <Plus className="w-3.5 h-3.5" />
             + Thêm chiến dịch
           </button>
-          <button className="px-3 py-1.5 bg-gray-800 text-white rounded text-xs font-semibold hover:bg-gray-900 transition-colors flex items-center gap-1.5">
+          <button
+            onMouseEnter={() => setHoveredSettingsButton(true)}
+            onMouseLeave={() => setHoveredSettingsButton(false)}
+            className="px-3 py-1.5 rounded text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredSettingsButton ? '#111827' : '#1f2937',
+              color: 'white'
+            }}
+          >
             <Settings className="w-3.5 h-3.5" />
             Cài đặt
           </button>
@@ -404,11 +467,23 @@ const CampaignsPage = () => {
         {/* Additional Filters */}
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <label className="text-xs font-semibold text-gray-900">Trạng thái:</label>
+            <label className="text-xs font-semibold" style={{ color: '#111827' }}>Trạng thái:</label>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="px-2 py-1 border rounded text-xs"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             >
               <option value="">Tất cả</option>
               <option value="active">Đang hoạt động</option>
@@ -418,21 +493,45 @@ const CampaignsPage = () => {
             </select>
           </div>
           <div className="flex items-center gap-1.5">
-            <label className="text-xs font-semibold text-gray-900">Từ ngày:</label>
+            <label className="text-xs font-semibold" style={{ color: '#111827' }}>Từ ngày:</label>
             <input
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="px-2 py-1 border rounded text-xs"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
           <div className="flex items-center gap-1.5">
-            <label className="text-xs font-semibold text-gray-900">Đến ngày:</label>
+            <label className="text-xs font-semibold" style={{ color: '#111827' }}>Đến ngày:</label>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="px-2 py-1 border rounded text-xs"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
         </div>
@@ -444,14 +543,32 @@ const CampaignsPage = () => {
           <button
             onClick={() => setCurrentPage(1)}
             disabled={currentPage === 1}
-            className="px-1.5 py-1 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage !== 1 && setHoveredPaginationNavButton('first')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-1.5 py-1 border rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'first' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: currentPage === 1 ? 0.5 : 1,
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronsLeft className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setCurrentPage(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-1.5 py-1 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage !== 1 && setHoveredPaginationNavButton('prev')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-1.5 py-1 border rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'prev' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: currentPage === 1 ? 0.5 : 1,
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
@@ -461,11 +578,16 @@ const CampaignsPage = () => {
               <button
                 key={pageNum}
                 onClick={() => setCurrentPage(pageNum)}
-                className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors ${
-                  currentPage === pageNum
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
+                onMouseEnter={() => currentPage !== pageNum && setHoveredPaginationButtonIndex(pageNum)}
+                onMouseLeave={() => setHoveredPaginationButtonIndex(null)}
+                className="px-2.5 py-1 rounded text-xs font-semibold transition-colors"
+                style={{
+                  backgroundColor: currentPage === pageNum
+                    ? '#2563eb'
+                    : (hoveredPaginationButtonIndex === pageNum ? '#f9fafb' : 'white'),
+                  border: currentPage === pageNum ? 'none' : '1px solid #d1d5db',
+                  color: currentPage === pageNum ? 'white' : '#374151'
+                }}
               >
                 {pageNum}
               </button>
@@ -474,14 +596,32 @@ const CampaignsPage = () => {
           <button
             onClick={() => setCurrentPage(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-1.5 py-1 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage !== totalPages && setHoveredPaginationNavButton('next')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-1.5 py-1 border rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'next' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: currentPage === totalPages ? 0.5 : 1,
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setCurrentPage(totalPages)}
             disabled={currentPage === totalPages}
-            className="px-1.5 py-1 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage !== totalPages && setHoveredPaginationNavButton('last')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-1.5 py-1 border rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'last' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: currentPage === totalPages ? 0.5 : 1,
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronsRight className="w-3.5 h-3.5" />
           </button>
@@ -493,76 +633,93 @@ const CampaignsPage = () => {
               setItemsPerPage(Number(e.target.value));
               setCurrentPage(1);
             }}
-            className="px-2.5 py-1 border border-gray-300 rounded text-xs font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="px-2.5 py-1 border rounded text-xs font-semibold"
+            style={{
+              borderColor: '#d1d5db',
+              color: '#374151',
+              outline: 'none'
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#2563eb';
+              e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#d1d5db';
+              e.target.style.boxShadow = 'none';
+            }}
           >
             <option value="20">20</option>
             <option value="50">50</option>
             <option value="100">100</option>
           </select>
-          <span className="text-xs text-gray-700 font-semibold">{totalItems} items</span>
+          <span className="text-xs font-semibold" style={{ color: '#374151' }}>{totalItems} items</span>
         </div>
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-y-auto bg-white rounded-lg border border-gray-200 min-h-0 relative">
+      <div className="flex-1 overflow-y-auto rounded-lg border min-h-0 relative" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div className="overflow-x-auto h-full">
           <table className="w-full">
-            <thead className="bg-gray-50 sticky top-0 z-10">
+            <thead className="sticky top-0 z-10" style={{ backgroundColor: '#f9fafb' }}>
               <tr>
-                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-900 border-b border-gray-200 w-10">
+                <th className="px-3 py-2 text-center text-xs font-semibold border-b w-10" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
                   <input
                     type="checkbox"
                     checked={selectedRows.size === campaigns.length && campaigns.length > 0}
                     onChange={handleSelectAll}
-                    className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+                    className="w-3.5 h-3.5 rounded"
+                    style={{
+                      accentColor: '#2563eb',
+                      borderColor: '#d1d5db'
+                    }}
                   />
                 </th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200 w-[110px]">
+                <th className="px-3 py-2 text-left text-xs font-semibold border-b w-[110px]" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
                   ID
                 </th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200 w-[220px]">
+                <th className="px-3 py-2 text-left text-xs font-semibold border-b w-[220px]" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
                   Tên chiến dịch
                 </th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200 w-[260px]">
+                <th className="px-3 py-2 text-left text-xs font-semibold border-b w-[260px]" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
                   Mô tả
                 </th>
-                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-900 border-b border-gray-200 w-[150px]">
+                <th className="px-3 py-2 text-center text-xs font-semibold border-b w-[150px]" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
                   Thời gian
                 </th>
-                <th className="px-3 py-2 text-right text-xs font-semibold text-gray-900 border-b border-gray-200 w-[140px]">
+                <th className="px-3 py-2 text-right text-xs font-semibold border-b w-[140px]" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
                   Ngân sách
                 </th>
-                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-900 border-b border-gray-200 w-[90px]">
+                <th className="px-3 py-2 text-center text-xs font-semibold border-b w-[90px]" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
                   Số job
                 </th>
-                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-900 border-b border-gray-200 w-[90px]">
+                <th className="px-3 py-2 text-center text-xs font-semibold border-b w-[90px]" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
                   Lượt xem
                 </th>
-                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-900 border-b border-gray-200 w-[90px]">
+                <th className="px-3 py-2 text-center text-xs font-semibold border-b w-[90px]" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
                   Ứng tuyển
                 </th>
-                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-900 border-b border-gray-200 w-[90px]">
+                <th className="px-3 py-2 text-center text-xs font-semibold border-b w-[90px]" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
                   Tiến cử
                 </th>
-                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-900 border-b border-gray-200 w-[130px]">
+                <th className="px-3 py-2 text-center text-xs font-semibold border-b w-[130px]" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
                   Trạng thái
                 </th>
-                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-900 border-b border-gray-200 w-[110px]">
+                <th className="px-3 py-2 text-center text-xs font-semibold border-b w-[110px]" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
                   Ngày tạo
                 </th>
-                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-900 border-b border-gray-200">Thao tác</th>
+                <th className="px-3 py-2 text-center text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y" style={{ borderColor: '#e5e7eb' }}>
               {loading ? (
                 <tr>
-                  <td colSpan="13" className="px-3 py-8 text-center text-xs text-gray-500">
+                  <td colSpan="13" className="px-3 py-8 text-center text-xs" style={{ color: '#6b7280' }}>
                     Đang tải dữ liệu...
                   </td>
                 </tr>
               ) : campaigns.length === 0 ? (
                 <tr>
-                  <td colSpan="13" className="px-3 py-8 text-center text-xs text-gray-500">
+                  <td colSpan="13" className="px-3 py-8 text-center text-xs" style={{ color: '#6b7280' }}>
                     Không có dữ liệu
                   </td>
                 </tr>
@@ -582,20 +739,34 @@ const CampaignsPage = () => {
                   return (
                 <tr
                   key={campaign.id}
-                  className="hover:bg-gray-50 transition-colors"
+                  className="transition-colors"
+                  onMouseEnter={() => setHoveredRowIndex(index)}
+                  onMouseLeave={() => setHoveredRowIndex(null)}
+                  style={{
+                    backgroundColor: hoveredRowIndex === index ? '#f9fafb' : 'transparent'
+                  }}
                 >
                   <td className="px-3 py-2 text-center">
                     <input
                       type="checkbox"
                       checked={selectedRows.has(index)}
                       onChange={() => handleSelectRow(index)}
-                      className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+                      className="w-3.5 h-3.5 rounded"
+                      style={{
+                        accentColor: '#2563eb',
+                        borderColor: '#d1d5db'
+                      }}
                     />
                   </td>
                   <td className="px-3 py-2">
                     <button
                       onClick={() => navigate(`/admin/campaigns/${campaign.id}`)}
-                      className="text-blue-600 hover:text-blue-800 font-medium text-xs flex items-center gap-1"
+                      onMouseEnter={() => setHoveredCampaignIdLinkIndex(index)}
+                      onMouseLeave={() => setHoveredCampaignIdLinkIndex(null)}
+                      className="font-medium text-xs flex items-center gap-1"
+                      style={{
+                        color: hoveredCampaignIdLinkIndex === index ? '#1e40af' : '#2563eb'
+                      }}
                     >
                       {campaign.id}
                       <ExternalLink className="w-3 h-3" />
@@ -603,69 +774,79 @@ const CampaignsPage = () => {
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-1.5">
-                      <div className="w-7 h-7 bg-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-[10px]">
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-white font-semibold text-[10px]" style={{ backgroundColor: '#a855f7' }}>
                         <Target className="w-4 h-4" />
                       </div>
                       <button
                         onClick={() => navigate(`/admin/campaigns/${campaign.id}`)}
-                        className="text-xs font-semibold text-gray-900 hover:text-blue-600 max-w-[200px] truncate"
+                        onMouseEnter={() => setHoveredCampaignNameLinkIndex(index)}
+                        onMouseLeave={() => setHoveredCampaignNameLinkIndex(null)}
+                        className="text-xs font-semibold max-w-[200px] truncate"
+                        style={{
+                          color: hoveredCampaignNameLinkIndex === index ? '#2563eb' : '#111827'
+                        }}
                       >
                         {campaign.name}
                       </button>
                     </div>
                   </td>
                   <td className="px-3 py-2">
-                    <span className="text-xs text-gray-700 max-w-[260px] truncate block">
+                    <span className="text-xs max-w-[260px] truncate block" style={{ color: '#374151' }}>
                       {campaign.description}
                     </span>
                   </td>
                   <td className="px-3 py-2 text-center">
-                    <div className="inline-flex items-center justify-center gap-1 text-xs text-gray-700">
-                      <Calendar className="w-3 h-3 text-gray-400" />
+                    <div className="inline-flex items-center justify-center gap-1 text-xs" style={{ color: '#374151' }}>
+                      <Calendar className="w-3 h-3" style={{ color: '#9ca3af' }} />
                       <span>
                         {startDate} ~ {endDate}
                       </span>
                     </div>
                   </td>
                   <td className="px-3 py-2 text-right">
-                    <div className="inline-flex items-center justify-end gap-1 text-xs text-gray-700">
-                      <DollarSign className="w-3 h-3 text-gray-400" />
+                    <div className="inline-flex items-center justify-end gap-1 text-xs" style={{ color: '#374151' }}>
+                      <DollarSign className="w-3 h-3" style={{ color: '#9ca3af' }} />
                       <span className="font-semibold">—</span>
                     </div>
                   </td>
                   <td className="px-3 py-2 text-center">
                     <button
                       onClick={() => navigate(`/admin/jobs?campaign=${campaign.id}`)}
-                      className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                      onMouseEnter={() => setHoveredJobCountLinkIndex(index)}
+                      onMouseLeave={() => setHoveredJobCountLinkIndex(null)}
+                      className="text-xs font-semibold flex items-center gap-1"
+                      style={{
+                        color: hoveredJobCountLinkIndex === index ? '#1e40af' : '#2563eb'
+                      }}
                     >
                       <Briefcase className="w-3 h-3" />
                       {campaign.jobCampaigns?.length || 0}
                     </button>
                   </td>
                   <td className="px-3 py-2 text-center">
-                    <div className="inline-flex items-center justify-center gap-1 text-xs text-gray-700">
-                      <Eye className="w-3 h-3 text-gray-400" />
+                    <div className="inline-flex items-center justify-center gap-1 text-xs" style={{ color: '#374151' }}>
+                      <Eye className="w-3 h-3" style={{ color: '#9ca3af' }} />
                       {campaign.viewsCount || 0}
                     </div>
                   </td>
                   <td className="px-3 py-2 text-center">
-                    <div className="inline-flex items-center justify-center gap-1 text-xs text-gray-700">
-                      <Users className="w-3 h-3 text-gray-400" />
+                    <div className="inline-flex items-center justify-center gap-1 text-xs" style={{ color: '#374151' }}>
+                      <Users className="w-3 h-3" style={{ color: '#9ca3af' }} />
                       {campaign.applicationsCount || 0}
                     </div>
                   </td>
                   <td className="px-3 py-2 text-center">
-                    <div className="inline-flex items-center justify-center gap-1 text-xs text-gray-700">
-                      <TrendingUp className="w-3 h-3 text-gray-400" />
+                    <div className="inline-flex items-center justify-center gap-1 text-xs" style={{ color: '#374151' }}>
+                      <TrendingUp className="w-3 h-3" style={{ color: '#9ca3af' }} />
                       {campaign.nominationsCount || 0}
                     </div>
                   </td>
                   <td className="px-3 py-2 text-center">
                     {getStatusBadge(campaignStatus)}
                   </td>
-                  <td className="px-3 py-2 text-center text-xs text-gray-700">
+                  <td className="px-3 py-2 text-center text-xs" style={{ color: '#374151' }}>
                     <div className="inline-flex items-center justify-center gap-1">
-                      <Calendar className="w-3 h-3 text-gray-400" />
+                      <Calendar className="w-3 h-3" style={{ color: '#9ca3af' }} />
                       {createdAt}
                     </div>
                   </td>
@@ -673,21 +854,39 @@ const CampaignsPage = () => {
                     <div className="flex items-center justify-center gap-1.5">
                       <button
                         onClick={() => navigate(`/admin/campaigns/${campaign.id}`)}
-                        className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors"
+                        onMouseEnter={() => setHoveredViewButtonIndex(index)}
+                        onMouseLeave={() => setHoveredViewButtonIndex(null)}
+                        className="p-1 rounded transition-colors"
+                        style={{
+                          color: hoveredViewButtonIndex === index ? '#1e40af' : '#2563eb',
+                          backgroundColor: hoveredViewButtonIndex === index ? '#eff6ff' : 'transparent'
+                        }}
                         title="Xem chi tiết"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => navigate(`/admin/campaigns/${campaign.id}/edit`)}
-                        className="text-gray-600 hover:text-gray-800 p-1 rounded hover:bg-gray-100 transition-colors"
+                        onMouseEnter={() => setHoveredEditButtonIndex(index)}
+                        onMouseLeave={() => setHoveredEditButtonIndex(null)}
+                        className="p-1 rounded transition-colors"
+                        style={{
+                          color: hoveredEditButtonIndex === index ? '#1f2937' : '#4b5563',
+                          backgroundColor: hoveredEditButtonIndex === index ? '#f3f4f6' : 'transparent'
+                        }}
                         title="Chỉnh sửa"
                       >
                         <Edit className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDelete(campaign.id)}
-                        className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
+                        onMouseEnter={() => setHoveredDeleteButtonIndex(index)}
+                        onMouseLeave={() => setHoveredDeleteButtonIndex(null)}
+                        className="p-1 rounded transition-colors"
+                        style={{
+                          color: hoveredDeleteButtonIndex === index ? '#991b1b' : '#dc2626',
+                          backgroundColor: hoveredDeleteButtonIndex === index ? '#fef2f2' : 'transparent'
+                        }}
                         title="Xóa"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

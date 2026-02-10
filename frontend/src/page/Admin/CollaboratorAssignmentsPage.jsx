@@ -51,6 +51,22 @@ const CollaboratorAssignmentsPage = () => {
   const [adminSearch, setAdminSearch] = useState('');
   const [collaboratorSearch, setCollaboratorSearch] = useState('');
   const [bulkMode, setBulkMode] = useState(false);
+  
+  // Hover states
+  const [hoveredBulkModeButton, setHoveredBulkModeButton] = useState(false);
+  const [hoveredAssignButton, setHoveredAssignButton] = useState(false);
+  const [hoveredClearAdminButton, setHoveredClearAdminButton] = useState(false);
+  const [hoveredClearCollaboratorButton, setHoveredClearCollaboratorButton] = useState(false);
+  const [hoveredAdminDropdownItemIndex, setHoveredAdminDropdownItemIndex] = useState(null);
+  const [hoveredCollaboratorDropdownItemIndex, setHoveredCollaboratorDropdownItemIndex] = useState(null);
+  const [hoveredSearchButton, setHoveredSearchButton] = useState(false);
+  const [hoveredUnassignButtonIndex, setHoveredUnassignButtonIndex] = useState(null);
+  const [hoveredPaginationNavButton, setHoveredPaginationNavButton] = useState(null);
+  const [hoveredCloseBulkModeButton, setHoveredCloseBulkModeButton] = useState(false);
+  const [hoveredSelectAllButton, setHoveredSelectAllButton] = useState(false);
+  const [hoveredBulkAssignButton, setHoveredBulkAssignButton] = useState(false);
+  const [hoveredCollaboratorItemIndex, setHoveredCollaboratorItemIndex] = useState(null);
+  const [hoveredRowIndex, setHoveredRowIndex] = useState(null);
 
   useEffect(() => {
     loadAssignments();
@@ -318,22 +334,26 @@ const CollaboratorAssignmentsPage = () => {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center justify-between">
+      <div className="rounded-lg p-4 border flex items-center justify-between" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Handshake className="w-6 h-6 text-blue-600" />
+          <h1 className="text-xl font-bold flex items-center gap-2" style={{ color: '#111827' }}>
+            <Handshake className="w-6 h-6" style={{ color: '#2563eb' }} />
             Phân công CTV cho AdminBackOffice
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Quản lý phân công CTV cho các AdminBackOffice</p>
+          <p className="text-sm mt-1" style={{ color: '#6b7280' }}>Quản lý phân công CTV cho các AdminBackOffice</p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => setBulkMode(!bulkMode)}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 ${
-              bulkMode
-                ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
-            }`}
+            onMouseEnter={() => setHoveredBulkModeButton(true)}
+            onMouseLeave={() => setHoveredBulkModeButton(false)}
+            className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
+            style={{
+              backgroundColor: bulkMode
+                ? (hoveredBulkModeButton ? '#d1d5db' : '#e5e7eb')
+                : (hoveredBulkModeButton ? '#1d4ed8' : '#2563eb'),
+              color: bulkMode ? '#374151' : 'white'
+            }}
           >
             <UserPlus className="w-4 h-4" />
             {bulkMode ? 'Đóng phân công hàng loạt' : 'Phân công hàng loạt'}
@@ -342,18 +362,18 @@ const CollaboratorAssignmentsPage = () => {
       </div>
 
       {/* Quick Assign Form */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200">
-        <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <Plus className="w-4 h-4 text-green-600" />
+      <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+        <h2 className="text-sm font-bold mb-4 flex items-center gap-2" style={{ color: '#111827' }}>
+          <Plus className="w-4 h-4" style={{ color: '#16a34a' }} />
           Phân công CTV nhanh
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div className="md:col-span-2">
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Chọn AdminBackOffice <span className="text-red-500">*</span>
+            <label className="block text-xs font-semibold mb-1" style={{ color: '#374151' }}>
+              Chọn AdminBackOffice <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <div className="relative admin-dropdown-container">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: '#9ca3af' }} />
               <input
                 type="text"
                 placeholder="Tìm kiếm AdminBackOffice..."
@@ -362,8 +382,20 @@ const CollaboratorAssignmentsPage = () => {
                   setAdminSearch(e.target.value);
                   setShowAdminDropdown(true);
                 }}
-                onFocus={() => setShowAdminDropdown(true)}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                onFocus={(e) => {
+                  setShowAdminDropdown(true);
+                  e.target.style.borderColor = '#2563eb';
+                  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
+                className="w-full pl-10 pr-3 py-2 border rounded-lg text-sm"
+                style={{
+                  borderColor: '#d1d5db',
+                  outline: 'none'
+                }}
               />
               {selectedAdminId && (
                 <button
@@ -372,26 +404,36 @@ const CollaboratorAssignmentsPage = () => {
                     setSelectedAdminName('');
                     setAdminSearch('');
                   }}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  onMouseEnter={() => setHoveredClearAdminButton(true)}
+                  onMouseLeave={() => setHoveredClearAdminButton(false)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  style={{
+                    color: hoveredClearAdminButton ? '#4b5563' : '#9ca3af'
+                  }}
                 >
                   <X className="w-4 h-4" />
                 </button>
               )}
               {showAdminDropdown && filteredAdmins.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                  {filteredAdmins.map((admin) => (
+                <div className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg max-h-60 overflow-y-auto" style={{ backgroundColor: 'white', borderColor: '#d1d5db' }}>
+                  {filteredAdmins.map((admin, index) => (
                     <button
                       key={admin.id}
                       type="button"
                       onClick={() => handleAdminSelect(admin)}
-                      className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between"
+                      onMouseEnter={() => setHoveredAdminDropdownItemIndex(index)}
+                      onMouseLeave={() => setHoveredAdminDropdownItemIndex(null)}
+                      className="w-full px-3 py-2 text-left text-sm flex items-center justify-between"
+                      style={{
+                        backgroundColor: hoveredAdminDropdownItemIndex === index ? '#f3f4f6' : 'transparent'
+                      }}
                     >
                       <div>
-                        <div className="font-medium text-gray-900">{admin.name}</div>
-                        <div className="text-xs text-gray-500">{admin.email}</div>
+                        <div className="font-medium" style={{ color: '#111827' }}>{admin.name}</div>
+                        <div className="text-xs" style={{ color: '#6b7280' }}>{admin.email}</div>
                       </div>
                       {selectedAdminId === admin.id && (
-                        <Check className="w-4 h-4 text-blue-600" />
+                        <Check className="w-4 h-4" style={{ color: '#2563eb' }} />
                       )}
                     </button>
                   ))}
@@ -400,18 +442,18 @@ const CollaboratorAssignmentsPage = () => {
             </div>
             <div className="h-5 mt-1">
               {selectedAdminId && (
-                <div className="text-xs text-blue-600">
+                <div className="text-xs" style={{ color: '#2563eb' }}>
                   Đã chọn: {selectedAdminName}
                 </div>
               )}
             </div>
           </div>
           <div className="md:col-span-2">
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Chọn CTV <span className="text-red-500">*</span>
+            <label className="block text-xs font-semibold mb-1" style={{ color: '#374151' }}>
+              Chọn CTV <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <div className="relative collaborator-dropdown-container">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: '#9ca3af' }} />
               <input
                 type="text"
                 placeholder="Tìm kiếm CTV chưa được phân công..."
@@ -420,8 +462,20 @@ const CollaboratorAssignmentsPage = () => {
                   setCollaboratorSearch(e.target.value);
                   setShowCollaboratorDropdown(true);
                 }}
-                onFocus={() => setShowCollaboratorDropdown(true)}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                onFocus={(e) => {
+                  setShowCollaboratorDropdown(true);
+                  e.target.style.borderColor = '#2563eb';
+                  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
+                className="w-full pl-10 pr-3 py-2 border rounded-lg text-sm"
+                style={{
+                  borderColor: '#d1d5db',
+                  outline: 'none'
+                }}
               />
               {selectedCollaboratorId && (
                 <button
@@ -430,28 +484,38 @@ const CollaboratorAssignmentsPage = () => {
                     setSelectedCollaboratorName('');
                     setCollaboratorSearch('');
                   }}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  onMouseEnter={() => setHoveredClearCollaboratorButton(true)}
+                  onMouseLeave={() => setHoveredClearCollaboratorButton(false)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  style={{
+                    color: hoveredClearCollaboratorButton ? '#4b5563' : '#9ca3af'
+                  }}
                 >
                   <X className="w-4 h-4" />
                 </button>
               )}
               {showCollaboratorDropdown && filteredUnassignedCollaborators.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                  {filteredUnassignedCollaborators.map((collaborator) => (
+                <div className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg max-h-60 overflow-y-auto" style={{ backgroundColor: 'white', borderColor: '#d1d5db' }}>
+                  {filteredUnassignedCollaborators.map((collaborator, index) => (
                     <button
                       key={collaborator.id}
                       type="button"
                       onClick={() => handleCollaboratorSelect(collaborator)}
-                      className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between"
+                      onMouseEnter={() => setHoveredCollaboratorDropdownItemIndex(index)}
+                      onMouseLeave={() => setHoveredCollaboratorDropdownItemIndex(null)}
+                      className="w-full px-3 py-2 text-left text-sm flex items-center justify-between"
+                      style={{
+                        backgroundColor: hoveredCollaboratorDropdownItemIndex === index ? '#f3f4f6' : 'transparent'
+                      }}
                     >
                       <div>
-                        <div className="font-medium text-gray-900">{collaborator.name}</div>
-                        <div className="text-xs text-gray-500">
+                        <div className="font-medium" style={{ color: '#111827' }}>{collaborator.name}</div>
+                        <div className="text-xs" style={{ color: '#6b7280' }}>
                           {collaborator.code || collaborator.id} • {collaborator.email}
                         </div>
                       </div>
                       {selectedCollaboratorId === collaborator.id && (
-                        <Check className="w-4 h-4 text-blue-600" />
+                        <Check className="w-4 h-4" style={{ color: '#2563eb' }} />
                       )}
                     </button>
                   ))}
@@ -460,12 +524,12 @@ const CollaboratorAssignmentsPage = () => {
             </div>
             <div className="h-5 mt-1">
               {selectedCollaboratorId && (
-                <div className="text-xs text-blue-600">
+                <div className="text-xs" style={{ color: '#2563eb' }}>
                   Đã chọn: {selectedCollaboratorName}
                 </div>
               )}
               {filteredUnassignedCollaborators.length === 0 && collaboratorSearch && (
-                <div className="text-xs text-gray-500">
+                <div className="text-xs" style={{ color: '#6b7280' }}>
                   Không tìm thấy CTV nào
                 </div>
               )}
@@ -475,7 +539,17 @@ const CollaboratorAssignmentsPage = () => {
             <button
               onClick={handleAssign}
               disabled={assigning || !selectedAdminId || !selectedCollaboratorId}
-              className="w-full px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              onMouseEnter={() => !(assigning || !selectedAdminId || !selectedCollaboratorId) && setHoveredAssignButton(true)}
+              onMouseLeave={() => setHoveredAssignButton(false)}
+              className="w-full px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+              style={{
+                backgroundColor: (assigning || !selectedAdminId || !selectedCollaboratorId)
+                  ? '#86efac'
+                  : (hoveredAssignButton ? '#15803d' : '#16a34a'),
+                color: 'white',
+                opacity: (assigning || !selectedAdminId || !selectedCollaboratorId) ? 0.5 : 1,
+                cursor: (assigning || !selectedAdminId || !selectedCollaboratorId) ? 'not-allowed' : 'pointer'
+              }}
             >
               {assigning ? (
                 <>
@@ -492,43 +566,79 @@ const CollaboratorAssignmentsPage = () => {
           </div>
         </div>
         <div className="mt-4">
-          <label className="block text-xs font-semibold text-gray-700 mb-1">Ghi chú (tùy chọn)</label>
+          <label className="block text-xs font-semibold mb-1" style={{ color: '#374151' }}>Ghi chú (tùy chọn)</label>
           <textarea
             value={assignNotes}
             onChange={(e) => setAssignNotes(e.target.value)}
             rows="2"
             placeholder="Ghi chú về phân công này..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="w-full px-3 py-2 border rounded-lg text-sm"
+            style={{
+              borderColor: '#d1d5db',
+              outline: 'none'
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#2563eb';
+              e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#d1d5db';
+              e.target.style.boxShadow = 'none';
+            }}
           />
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Tìm kiếm</label>
+            <label className="block text-xs font-semibold mb-1" style={{ color: '#374151' }}>Tìm kiếm</label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: '#9ca3af' }} />
               <input
                 type="text"
                 placeholder="Tên CTV, email, mã CTV..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className="w-full pl-10 pr-3 py-2 border rounded-lg text-sm"
+                style={{
+                  borderColor: '#d1d5db',
+                  outline: 'none'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#2563eb';
+                  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">AdminBackOffice</label>
+            <label className="block text-xs font-semibold mb-1" style={{ color: '#374151' }}>AdminBackOffice</label>
             <select
               value={adminFilter}
               onChange={(e) => {
                 setAdminFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full px-3 py-2 border rounded-lg text-sm"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             >
               <option value="">Tất cả</option>
               {admins.map(admin => (
@@ -537,14 +647,26 @@ const CollaboratorAssignmentsPage = () => {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Trạng thái</label>
+            <label className="block text-xs font-semibold mb-1" style={{ color: '#374151' }}>Trạng thái</label>
             <select
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full px-3 py-2 border rounded-lg text-sm"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             >
               <option value="">Tất cả</option>
               <option value="1">Đang hoạt động</option>
@@ -554,7 +676,13 @@ const CollaboratorAssignmentsPage = () => {
           <div className="flex items-end">
             <button
               onClick={handleSearch}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+              onMouseEnter={() => setHoveredSearchButton(true)}
+              onMouseLeave={() => setHoveredSearchButton(false)}
+              className="w-full px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+              style={{
+                backgroundColor: hoveredSearchButton ? '#1d4ed8' : '#2563eb',
+                color: 'white'
+              }}
             >
               Tìm kiếm
             </button>
@@ -563,80 +691,87 @@ const CollaboratorAssignmentsPage = () => {
       </div>
 
       {/* Assignments Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="rounded-lg border overflow-hidden" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         {loading ? (
           <div className="p-8 text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p className="mt-2 text-sm text-gray-500">Đang tải...</p>
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#2563eb' }}></div>
+            <p className="mt-2 text-sm" style={{ color: '#6b7280' }}>Đang tải...</p>
           </div>
         ) : assignments.length === 0 ? (
           <div className="p-8 text-center">
-            <UserCheck className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-            <p className="text-sm text-gray-500">Chưa có phân công nào</p>
+            <UserCheck className="w-12 h-12 mx-auto mb-2" style={{ color: '#9ca3af' }} />
+            <p className="text-sm" style={{ color: '#6b7280' }}>Chưa có phân công nào</p>
           </div>
         ) : (
           <>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="border-b" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">CTV</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">AdminBackOffice</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Người phân công</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Ngày phân công</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Ghi chú</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Trạng thái</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Thao tác</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase" style={{ color: '#374151' }}>CTV</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase" style={{ color: '#374151' }}>AdminBackOffice</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase" style={{ color: '#374151' }}>Người phân công</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase" style={{ color: '#374151' }}>Ngày phân công</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase" style={{ color: '#374151' }}>Ghi chú</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase" style={{ color: '#374151' }}>Trạng thái</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase" style={{ color: '#374151' }}>Thao tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {assignments.map((assignment) => (
-                    <tr key={assignment.id} className="hover:bg-gray-50">
+                <tbody className="divide-y" style={{ borderColor: '#e5e7eb' }}>
+                  {assignments.map((assignment, index) => (
+                    <tr
+                      key={assignment.id}
+                      className="transition-colors"
+                      onMouseEnter={() => setHoveredRowIndex(index)}
+                      onMouseLeave={() => setHoveredRowIndex(null)}
+                      style={{
+                        backgroundColor: hoveredRowIndex === index ? '#f9fafb' : 'transparent'
+                      }}
+                    >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-gray-400" />
+                          <User className="w-4 h-4" style={{ color: '#9ca3af' }} />
                           <div>
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-medium" style={{ color: '#111827' }}>
                               {assignment.collaborator?.name || '—'}
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs" style={{ color: '#6b7280' }}>
                               {assignment.collaborator?.email || '—'}
                             </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm" style={{ color: '#111827' }}>
                           {assignment.admin?.name || '—'}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs" style={{ color: '#6b7280' }}>
                           {assignment.admin?.email || '—'}
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm" style={{ color: '#111827' }}>
                           {assignment.assignedByAdmin?.name || '—'}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs" style={{ color: '#6b7280' }}>
                           {formatDate(assignment.createdAt)}
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm" style={{ color: '#111827' }}>
                           {formatDate(assignment.createdAt)}
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-sm text-gray-600 max-w-xs truncate">
+                        <div className="text-sm max-w-xs truncate" style={{ color: '#4b5563' }}>
                           {assignment.notes || '—'}
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                          assignment.status === 1
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" style={{
+                          backgroundColor: assignment.status === 1 ? '#dcfce7' : '#f3f4f6',
+                          color: assignment.status === 1 ? '#166534' : '#1f2937'
+                        }}>
                           {assignment.status === 1 ? 'Đang hoạt động' : 'Đã hủy'}
                         </span>
                       </td>
@@ -644,7 +779,13 @@ const CollaboratorAssignmentsPage = () => {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleUnassign(assignment.id)}
-                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                            onMouseEnter={() => setHoveredUnassignButtonIndex(index)}
+                            onMouseLeave={() => setHoveredUnassignButtonIndex(null)}
+                            className="p-1.5 rounded transition-colors"
+                            style={{
+                              color: hoveredUnassignButtonIndex === index ? '#991b1b' : '#dc2626',
+                              backgroundColor: hoveredUnassignButtonIndex === index ? '#fef2f2' : 'transparent'
+                            }}
                             title="Hủy phân công"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -659,39 +800,71 @@ const CollaboratorAssignmentsPage = () => {
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
-                <div className="text-sm text-gray-700">
+              <div className="px-4 py-3 border-t flex items-center justify-between" style={{ borderColor: '#e5e7eb' }}>
+                <div className="text-sm" style={{ color: '#374151' }}>
                   Hiển thị {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, pagination.total)} của {pagination.total}
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCurrentPage(1)}
                     disabled={currentPage === 1}
-                    className="p-1.5 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onMouseEnter={() => currentPage !== 1 && setHoveredPaginationNavButton('first')}
+                    onMouseLeave={() => setHoveredPaginationNavButton(null)}
+                    className="p-1.5 border rounded transition-colors"
+                    style={{
+                      borderColor: '#d1d5db',
+                      backgroundColor: hoveredPaginationNavButton === 'first' ? '#f9fafb' : 'transparent',
+                      opacity: currentPage === 1 ? 0.5 : 1,
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+                    }}
                   >
                     <ChevronsLeft className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                     disabled={currentPage === 1}
-                    className="p-1.5 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onMouseEnter={() => currentPage !== 1 && setHoveredPaginationNavButton('prev')}
+                    onMouseLeave={() => setHoveredPaginationNavButton(null)}
+                    className="p-1.5 border rounded transition-colors"
+                    style={{
+                      borderColor: '#d1d5db',
+                      backgroundColor: hoveredPaginationNavButton === 'prev' ? '#f9fafb' : 'transparent',
+                      opacity: currentPage === 1 ? 0.5 : 1,
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+                    }}
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <span className="text-sm text-gray-700">
+                  <span className="text-sm" style={{ color: '#374151' }}>
                     Trang {currentPage} / {pagination.totalPages}
                   </span>
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(pagination.totalPages, prev + 1))}
                     disabled={currentPage === pagination.totalPages}
-                    className="p-1.5 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onMouseEnter={() => currentPage !== pagination.totalPages && setHoveredPaginationNavButton('next')}
+                    onMouseLeave={() => setHoveredPaginationNavButton(null)}
+                    className="p-1.5 border rounded transition-colors"
+                    style={{
+                      borderColor: '#d1d5db',
+                      backgroundColor: hoveredPaginationNavButton === 'next' ? '#f9fafb' : 'transparent',
+                      opacity: currentPage === pagination.totalPages ? 0.5 : 1,
+                      cursor: currentPage === pagination.totalPages ? 'not-allowed' : 'pointer'
+                    }}
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setCurrentPage(pagination.totalPages)}
                     disabled={currentPage === pagination.totalPages}
-                    className="p-1.5 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onMouseEnter={() => currentPage !== pagination.totalPages && setHoveredPaginationNavButton('last')}
+                    onMouseLeave={() => setHoveredPaginationNavButton(null)}
+                    className="p-1.5 border rounded transition-colors"
+                    style={{
+                      borderColor: '#d1d5db',
+                      backgroundColor: hoveredPaginationNavButton === 'last' ? '#f9fafb' : 'transparent',
+                      opacity: currentPage === pagination.totalPages ? 0.5 : 1,
+                      cursor: currentPage === pagination.totalPages ? 'not-allowed' : 'pointer'
+                    }}
                   >
                     <ChevronsRight className="w-4 h-4" />
                   </button>
@@ -704,10 +877,10 @@ const CollaboratorAssignmentsPage = () => {
 
       {/* Bulk Assign Section */}
       {bulkMode && (
-        <div className="bg-white rounded-lg p-4 border border-gray-200">
+        <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-              <UserPlus className="w-4 h-4 text-blue-600" />
+            <h2 className="text-sm font-bold flex items-center gap-2" style={{ color: '#111827' }}>
+              <UserPlus className="w-4 h-4" style={{ color: '#2563eb' }} />
               Phân công hàng loạt ({selectedCollaboratorIds.size} CTV đã chọn)
             </h2>
             <button
@@ -715,18 +888,22 @@ const CollaboratorAssignmentsPage = () => {
                 setBulkMode(false);
                 setSelectedCollaboratorIds(new Set());
               }}
-              className="text-gray-400 hover:text-gray-600"
+              onMouseEnter={() => setHoveredCloseBulkModeButton(true)}
+              onMouseLeave={() => setHoveredCloseBulkModeButton(false)}
+              style={{
+                color: hoveredCloseBulkModeButton ? '#4b5563' : '#9ca3af'
+              }}
             >
               <X className="w-4 h-4" />
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Chọn AdminBackOffice <span className="text-red-500">*</span>
+              <label className="block text-xs font-semibold mb-1" style={{ color: '#374151' }}>
+                Chọn AdminBackOffice <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: '#9ca3af' }} />
                 <input
                   type="text"
                   placeholder="Tìm kiếm AdminBackOffice..."
@@ -735,8 +912,20 @@ const CollaboratorAssignmentsPage = () => {
                     setAdminSearch(e.target.value);
                     setShowAdminDropdown(true);
                   }}
-                  onFocus={() => setShowAdminDropdown(true)}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  onFocus={(e) => {
+                    setShowAdminDropdown(true);
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                  className="w-full pl-10 pr-3 py-2 border rounded-lg text-sm"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
                 />
                 {selectedAdminId && (
                   <button
@@ -745,26 +934,36 @@ const CollaboratorAssignmentsPage = () => {
                       setSelectedAdminName('');
                       setAdminSearch('');
                     }}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    onMouseEnter={() => setHoveredClearAdminButton(true)}
+                    onMouseLeave={() => setHoveredClearAdminButton(false)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                    style={{
+                      color: hoveredClearAdminButton ? '#4b5563' : '#9ca3af'
+                    }}
                   >
                     <X className="w-4 h-4" />
                   </button>
                 )}
                 {showAdminDropdown && filteredAdmins.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                    {filteredAdmins.map((admin) => (
+                  <div className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg max-h-60 overflow-y-auto" style={{ backgroundColor: 'white', borderColor: '#d1d5db' }}>
+                    {filteredAdmins.map((admin, index) => (
                       <button
                         key={admin.id}
                         type="button"
                         onClick={() => handleAdminSelect(admin)}
-                        className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between"
+                        onMouseEnter={() => setHoveredAdminDropdownItemIndex(index)}
+                        onMouseLeave={() => setHoveredAdminDropdownItemIndex(null)}
+                        className="w-full px-3 py-2 text-left text-sm flex items-center justify-between"
+                        style={{
+                          backgroundColor: hoveredAdminDropdownItemIndex === index ? '#f3f4f6' : 'transparent'
+                        }}
                       >
                         <div>
-                          <div className="font-medium text-gray-900">{admin.name}</div>
-                          <div className="text-xs text-gray-500">{admin.email}</div>
+                          <div className="font-medium" style={{ color: '#111827' }}>{admin.name}</div>
+                          <div className="text-xs" style={{ color: '#6b7280' }}>{admin.email}</div>
                         </div>
                         {selectedAdminId === admin.id && (
-                          <Check className="w-4 h-4 text-blue-600" />
+                          <Check className="w-4 h-4" style={{ color: '#2563eb' }} />
                         )}
                       </button>
                     ))}
@@ -773,28 +972,50 @@ const CollaboratorAssignmentsPage = () => {
               </div>
             </div>
             <div className="md:col-span-1">
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Ghi chú</label>
+              <label className="block text-xs font-semibold mb-1" style={{ color: '#374151' }}>Ghi chú</label>
               <textarea
                 value={assignNotes}
                 onChange={(e) => setAssignNotes(e.target.value)}
                 rows="2"
                 placeholder="Ghi chú..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className="w-full px-3 py-2 border rounded-lg text-sm"
+                style={{
+                  borderColor: '#d1d5db',
+                  outline: 'none'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#2563eb';
+                  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
             </div>
             <div className="flex items-end">
               <button
                 onClick={handleBulkAssign}
                 disabled={assigning || !selectedAdminId || selectedCollaboratorIds.size === 0}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                onMouseEnter={() => !(assigning || !selectedAdminId || selectedCollaboratorIds.size === 0) && setHoveredBulkAssignButton(true)}
+                onMouseLeave={() => setHoveredBulkAssignButton(false)}
+                className="w-full px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                style={{
+                  backgroundColor: (assigning || !selectedAdminId || selectedCollaboratorIds.size === 0)
+                    ? '#93c5fd'
+                    : (hoveredBulkAssignButton ? '#1d4ed8' : '#2563eb'),
+                  color: 'white',
+                  opacity: (assigning || !selectedAdminId || selectedCollaboratorIds.size === 0) ? 0.5 : 1,
+                  cursor: (assigning || !selectedAdminId || selectedCollaboratorIds.size === 0) ? 'not-allowed' : 'pointer'
+                }}
               >
                 {assigning ? 'Đang phân công...' : `Phân công ${selectedCollaboratorIds.size} CTV`}
               </button>
             </div>
           </div>
-          <div className="mt-4 border border-gray-200 rounded-lg max-h-96 overflow-y-auto">
-            <div className="p-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-              <span className="text-xs font-semibold text-gray-700">
+          <div className="mt-4 border rounded-lg max-h-96 overflow-y-auto" style={{ borderColor: '#e5e7eb' }}>
+            <div className="p-2 border-b flex items-center justify-between" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
+              <span className="text-xs font-semibold" style={{ color: '#374151' }}>
                 Danh sách CTV chưa được phân công ({unassignedCollaborators.length})
               </span>
               <div className="flex gap-2">
@@ -806,19 +1027,24 @@ const CollaboratorAssignmentsPage = () => {
                       setSelectedCollaboratorIds(new Set(unassignedCollaborators.map(c => c.id)));
                     }
                   }}
-                  className="text-xs text-blue-600 hover:text-blue-700"
+                  onMouseEnter={() => setHoveredSelectAllButton(true)}
+                  onMouseLeave={() => setHoveredSelectAllButton(false)}
+                  className="text-xs"
+                  style={{
+                    color: hoveredSelectAllButton ? '#1e40af' : '#2563eb'
+                  }}
                 >
                   {selectedCollaboratorIds.size === unassignedCollaborators.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
                 </button>
               </div>
             </div>
-            <div className="divide-y divide-gray-200">
-              {unassignedCollaborators.map((collaborator) => (
+            <div className="divide-y" style={{ borderColor: '#e5e7eb' }}>
+              {unassignedCollaborators.map((collaborator, index) => (
                 <div
                   key={collaborator.id}
-                  className={`p-3 flex items-center gap-3 hover:bg-gray-50 cursor-pointer ${
-                    selectedCollaboratorIds.has(collaborator.id) ? 'bg-blue-50' : ''
-                  }`}
+                  className="p-3 flex items-center gap-3 cursor-pointer transition-colors"
+                  onMouseEnter={() => setHoveredCollaboratorItemIndex(index)}
+                  onMouseLeave={() => setHoveredCollaboratorItemIndex(null)}
                   onClick={() => {
                     const newSet = new Set(selectedCollaboratorIds);
                     if (newSet.has(collaborator.id)) {
@@ -828,19 +1054,28 @@ const CollaboratorAssignmentsPage = () => {
                     }
                     setSelectedCollaboratorIds(newSet);
                   }}
+                  style={{
+                    backgroundColor: selectedCollaboratorIds.has(collaborator.id)
+                      ? '#eff6ff'
+                      : (hoveredCollaboratorItemIndex === index ? '#f9fafb' : 'transparent')
+                  }}
                 >
                   <input
                     type="checkbox"
                     checked={selectedCollaboratorIds.has(collaborator.id)}
                     onChange={() => {}}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+                    className="w-4 h-4 rounded"
+                    style={{
+                      accentColor: '#2563eb',
+                      borderColor: '#d1d5db'
+                    }}
                   />
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-900">{collaborator.name}</div>
-                    <div className="text-xs text-gray-500">{collaborator.email}</div>
+                    <div className="text-sm font-medium" style={{ color: '#111827' }}>{collaborator.name}</div>
+                    <div className="text-xs" style={{ color: '#6b7280' }}>{collaborator.email}</div>
                   </div>
                   {selectedCollaboratorIds.has(collaborator.id) && (
-                    <Check className="w-4 h-4 text-blue-600" />
+                    <Check className="w-4 h-4" style={{ color: '#2563eb' }} />
                   )}
                 </div>
               ))}

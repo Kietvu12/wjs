@@ -77,6 +77,25 @@ const AdminAddCandidatePage = () => {
   const [parseSuccess, setParseSuccess] = useState(null);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  
+  // Hover states
+  const [hoveredBackButton, setHoveredBackButton] = useState(false);
+  const [hoveredCancelButton, setHoveredCancelButton] = useState(false);
+  const [hoveredSaveButton, setHoveredSaveButton] = useState(false);
+  const [hoveredUploadArea, setHoveredUploadArea] = useState(false);
+  const [hoveredAddMoreButton, setHoveredAddMoreButton] = useState(false);
+  const [hoveredRemoveCvButtonIndex, setHoveredRemoveCvButtonIndex] = useState(null);
+  const [hoveredClearAllButton, setHoveredClearAllButton] = useState(false);
+  const [hoveredAddEducationButton, setHoveredAddEducationButton] = useState(false);
+  const [hoveredRemoveEducationButtonIndex, setHoveredRemoveEducationButtonIndex] = useState(null);
+  const [hoveredAddWorkExperienceButton, setHoveredAddWorkExperienceButton] = useState(false);
+  const [hoveredRemoveWorkExperienceButtonIndex, setHoveredRemoveWorkExperienceButtonIndex] = useState(null);
+  const [hoveredAddCertificateButton, setHoveredAddCertificateButton] = useState(false);
+  const [hoveredRemoveCertificateButtonIndex, setHoveredRemoveCertificateButtonIndex] = useState(null);
+  const [hoveredAddLearnedToolButton, setHoveredAddLearnedToolButton] = useState(false);
+  const [hoveredRemoveLearnedToolButtonIndex, setHoveredRemoveLearnedToolButtonIndex] = useState(null);
+  const [hoveredAddExperienceToolButton, setHoveredAddExperienceToolButton] = useState(false);
+  const [hoveredRemoveExperienceToolButtonIndex, setHoveredRemoveExperienceToolButtonIndex] = useState(null);
 
   useEffect(() => {
     if (candidateId) {
@@ -734,30 +753,47 @@ const AdminAddCandidatePage = () => {
   return (
     <div className="space-y-3">
       {/* Header */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center justify-between">
+      <div className="rounded-lg p-4 border flex items-center justify-between" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(candidateId ? `/admin/candidates/${candidateId}` : '/admin/candidates')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            onMouseEnter={() => setHoveredBackButton(true)}
+            onMouseLeave={() => setHoveredBackButton(false)}
+            className="p-2 rounded-lg transition-colors"
+            style={{
+              backgroundColor: hoveredBackButton ? '#f3f4f6' : 'transparent'
+            }}
           >
-            <ArrowLeft className="w-4 h-4 text-gray-600" />
+            <ArrowLeft className="w-4 h-4" style={{ color: '#4b5563' }} />
           </button>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">{candidateId ? 'Chỉnh sửa ứng viên' : 'Tạo ứng viên'}</h1>
-            <p className="text-xs text-gray-500 mt-1">{candidateId ? 'Cập nhật thông tin ứng viên' : 'Thêm thông tin ứng viên mới vào hệ thống'}</p>
+            <h1 className="text-lg font-bold" style={{ color: '#111827' }}>{candidateId ? 'Chỉnh sửa ứng viên' : 'Tạo ứng viên'}</h1>
+            <p className="text-xs mt-1" style={{ color: '#6b7280' }}>{candidateId ? 'Cập nhật thông tin ứng viên' : 'Thêm thông tin ứng viên mới vào hệ thống'}</p>
           </div>
         </div>
         <div className="flex gap-2">
           <button
             onClick={handleCancel}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center gap-1.5"
+            onMouseEnter={() => setHoveredCancelButton(true)}
+            onMouseLeave={() => setHoveredCancelButton(false)}
+            className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredCancelButton ? '#e5e7eb' : '#f3f4f6',
+              color: '#374151'
+            }}
           >
             <X className="w-3.5 h-3.5" />
             Hủy
           </button>
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+            onMouseEnter={() => setHoveredSaveButton(true)}
+            onMouseLeave={() => setHoveredSaveButton(false)}
+            className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredSaveButton ? '#1d4ed8' : '#2563eb',
+              color: 'white'
+            }}
           >
             <Save className="w-3.5 h-3.5" />
             {candidateId ? 'Cập nhật ứng viên' : 'Lưu ứng viên'}
@@ -770,14 +806,14 @@ const AdminAddCandidatePage = () => {
         {/* Left Column */}
         <div className="space-y-3">
           {/* Personal Information */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <User className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <User className="w-4 h-4" style={{ color: '#2563eb' }} />
               Thông tin cá nhân (個人情報)
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   CTV (Tùy chọn)
                 </label>
                 <input
@@ -786,17 +822,27 @@ const AdminAddCandidatePage = () => {
                   value={formData.collaboratorId}
                   onChange={handleInputChange}
                   placeholder="Nhập ID CTV (để trống nếu không có)"
-                  className={`w-full px-3 py-2 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-                    errors.collaboratorId ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className="w-full px-3 py-2 border rounded-lg text-xs"
+                  style={{
+                    borderColor: errors.collaboratorId ? '#ef4444' : '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = errors.collaboratorId ? '#ef4444' : '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
-                {errors.collaboratorId && <p className="text-[10px] text-red-500 mt-1">{errors.collaboratorId}</p>}
-                <p className="text-[10px] text-gray-500 mt-1">Để trống nếu ứng viên không thuộc CTV nào</p>
+                {errors.collaboratorId && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.collaboratorId}</p>}
+                <p className="text-[10px] mt-1" style={{ color: '#6b7280' }}>Để trống nếu ứng viên không thuộc CTV nào</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
-                    Họ tên (Kanji) - 氏名 <span className="text-red-500">*</span>
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+                    Họ tên (Kanji) - 氏名 <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <input
                     type="text"
@@ -804,14 +850,24 @@ const AdminAddCandidatePage = () => {
                     value={formData.nameKanji}
                     onChange={handleInputChange}
                     placeholder="VD: 山田 太郎"
-                    className={`w-full px-3 py-2 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-                      errors.nameKanji ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: errors.nameKanji ? '#ef4444' : '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = errors.nameKanji ? '#ef4444' : '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
-                  {errors.nameKanji && <p className="text-[10px] text-red-500 mt-1">{errors.nameKanji}</p>}
+                  {errors.nameKanji && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.nameKanji}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Họ tên (Kana) - ふりがな
                   </label>
                   <input
@@ -820,24 +876,40 @@ const AdminAddCandidatePage = () => {
                     value={formData.nameKana}
                     onChange={handleInputChange}
                     placeholder="VD: やまだ たろう"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Ngày sinh - 生年月日
                   </label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400 z-10 pointer-events-none" />
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 z-10 pointer-events-none" style={{ color: '#9ca3af' }} />
                     <DatePicker
                       selected={formData.birthDate ? new Date(formData.birthDate) : null}
                       onChange={handleBirthDateChange}
                       dateFormat="yyyy-MM-dd"
                       maxDate={new Date()}
                       placeholderText="Chọn ngày sinh"
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      className="w-full pl-10 pr-3 py-2 border rounded-lg text-xs"
+                      style={{
+                        borderColor: '#d1d5db',
+                        outline: 'none'
+                      }}
                       showYearDropdown
                       showMonthDropdown
                       dropdownMode="select"
@@ -851,7 +923,7 @@ const AdminAddCandidatePage = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Tuổi - 満歳
                   </label>
                   <input
@@ -861,18 +933,35 @@ const AdminAddCandidatePage = () => {
                     onChange={handleInputChange}
                     placeholder="30"
                     readOnly
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-not-allowed"
+                    className="w-full px-3 py-2 border rounded-lg text-xs cursor-not-allowed"
+                    style={{
+                      borderColor: '#d1d5db',
+                      backgroundColor: '#f9fafb',
+                      outline: 'none'
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Giới tính - 性別
                   </label>
                   <select
                     name="gender"
                     value={formData.gender}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   >
                     <option value="">Chọn</option>
                     <option value="男">Nam (男)</option>
@@ -882,14 +971,14 @@ const AdminAddCandidatePage = () => {
               </div>
 
               {/* Contact Information */}
-              <div className="border-t pt-3 mt-3">
-                <h3 className="text-xs font-bold text-gray-700 mb-3">
+              <div className="border-t pt-3 mt-3" style={{ borderColor: '#e5e7eb' }}>
+                <h3 className="text-xs font-bold mb-3" style={{ color: '#374151' }}>
                   Thông tin liên hệ (連絡先)
                 </h3>
                 <div className="space-y-3">
                   <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-900 mb-2">
+                      <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                         Mã bưu điện - 〒
                       </label>
                       <input
@@ -898,74 +987,120 @@ const AdminAddCandidatePage = () => {
                         value={formData.postalCode}
                         onChange={handleInputChange}
                         placeholder="123-4567"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-3 py-2 border rounded-lg text-xs"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#2563eb';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                     </div>
                     <div className="col-span-2">
-                      <label className="block text-xs font-semibold text-gray-900 mb-2">
+                      <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                         Địa chỉ - 現住所
                       </label>
                       <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                         <input
                           type="text"
                           name="address"
                           value={formData.address}
                           onChange={handleInputChange}
                           placeholder="東京都渋谷区..."
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          className="w-full pl-10 pr-3 py-2 border rounded-lg text-xs"
+                          style={{
+                            borderColor: '#d1d5db',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = '#2563eb';
+                            e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                            e.target.style.boxShadow = 'none';
+                          }}
                         />
                       </div>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-900 mb-2">
+                      <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                         Điện thoại - 電話
                       </label>
                       <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                         <input
                           type="tel"
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
                           placeholder="090-1234-5678"
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          className="w-full pl-10 pr-3 py-2 border rounded-lg text-xs"
+                          style={{
+                            borderColor: '#d1d5db',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = '#2563eb';
+                            e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                            e.target.style.boxShadow = 'none';
+                          }}
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-900 mb-2">
+                      <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                         Email
                       </label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                         <input
                           type="email"
                           name="email"
                           value={formData.email}
                           onChange={handleInputChange}
                           placeholder="email@example.com"
-                          className={`w-full pl-10 pr-3 py-2 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-                            errors.email ? 'border-red-500' : 'border-gray-300'
-                          }`}
+                          className="w-full pl-10 pr-3 py-2 border rounded-lg text-xs"
+                          style={{
+                            borderColor: errors.email ? '#ef4444' : '#d1d5db',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = '#2563eb';
+                            e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = errors.email ? '#ef4444' : '#d1d5db';
+                            e.target.style.boxShadow = 'none';
+                          }}
                         />
                       </div>
-                      {errors.email && <p className="text-[10px] text-red-500 mt-1">{errors.email}</p>}
+                      {errors.email && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.email}</p>}
                     </div>
                   </div>
                 </div>
               </div>
               
               {/* Residence & Visa Information */}
-              <div className="border-t pt-3 mt-3">
-                <h3 className="text-xs font-bold text-gray-700 mb-3">
+              <div className="border-t pt-3 mt-3" style={{ borderColor: '#e5e7eb' }}>
+                <h3 className="text-xs font-bold mb-3" style={{ color: '#374151' }}>
                   Thông tin cư trú & Visa (在留情報)
                 </h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-900 mb-2">
+                    <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                       Địa chỉ gốc - 出身地
                     </label>
                     <input
@@ -974,19 +1109,43 @@ const AdminAddCandidatePage = () => {
                       value={formData.addressOrigin}
                       onChange={handleInputChange}
                       placeholder="VD: ベトナム ホーチミン市"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      className="w-full px-3 py-2 border rounded-lg text-xs"
+                      style={{
+                        borderColor: '#d1d5db',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#2563eb';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#d1d5db';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-900 mb-2">
+                      <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                         Passport - パスポート
                       </label>
                       <select
                         name="passport"
                         value={formData.passport}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-3 py-2 border rounded-lg text-xs"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#2563eb';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       >
                         <option value="">Chọn</option>
                         <option value="1">Có</option>
@@ -994,14 +1153,26 @@ const AdminAddCandidatePage = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-900 mb-2">
+                      <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                         Nơi cư trú hiện tại - 現在の居住地
                       </label>
                       <select
                         name="currentResidence"
                         value={formData.currentResidence}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-3 py-2 border rounded-lg text-xs"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#2563eb';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       >
                         <option value="">Chọn</option>
                         <option value="1">Nhật Bản</option>
@@ -1012,14 +1183,26 @@ const AdminAddCandidatePage = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-900 mb-2">
+                      <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                         Tình trạng cư trú tại Nhật - 在留資格
                       </label>
                       <select
                         name="jpResidenceStatus"
                         value={formData.jpResidenceStatus}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-3 py-2 border rounded-lg text-xs"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#2563eb';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       >
                         <option value="">Chọn</option>
                         <option value="1">技術・人文知識・国際業務</option>
@@ -1032,7 +1215,7 @@ const AdminAddCandidatePage = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-900 mb-2">
+                      <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                         Ngày hết hạn Visa - 在留期限
                       </label>
                       <DatePicker
@@ -1052,13 +1235,17 @@ const AdminAddCandidatePage = () => {
                         }}
                         dateFormat="yyyy-MM-dd"
                         placeholderText="Chọn ngày hết hạn"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-3 py-2 border rounded-lg text-xs"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
                         isClearable
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-900 mb-2">
+                    <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                       Quốc gia khác - その他の国
                     </label>
                     <input
@@ -1067,7 +1254,19 @@ const AdminAddCandidatePage = () => {
                       value={formData.otherCountry}
                       onChange={handleInputChange}
                       placeholder="VD: アメリカ"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      className="w-full px-3 py-2 border rounded-lg text-xs"
+                      style={{
+                        borderColor: '#d1d5db',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#2563eb';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#d1d5db';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
                 </div>
@@ -1076,20 +1275,24 @@ const AdminAddCandidatePage = () => {
           </div>
 
           {/* Education */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <GraduationCap className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <GraduationCap className="w-4 h-4" style={{ color: '#2563eb' }} />
               Học vấn (学歴)
             </h2>
             <div className="space-y-3">
               {formData.educations.map((edu, index) => (
-                <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div key={index} className="p-3 rounded-lg border" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
                   <div className="flex justify-between items-start mb-2">
-                    <span className="text-[10px] font-bold text-gray-500">#{index + 1}</span>
+                    <span className="text-[10px] font-bold" style={{ color: '#6b7280' }}>#{index + 1}</span>
                     <button
                       type="button"
                       onClick={() => removeEducation(index)}
-                      className="text-red-500 hover:text-red-700"
+                      onMouseEnter={() => setHoveredRemoveEducationButtonIndex(index)}
+                      onMouseLeave={() => setHoveredRemoveEducationButtonIndex(null)}
+                      style={{
+                        color: hoveredRemoveEducationButtonIndex === index ? '#b91c1c' : '#ef4444'
+                      }}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -1100,21 +1303,24 @@ const AdminAddCandidatePage = () => {
                       value={edu.year}
                       onChange={(e) => updateEducation(index, 'year', e.target.value)}
                       placeholder="Năm (年)"
-                      className="px-2 py-1.5 border border-gray-300 rounded text-xs"
+                      className="px-2 py-1.5 border rounded text-xs"
+                      style={{ borderColor: '#d1d5db' }}
                     />
                     <input
                       type="text"
                       value={edu.month}
                       onChange={(e) => updateEducation(index, 'month', e.target.value)}
                       placeholder="Tháng (月)"
-                      className="px-2 py-1.5 border border-gray-300 rounded text-xs"
+                      className="px-2 py-1.5 border rounded text-xs"
+                      style={{ borderColor: '#d1d5db' }}
                     />
                     <input
                       type="text"
                       value={edu.content}
                       onChange={(e) => updateEducation(index, 'content', e.target.value)}
                       placeholder="Tên trường, ngành học..."
-                      className="col-span-2 px-2 py-1.5 border border-gray-300 rounded text-xs"
+                      className="col-span-2 px-2 py-1.5 border rounded text-xs"
+                      style={{ borderColor: '#d1d5db' }}
                     />
                   </div>
                 </div>
@@ -1122,7 +1328,13 @@ const AdminAddCandidatePage = () => {
               <button
                 type="button"
                 onClick={handleAddEducation}
-                className="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-blue-600 hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
+                onMouseEnter={() => setHoveredAddEducationButton(true)}
+                onMouseLeave={() => setHoveredAddEducationButton(false)}
+                className="w-full px-4 py-2 border-2 border-dashed rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-2"
+                style={{
+                  borderColor: hoveredAddEducationButton ? '#2563eb' : '#d1d5db',
+                  color: hoveredAddEducationButton ? '#2563eb' : '#4b5563'
+                }}
               >
                 <Plus className="w-3.5 h-3.5" />
                 Thêm học vấn
@@ -1131,20 +1343,24 @@ const AdminAddCandidatePage = () => {
           </div>
 
           {/* Work Experience */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <Briefcase className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <Briefcase className="w-4 h-4" style={{ color: '#2563eb' }} />
               Kinh nghiệm làm việc (職歴)
             </h2>
             <div className="space-y-3">
               {formData.workExperiences.map((emp, index) => (
-                <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div key={index} className="p-3 rounded-lg border" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
                   <div className="flex justify-between items-start mb-2">
-                    <span className="text-[10px] font-bold text-gray-500">#{index + 1}</span>
+                    <span className="text-[10px] font-bold" style={{ color: '#6b7280' }}>#{index + 1}</span>
                     <button
                       type="button"
                       onClick={() => removeEmployment(index)}
-                      className="text-red-500 hover:text-red-700"
+                      onMouseEnter={() => setHoveredRemoveWorkExperienceButtonIndex(index)}
+                      onMouseLeave={() => setHoveredRemoveWorkExperienceButtonIndex(null)}
+                      style={{
+                        color: hoveredRemoveWorkExperienceButtonIndex === index ? '#b91c1c' : '#ef4444'
+                      }}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -1156,14 +1372,16 @@ const AdminAddCandidatePage = () => {
                         value={emp.period}
                         onChange={(e) => updateEmployment(index, 'period', e.target.value)}
                         placeholder="Thời gian (YYYY/MM - YYYY/MM)"
-                        className="px-2 py-1.5 border border-gray-300 rounded text-xs"
+                        className="px-2 py-1.5 border rounded text-xs"
+                        style={{ borderColor: '#d1d5db' }}
                       />
                       <input
                         type="text"
                         value={emp.company_name}
                         onChange={(e) => updateEmployment(index, 'company_name', e.target.value)}
                         placeholder="Tên công ty"
-                        className="px-2 py-1.5 border border-gray-300 rounded text-xs"
+                        className="px-2 py-1.5 border rounded text-xs"
+                        style={{ borderColor: '#d1d5db' }}
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -1172,14 +1390,16 @@ const AdminAddCandidatePage = () => {
                         value={emp.business_purpose}
                         onChange={(e) => updateEmployment(index, 'business_purpose', e.target.value)}
                         placeholder="Lĩnh vực kinh doanh (事業目的)"
-                        className="px-2 py-1.5 border border-gray-300 rounded text-xs"
+                        className="px-2 py-1.5 border rounded text-xs"
+                        style={{ borderColor: '#d1d5db' }}
                       />
                       <input
                         type="text"
                         value={emp.scale_role}
                         onChange={(e) => updateEmployment(index, 'scale_role', e.target.value)}
                         placeholder="Quy mô / Vai trò (規模／役割)"
-                        className="px-2 py-1.5 border border-gray-300 rounded text-xs"
+                        className="px-2 py-1.5 border rounded text-xs"
+                        style={{ borderColor: '#d1d5db' }}
                       />
                     </div>
                     <textarea
@@ -1187,14 +1407,16 @@ const AdminAddCandidatePage = () => {
                       onChange={(e) => updateEmployment(index, 'description', e.target.value)}
                       placeholder="Mô tả công việc (業務内容)"
                       rows={2}
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs"
+                      className="w-full px-2 py-1.5 border rounded text-xs"
+                      style={{ borderColor: '#d1d5db' }}
                     />
                     <input
                       type="text"
                       value={emp.tools_tech}
                       onChange={(e) => updateEmployment(index, 'tools_tech', e.target.value)}
                       placeholder="Công cụ, công nghệ (ツール)"
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs"
+                      className="w-full px-2 py-1.5 border rounded text-xs"
+                      style={{ borderColor: '#d1d5db' }}
                     />
                   </div>
                 </div>
@@ -1202,7 +1424,13 @@ const AdminAddCandidatePage = () => {
               <button
                 type="button"
                 onClick={handleAddWorkExperience}
-                className="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-blue-600 hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
+                onMouseEnter={() => setHoveredAddWorkExperienceButton(true)}
+                onMouseLeave={() => setHoveredAddWorkExperienceButton(false)}
+                className="w-full px-4 py-2 border-2 border-dashed rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-2"
+                style={{
+                  borderColor: hoveredAddWorkExperienceButton ? '#2563eb' : '#d1d5db',
+                  color: hoveredAddWorkExperienceButton ? '#2563eb' : '#4b5563'
+                }}
               >
                 <Plus className="w-3.5 h-3.5" />
                 Thêm kinh nghiệm
@@ -1214,24 +1442,31 @@ const AdminAddCandidatePage = () => {
         {/* Right Column */}
         <div className="space-y-3">
           {/* Upload CV */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <FileText className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <FileText className="w-4 h-4" style={{ color: '#2563eb' }} />
               Upload CV
             </h2>
             {cvFiles.length === 0 ? (
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-600 transition-colors">
+              <div 
+                className="border-2 border-dashed rounded-lg p-6 text-center transition-colors"
+                onMouseEnter={() => setHoveredUploadArea(true)}
+                onMouseLeave={() => setHoveredUploadArea(false)}
+                style={{
+                  borderColor: hoveredUploadArea ? '#2563eb' : '#d1d5db'
+                }}
+              >
                 <label htmlFor="cv-upload" className="cursor-pointer">
                   <div className="flex flex-col items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                      <Upload className="w-6 h-6 text-gray-400" />
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#f3f4f6' }}>
+                      <Upload className="w-6 h-6" style={{ color: '#9ca3af' }} />
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-gray-900 mb-1">Kéo thả file CV vào đây</p>
-                      <p className="text-[10px] text-gray-500">hoặc</p>
-                      <p className="text-xs text-blue-600 font-medium mt-1">Chọn file từ máy tính</p>
+                      <p className="text-xs font-semibold mb-1" style={{ color: '#111827' }}>Kéo thả file CV vào đây</p>
+                      <p className="text-[10px]" style={{ color: '#6b7280' }}>hoặc</p>
+                      <p className="text-xs font-medium mt-1" style={{ color: '#2563eb' }}>Chọn file từ máy tính</p>
                     </div>
-                    <p className="text-[10px] text-gray-500">Hỗ trợ nhiều file PDF - Tự động trích xuất dữ liệu</p>
+                    <p className="text-[10px]" style={{ color: '#6b7280' }}>Hỗ trợ nhiều file PDF - Tự động trích xuất dữ liệu</p>
                   </div>
                   <input
                     id="cv-upload"
@@ -1248,22 +1483,29 @@ const AdminAddCandidatePage = () => {
                 {/* File List */}
                 <div className="space-y-2">
                   {cvFiles.map((file, index) => (
-                    <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    <div key={index} className="rounded-lg p-3 border" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                            <FileText className="w-4 h-4 text-blue-600" />
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#dbeafe' }}>
+                            <FileText className="w-4 h-4" style={{ color: '#2563eb' }} />
                           </div>
                           <div>
-                            <p className="text-xs font-medium text-gray-900">{file.name}</p>
-                            <p className="text-[10px] text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                            <p className="text-xs font-medium" style={{ color: '#111827' }}>{file.name}</p>
+                            <p className="text-[10px]" style={{ color: '#6b7280' }}>{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                           </div>
                         </div>
                         <button
                           type="button"
                           onClick={() => handleRemoveCV(index)}
-                          className="text-gray-400 hover:text-red-600 p-1"
+                          onMouseEnter={() => setHoveredRemoveCvButtonIndex(index)}
+                          onMouseLeave={() => setHoveredRemoveCvButtonIndex(null)}
+                          className="p-1"
                           disabled={isParsing}
+                          style={{
+                            color: hoveredRemoveCvButtonIndex === index ? '#dc2626' : '#9ca3af',
+                            opacity: isParsing ? 0.5 : 1,
+                            cursor: isParsing ? 'not-allowed' : 'pointer'
+                          }}
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
@@ -1274,7 +1516,15 @@ const AdminAddCandidatePage = () => {
 
                 {/* Add More Files Button */}
                 <label htmlFor="cv-upload-more" className="block">
-                  <div className="w-full px-4 py-2 border border-dashed border-gray-300 rounded-lg text-xs font-medium text-gray-600 hover:border-blue-600 hover:text-blue-600 transition-colors text-center cursor-pointer flex items-center justify-center gap-2">
+                  <div 
+                    className="w-full px-4 py-2 border border-dashed rounded-lg text-xs font-medium transition-colors text-center cursor-pointer flex items-center justify-center gap-2"
+                    onMouseEnter={() => setHoveredAddMoreButton(true)}
+                    onMouseLeave={() => setHoveredAddMoreButton(false)}
+                    style={{
+                      borderColor: hoveredAddMoreButton ? '#2563eb' : '#d1d5db',
+                      color: hoveredAddMoreButton ? '#2563eb' : '#4b5563'
+                    }}
+                  >
                     <Plus className="w-3.5 h-3.5" /> Thêm file PDF
                   </div>
                   <input
@@ -1290,17 +1540,20 @@ const AdminAddCandidatePage = () => {
 
                 {/* Parsing Progress */}
                 {isParsing && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="rounded-lg p-3 border" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-                      <p className="text-xs font-medium text-blue-800">
+                      <div className="animate-spin w-4 h-4 border-2 rounded-full" style={{ borderColor: '#2563eb', borderTopColor: 'transparent' }}></div>
+                      <p className="text-xs font-medium" style={{ color: '#1e40af' }}>
                         Đang phân tích CV bằng AI... ({parseProgress.current}/{parseProgress.total})
                       </p>
                     </div>
-                    <div className="w-full bg-blue-200 rounded-full h-1.5">
+                    <div className="w-full rounded-full h-1.5" style={{ backgroundColor: '#bfdbfe' }}>
                       <div
-                        className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
-                        style={{ width: `${(parseProgress.current / parseProgress.total) * 100}%` }}
+                        className="h-1.5 rounded-full transition-all duration-300"
+                        style={{ 
+                          width: `${(parseProgress.current / parseProgress.total) * 100}%`,
+                          backgroundColor: '#2563eb'
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -1308,18 +1561,25 @@ const AdminAddCandidatePage = () => {
 
                 {/* Parse Error */}
                 {parseError && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
-                    <span className="text-red-600 mt-0.5 text-xs">⚠️</span>
-                    <pre className="flex-1 text-xs font-medium text-red-800 whitespace-pre-wrap">{parseError}</pre>
-                    <button type="button" onClick={() => setParseError(null)} className="text-red-600 hover:text-red-800 text-xs">✕</button>
+                  <div className="rounded-lg p-3 border flex items-start gap-2" style={{ backgroundColor: '#fef2f2', borderColor: '#fecaca' }}>
+                    <span className="mt-0.5 text-xs" style={{ color: '#dc2626' }}>⚠️</span>
+                    <pre className="flex-1 text-xs font-medium whitespace-pre-wrap" style={{ color: '#991b1b' }}>{parseError}</pre>
+                    <button 
+                      type="button" 
+                      onClick={() => setParseError(null)} 
+                      className="text-xs"
+                      style={{ color: '#dc2626' }}
+                      onMouseEnter={(e) => e.target.style.color = '#991b1b'}
+                      onMouseLeave={(e) => e.target.style.color = '#dc2626'}
+                    >✕</button>
                   </div>
                 )}
 
                 {/* Parse Success */}
                 {parseSuccess && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2">
-                    <span className="text-green-600 text-xs">✓</span>
-                    <p className="flex-1 text-xs font-medium text-green-800">{parseSuccess}</p>
+                  <div className="rounded-lg p-3 border flex items-center gap-2" style={{ backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' }}>
+                    <span className="text-xs" style={{ color: '#16a34a' }}>✓</span>
+                    <p className="flex-1 text-xs font-medium" style={{ color: '#166534' }}>{parseSuccess}</p>
                   </div>
                 )}
 
@@ -1328,30 +1588,36 @@ const AdminAddCandidatePage = () => {
                   <button
                     type="button"
                     onClick={() => handleRemoveCV()}
-                    className="w-full px-4 py-2 text-xs text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    onMouseEnter={() => setHoveredClearAllButton(true)}
+                    onMouseLeave={() => setHoveredClearAllButton(false)}
+                    className="w-full px-4 py-2 text-xs rounded-lg transition-colors"
+                    style={{
+                      color: '#dc2626',
+                      backgroundColor: hoveredClearAllButton ? '#fef2f2' : 'transparent'
+                    }}
                   >
                     Xóa tất cả file
                   </button>
                 )}
               </div>
             )}
-            {errors.cvFiles && <p className="text-[10px] text-red-500 mt-1">{errors.cvFiles}</p>}
+            {errors.cvFiles && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.cvFiles}</p>}
           </div>
 
           {/* Skills & Certificates */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <Award className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <Award className="w-4 h-4" style={{ color: '#2563eb' }} />
               Kỹ năng & Chứng chỉ (資格)
             </h2>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     JLPT Level - 日本語能力試験
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-xs font-semibold text-gray-600 pointer-events-none">N</span>
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-xs font-semibold pointer-events-none" style={{ color: '#4b5563' }}>N</span>
                     <input
                       type="number"
                       name="jlptLevel"
@@ -1360,13 +1626,25 @@ const AdminAddCandidatePage = () => {
                       min="1"
                       max="5"
                       placeholder="1-5"
-                      className="w-full pl-6 pr-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      className="w-full pl-6 pr-3 py-2 border rounded-lg text-xs"
+                      style={{
+                        borderColor: '#d1d5db',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#2563eb';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#d1d5db';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
-                  <p className="text-[10px] text-gray-500 mt-1">Nhập số từ 1 (N1) đến 5 (N5)</p>
+                  <p className="text-[10px] mt-1" style={{ color: '#6b7280' }}>Nhập số từ 1 (N1) đến 5 (N5)</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Số năm kinh nghiệm - 経験年数
                   </label>
                   <input
@@ -1376,13 +1654,25 @@ const AdminAddCandidatePage = () => {
                     onChange={handleInputChange}
                     placeholder="VD: 3"
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Chuyên ngành - 専門分野
                   </label>
                   <input
@@ -1392,11 +1682,23 @@ const AdminAddCandidatePage = () => {
                     onChange={handleInputChange}
                     placeholder="ID chuyên ngành"
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Bằng cấp - 資格
                   </label>
                   <input
@@ -1406,12 +1708,24 @@ const AdminAddCandidatePage = () => {
                     onChange={handleInputChange}
                     placeholder="ID bằng cấp"
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Kỹ năng kỹ thuật (活かせる経験・知識・技術)
                 </label>
                 <textarea
@@ -1420,11 +1734,23 @@ const AdminAddCandidatePage = () => {
                   onChange={handleInputChange}
                   placeholder="VD: Project Management, React, Python..."
                   rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                  className="w-full px-3 py-2 border rounded-lg text-xs resize-none"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Chứng chỉ (免許・資格)
                 </label>
                 <div className="space-y-2">
@@ -1435,26 +1761,33 @@ const AdminAddCandidatePage = () => {
                         value={cert.year}
                         onChange={(e) => updateCertificate(index, 'year', e.target.value)}
                         placeholder="Năm"
-                        className="w-16 px-2 py-1.5 border border-gray-300 rounded text-xs"
+                        className="w-16 px-2 py-1.5 border rounded text-xs"
+                        style={{ borderColor: '#d1d5db' }}
                       />
                       <input
                         type="text"
                         value={cert.month}
                         onChange={(e) => updateCertificate(index, 'month', e.target.value)}
                         placeholder="Tháng"
-                        className="w-16 px-2 py-1.5 border border-gray-300 rounded text-xs"
+                        className="w-16 px-2 py-1.5 border rounded text-xs"
+                        style={{ borderColor: '#d1d5db' }}
                       />
                       <input
                         type="text"
                         value={cert.name}
                         onChange={(e) => updateCertificate(index, 'name', e.target.value)}
                         placeholder="Tên chứng chỉ"
-                        className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-xs"
+                        className="flex-1 px-2 py-1.5 border rounded text-xs"
+                        style={{ borderColor: '#d1d5db' }}
                       />
                       <button
                         type="button"
                         onClick={() => removeCertificate(index)}
-                        className="text-red-500 hover:text-red-700"
+                        onMouseEnter={() => setHoveredRemoveCertificateButtonIndex(index)}
+                        onMouseLeave={() => setHoveredRemoveCertificateButtonIndex(null)}
+                        style={{
+                          color: hoveredRemoveCertificateButtonIndex === index ? '#b91c1c' : '#ef4444'
+                        }}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -1463,7 +1796,12 @@ const AdminAddCandidatePage = () => {
                   <button
                     type="button"
                     onClick={handleAddCertificate}
-                    className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                    onMouseEnter={() => setHoveredAddCertificateButton(true)}
+                    onMouseLeave={() => setHoveredAddCertificateButton(false)}
+                    className="text-xs flex items-center gap-1"
+                    style={{
+                      color: hoveredAddCertificateButton ? '#1d4ed8' : '#2563eb'
+                    }}
                   >
                     <Plus className="w-3.5 h-3.5" />
                     Thêm chứng chỉ
@@ -1471,7 +1809,7 @@ const AdminAddCandidatePage = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Công cụ đã học - 学習したツール
                 </label>
                 <div className="space-y-2">
@@ -1482,12 +1820,17 @@ const AdminAddCandidatePage = () => {
                         value={tool}
                         onChange={(e) => updateLearnedTool(index, e.target.value)}
                         placeholder="VD: React, Python, Docker..."
-                        className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-xs"
+                        className="flex-1 px-2 py-1.5 border rounded text-xs"
+                        style={{ borderColor: '#d1d5db' }}
                       />
                       <button
                         type="button"
                         onClick={() => removeLearnedTool(index)}
-                        className="text-red-500 hover:text-red-700"
+                        onMouseEnter={() => setHoveredRemoveLearnedToolButtonIndex(index)}
+                        onMouseLeave={() => setHoveredRemoveLearnedToolButtonIndex(null)}
+                        style={{
+                          color: hoveredRemoveLearnedToolButtonIndex === index ? '#b91c1c' : '#ef4444'
+                        }}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -1496,7 +1839,12 @@ const AdminAddCandidatePage = () => {
                   <button
                     type="button"
                     onClick={handleAddLearnedTool}
-                    className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                    onMouseEnter={() => setHoveredAddLearnedToolButton(true)}
+                    onMouseLeave={() => setHoveredAddLearnedToolButton(false)}
+                    className="text-xs flex items-center gap-1"
+                    style={{
+                      color: hoveredAddLearnedToolButton ? '#1d4ed8' : '#2563eb'
+                    }}
                   >
                     <Plus className="w-3.5 h-3.5" />
                     Thêm công cụ đã học
@@ -1504,7 +1852,7 @@ const AdminAddCandidatePage = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Công cụ có kinh nghiệm - 経験のあるツール
                 </label>
                 <div className="space-y-2">
@@ -1515,12 +1863,17 @@ const AdminAddCandidatePage = () => {
                         value={tool}
                         onChange={(e) => updateExperienceTool(index, e.target.value)}
                         placeholder="VD: AWS, Kubernetes, TypeScript..."
-                        className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-xs"
+                        className="flex-1 px-2 py-1.5 border rounded text-xs"
+                        style={{ borderColor: '#d1d5db' }}
                       />
                       <button
                         type="button"
                         onClick={() => removeExperienceTool(index)}
-                        className="text-red-500 hover:text-red-700"
+                        onMouseEnter={() => setHoveredRemoveExperienceToolButtonIndex(index)}
+                        onMouseLeave={() => setHoveredRemoveExperienceToolButtonIndex(null)}
+                        style={{
+                          color: hoveredRemoveExperienceToolButtonIndex === index ? '#b91c1c' : '#ef4444'
+                        }}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -1529,7 +1882,12 @@ const AdminAddCandidatePage = () => {
                   <button
                     type="button"
                     onClick={handleAddExperienceTool}
-                    className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                    onMouseEnter={() => setHoveredAddExperienceToolButton(true)}
+                    onMouseLeave={() => setHoveredAddExperienceToolButton(false)}
+                    className="text-xs flex items-center gap-1"
+                    style={{
+                      color: hoveredAddExperienceToolButton ? '#1d4ed8' : '#2563eb'
+                    }}
                   >
                     <Plus className="w-3.5 h-3.5" />
                     Thêm công cụ có kinh nghiệm
@@ -1540,14 +1898,14 @@ const AdminAddCandidatePage = () => {
           </div>
 
           {/* Self Introduction */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <UserCircle className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <UserCircle className="w-4 h-4" style={{ color: '#2563eb' }} />
               Giới thiệu bản thân (自己PR)
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Tóm tắt nghề nghiệp (職務要約)
                 </label>
                 <textarea
@@ -1556,11 +1914,23 @@ const AdminAddCandidatePage = () => {
                   onChange={handleInputChange}
                   placeholder="Tóm tắt kinh nghiệm làm việc..."
                   rows="2"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                  className="w-full px-3 py-2 border rounded-lg text-xs resize-none"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Điểm mạnh (自己PR)
                 </label>
                 <textarea
@@ -1569,11 +1939,23 @@ const AdminAddCandidatePage = () => {
                   onChange={handleInputChange}
                   placeholder="Điểm mạnh của bạn..."
                   rows="2"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                  className="w-full px-3 py-2 border rounded-lg text-xs resize-none"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Động lực ứng tuyển (志望動機)
                 </label>
                 <textarea
@@ -1582,19 +1964,31 @@ const AdminAddCandidatePage = () => {
                   onChange={handleInputChange}
                   placeholder="Lý do muốn ứng tuyển..."
                   rows="2"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                  className="w-full px-3 py-2 border rounded-lg text-xs resize-none"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
             </div>
           </div>
 
           {/* Preferences */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 pb-3 border-b border-gray-200">Mong muốn (希望)</h2>
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Mong muốn (希望)</h2>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Lương hiện tại (現在年収)
                   </label>
                   <input
@@ -1603,11 +1997,23 @@ const AdminAddCandidatePage = () => {
                     value={formData.currentSalary}
                     onChange={handleInputChange}
                     placeholder="VD: 500万円"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Lương mong muốn (希望年収)
                   </label>
                   <input
@@ -1616,12 +2022,24 @@ const AdminAddCandidatePage = () => {
                     value={formData.desiredSalary}
                     onChange={handleInputChange}
                     placeholder="VD: 600万円"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Vị trí mong muốn (希望職種)
                 </label>
                 <input
@@ -1630,12 +2048,24 @@ const AdminAddCandidatePage = () => {
                   value={formData.desiredPosition}
                   onChange={handleInputChange}
                   placeholder="VD: Software Engineer"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full px-3 py-2 border rounded-lg text-xs"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Địa điểm (希望勤務地)
                   </label>
                   <input
@@ -1644,11 +2074,23 @@ const AdminAddCandidatePage = () => {
                     value={formData.desiredLocation}
                     onChange={handleInputChange}
                     placeholder="VD: Tokyo"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Ngày bắt đầu (希望入社日)
                   </label>
                   <input
@@ -1657,7 +2099,19 @@ const AdminAddCandidatePage = () => {
                     value={formData.desiredStartDate}
                     onChange={handleInputChange}
                     placeholder="VD: 2025年4月"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
@@ -1667,11 +2121,17 @@ const AdminAddCandidatePage = () => {
       </form>
 
       {/* Action Buttons */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-end gap-3">
+      <div className="rounded-lg border p-4 flex items-center justify-end gap-3" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <button
           type="button"
           onClick={handleCancel}
-          className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center gap-2"
+          onMouseEnter={() => setHoveredCancelButton(true)}
+          onMouseLeave={() => setHoveredCancelButton(false)}
+          className="px-5 py-2.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2"
+          style={{
+            backgroundColor: hoveredCancelButton ? '#e5e7eb' : '#f3f4f6',
+            color: '#374151'
+          }}
         >
           <X className="w-3.5 h-3.5" />
           Hủy
@@ -1680,7 +2140,17 @@ const AdminAddCandidatePage = () => {
           type="submit"
           onClick={handleSubmit}
           disabled={loading}
-          className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          onMouseEnter={() => !loading && setHoveredSaveButton(true)}
+          onMouseLeave={() => setHoveredSaveButton(false)}
+          className="px-5 py-2.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2"
+          style={{
+            backgroundColor: loading 
+              ? '#93c5fd' 
+              : (hoveredSaveButton ? '#1d4ed8' : '#2563eb'),
+            color: 'white',
+            opacity: loading ? 0.5 : 1,
+            cursor: loading ? 'not-allowed' : 'pointer'
+          }}
         >
           <Save className="w-3.5 h-3.5" />
           {loading ? (candidateId ? 'Đang cập nhật...' : 'Đang lưu...') : (candidateId ? 'Cập nhật ứng viên' : 'Lưu ứng viên')}

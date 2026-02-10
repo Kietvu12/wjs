@@ -113,6 +113,15 @@ const JobsDetail = () => {
     company: true,
   });
 
+  // Hover states
+  const [hoveredBackButton, setHoveredBackButton] = useState(false);
+  const [hoveredCollapsibleCard, setHoveredCollapsibleCard] = useState({});
+  const [hoveredSuggestButton, setHoveredSuggestButton] = useState(false);
+  const [hoveredCopyButton, setHoveredCopyButton] = useState(false);
+  const [hoveredDownloadButton, setHoveredDownloadButton] = useState(false);
+  const [hoveredSaveButton, setHoveredSaveButton] = useState(false);
+  const [hoveredBackToListButton, setHoveredBackToListButton] = useState(false);
+
   useEffect(() => {
     loadJobDetail();
   }, [jobId]);
@@ -171,27 +180,31 @@ const JobsDetail = () => {
     className = ''
   }) => {
     const isExpanded = expandedSections[sectionKey] ?? defaultExpanded;
+    const isHovered = hoveredCollapsibleCard[sectionKey] || false;
     
     return (
-      <div className={`bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow ${className}`}>
+      <div className={`rounded-xl transition-shadow ${className}`} style={{ backgroundColor: 'white', borderColor: '#e5e7eb', borderWidth: '1px', borderStyle: 'solid', boxShadow: isHovered ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }} onMouseEnter={() => setHoveredCollapsibleCard(prev => ({ ...prev, [sectionKey]: true }))} onMouseLeave={() => setHoveredCollapsibleCard(prev => ({ ...prev, [sectionKey]: false }))}>
         <button
           onClick={() => toggleSection(sectionKey)}
-          className="w-full flex items-center justify-between p-5 sm:p-6 hover:bg-gray-50 transition-colors rounded-t-xl"
+          className="w-full flex items-center justify-between p-5 sm:p-6 transition-colors rounded-t-xl"
+          style={{
+            backgroundColor: isHovered ? '#f9fafb' : 'transparent'
+          }}
         >
           <div className="flex items-center gap-3 sm:gap-4">
-            {Icon && <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />}
-            <h2 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 text-left">
+            {Icon && <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" style={{ color: '#2563eb' }} />}
+            <h2 className="text-base sm:text-lg lg:text-xl font-bold text-left" style={{ color: '#111827' }}>
               {title}
             </h2>
           </div>
           {isExpanded ? (
-            <ChevronUp className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500 flex-shrink-0 transition-transform" />
+            <ChevronUp className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 transition-transform" style={{ color: '#6b7280' }} />
           ) : (
-            <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500 flex-shrink-0 transition-transform" />
+            <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 transition-transform" style={{ color: '#6b7280' }} />
           )}
         </button>
         {isExpanded && (
-          <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-4 border-t border-gray-100">
+          <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-4 border-t" style={{ borderColor: '#f3f4f6' }}>
             {children}
           </div>
         )}
@@ -201,10 +214,10 @@ const JobsDetail = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full bg-white">
+      <div className="flex items-center justify-center h-full" style={{ backgroundColor: 'white' }}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Đang tải thông tin việc làm...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#2563eb' }}></div>
+          <p style={{ color: '#4b5563' }}>Đang tải thông tin việc làm...</p>
         </div>
       </div>
     );
@@ -212,12 +225,18 @@ const JobsDetail = () => {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-full bg-white">
+      <div className="flex items-center justify-center h-full" style={{ backgroundColor: 'white' }}>
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
+          <p className="mb-4" style={{ color: '#ef4444' }}>{error}</p>
           <button
             onClick={() => navigate('/agent/jobs')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            onMouseEnter={() => setHoveredBackToListButton(true)}
+            onMouseLeave={() => setHoveredBackToListButton(false)}
+            className="px-4 py-2 rounded-lg transition-colors"
+            style={{
+              backgroundColor: hoveredBackToListButton ? '#1d4ed8' : '#2563eb',
+              color: 'white'
+            }}
           >
             Quay lại danh sách việc làm
           </button>
@@ -367,12 +386,12 @@ const JobsDetail = () => {
     return 'Liên hệ';
   };
 
-  // Helper function to get tag color class
-  const getTagColorClass = (color) => {
+  // Helper function to get tag color style
+  const getTagColorStyle = (color) => {
     const colors = {
-      green: 'bg-green-100 text-green-800 border-green-300',
-      orange: 'bg-orange-100 text-orange-800 border-orange-300',
-      blue: 'bg-blue-100 text-blue-800 border-blue-300',
+      green: { backgroundColor: '#dcfce7', color: '#166534', borderColor: '#86efac' },
+      orange: { backgroundColor: '#fed7aa', color: '#9a3412', borderColor: '#fdba74' },
+      blue: { backgroundColor: '#dbeafe', color: '#1e40af', borderColor: '#93c5fd' },
     };
     return colors[color] || colors.green;
   };
@@ -413,23 +432,28 @@ const JobsDetail = () => {
           background: #a0aec0;
         }
       `}</style>
-      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-full overflow-hidden bg-gray-50 p-4 sm:p-5 lg:p-6">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-full overflow-hidden p-4 sm:p-5 lg:p-6" style={{ backgroundColor: '#f9fafb' }}>
       {/* Main Content - Left Column */}
       <div className="flex-1 overflow-y-auto min-w-0 custom-scrollbar">
         <div className="w-full max-w-none space-y-5">
           {/* Header Section */}
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 sm:p-6">
+          <div className="rounded-xl shadow-sm p-5 sm:p-6" style={{ backgroundColor: 'white', borderColor: '#e5e7eb', borderWidth: '1px', borderStyle: 'solid' }}>
             <button
               onClick={() => navigate('/agent/jobs')}
-              className="mb-5 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors text-sm sm:text-base group"
+              onMouseEnter={() => setHoveredBackButton(true)}
+              onMouseLeave={() => setHoveredBackButton(false)}
+              className="mb-5 flex items-center gap-2 transition-colors text-sm sm:text-base group"
+              style={{
+                color: hoveredBackButton ? '#111827' : '#4b5563'
+              }}
             >
-              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform" />
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 transition-transform" style={{ transform: hoveredBackButton ? 'translateX(-4px)' : 'translateX(0)' }} />
               <span>Quay lại</span>
             </button>
 
             {/* Job ID */}
-            <div className="text-xs sm:text-sm text-gray-500 mb-3">
-              ID công việc: <span className="text-gray-700 font-semibold">{job.jobCode || job.id}</span>
+            <div className="text-xs sm:text-sm mb-3" style={{ color: '#6b7280' }}>
+              ID công việc: <span className="font-semibold" style={{ color: '#374151' }}>{job.jobCode || job.id}</span>
             </div>
 
             {/* Tags */}
@@ -438,7 +462,8 @@ const JobsDetail = () => {
                 {jobTags.map((tag, index) => (
                   <span
                     key={index}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${getTagColorClass(tag.color)}`}
+                    className="px-3 py-1.5 rounded-full text-xs font-semibold border"
+                    style={getTagColorStyle(tag.color)}
                   >
                     {tag.label}
                   </span>
@@ -447,23 +472,23 @@ const JobsDetail = () => {
             )}
 
             {/* Job Title */}
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600 mb-4 leading-tight">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 leading-tight" style={{ color: '#2563eb' }}>
               {job.title}
             </h1>
 
             {/* Category */}
             {job.category && (
-              <div className="text-xs sm:text-sm text-gray-700 mb-3">
-                <span className="font-semibold text-gray-600">Phân loại công việc:</span>
+              <div className="text-xs sm:text-sm mb-3" style={{ color: '#374151' }}>
+                <span className="font-semibold" style={{ color: '#4b5563' }}>Phân loại công việc:</span>
                 <span className="ml-2">{job.category.name}</span>
               </div>
             )}
 
             {/* Company Name */}
             <div className="flex items-start gap-2 mb-4">
-              <Building2 className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-              <div className="text-xs sm:text-sm text-gray-700">
-                <span className="font-semibold text-gray-600">Các công ty tuyển dụng:</span>
+              <Building2 className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#6b7280' }} />
+              <div className="text-xs sm:text-sm" style={{ color: '#374151' }}>
+                <span className="font-semibold" style={{ color: '#4b5563' }}>Các công ty tuyển dụng:</span>
                 <span className="ml-2">{job.recruitingCompany?.companyName || 'N/A'}</span>
               </div>
             </div>
@@ -474,7 +499,8 @@ const JobsDetail = () => {
                 {jobFeatures.map((feature, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs sm:text-sm font-medium border border-blue-200"
+                    className="px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium border"
+                    style={{ backgroundColor: '#eff6ff', color: '#1e40af', borderColor: '#bfdbfe' }}
                   >
                     {feature}
                   </span>
@@ -485,20 +511,20 @@ const JobsDetail = () => {
 
           {/* Date Information */}
           {(updatedAt || publishedAt) && (
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 sm:p-5">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 text-xs sm:text-sm text-gray-600">
+            <div className="rounded-xl shadow-sm p-4 sm:p-5" style={{ backgroundColor: 'white', borderColor: '#e5e7eb', borderWidth: '1px', borderStyle: 'solid' }}>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 text-xs sm:text-sm" style={{ color: '#4b5563' }}>
                 {updatedAt && (
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#6b7280' }} />
                     <span className="font-medium">Ngày cập nhật {updatedAt}</span>
                   </div>
                 )}
                 {updatedAt && publishedAt && (
-                  <div className="hidden sm:block h-5 w-px bg-gray-300"></div>
+                  <div className="hidden sm:block h-5 w-px" style={{ backgroundColor: '#d1d5db' }}></div>
                 )}
                 {publishedAt && (
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#6b7280' }} />
                     <span className="font-medium">Ngày xuất bản {publishedAt}</span>
                   </div>
                 )}
@@ -507,9 +533,9 @@ const JobsDetail = () => {
           )}
 
           {/* Orange Notice Box */}
-          <div className="bg-orange-50 border-2 border-orange-300 rounded-xl p-4 sm:p-5 flex items-start gap-3 shadow-sm">
-            <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-            <div className="text-xs sm:text-sm text-orange-900">
+          <div className="rounded-xl p-4 sm:p-5 flex items-start gap-3 shadow-sm" style={{ backgroundColor: '#fff7ed', borderColor: '#fdba74', borderWidth: '2px', borderStyle: 'solid' }}>
+            <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 mt-0.5" style={{ color: '#ea580c' }} />
+            <div className="text-xs sm:text-sm" style={{ color: '#9a3412' }}>
               <p className="font-bold mb-2 text-sm sm:text-base">Thông báo quan trọng</p>
               <p className="leading-relaxed">
                 Thông tin trong các mục được đánh dấu bằng dấu này là dành cho đại lý. Hãy cẩn thận đừng chia sẻ với các ứng viên. 
@@ -529,8 +555,8 @@ const JobsDetail = () => {
               {/* Job Description */}
               {job.description && (
                 <div>
-                  <div className="text-xs sm:text-sm font-bold text-gray-800 mb-3">Nội dung công việc:</div>
-                  <div className="text-gray-700 leading-relaxed whitespace-pre-line text-xs sm:text-sm">
+                  <div className="text-xs sm:text-sm font-bold mb-3" style={{ color: '#1f2937' }}>Nội dung công việc:</div>
+                  <div className="leading-relaxed whitespace-pre-line text-xs sm:text-sm" style={{ color: '#374151' }}>
                     {stripHtml(job.description)}
                   </div>
                 </div>
@@ -539,11 +565,11 @@ const JobsDetail = () => {
               {/* Salary Range */}
               {salaryRanges.length > 0 && (
                 <div>
-                  <div className="text-xs sm:text-sm font-bold text-gray-800 mb-3">Mức lương:</div>
-                  <ul className="space-y-2 text-xs sm:text-sm text-gray-600">
+                  <div className="text-xs sm:text-sm font-bold mb-3" style={{ color: '#1f2937' }}>Mức lương:</div>
+                  <ul className="space-y-2 text-xs sm:text-sm" style={{ color: '#4b5563' }}>
                     {salaryRanges.map((salary, index) => (
                       <li key={index} className="flex items-start gap-2">
-                        <span className="text-blue-600 mt-1">•</span>
+                        <span className="mt-1" style={{ color: '#2563eb' }}>•</span>
                         <span>{salary}</span>
                       </li>
                     ))}
@@ -552,78 +578,78 @@ const JobsDetail = () => {
               )}
 
               {/* Quick Info Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t" style={{ borderColor: '#e5e7eb' }}>
                 {/* Annual Income */}
                 {salaryRanges.length > 0 && (
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  <div className="rounded-lg p-3" style={{ backgroundColor: '#f9fafb' }}>
+                    <div className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#6b7280' }}>
                       Thu nhập hàng năm
                     </div>
-                    <div className="text-sm sm:text-base font-bold text-gray-900">{getAverageSalary()}</div>
+                    <div className="text-sm sm:text-base font-bold" style={{ color: '#111827' }}>{getAverageSalary()}</div>
                   </div>
                 )}
 
                 {/* Age */}
                 {job.ageRange && (
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  <div className="rounded-lg p-3" style={{ backgroundColor: '#f9fafb' }}>
+                    <div className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#6b7280' }}>
                       Tuổi
                     </div>
-                    <div className="text-sm sm:text-base font-bold text-gray-900">{job.ageRange}</div>
+                    <div className="text-sm sm:text-base font-bold" style={{ color: '#111827' }}>{job.ageRange}</div>
                   </div>
                 )}
 
                 {/* Nationality */}
                 {job.nationality && (
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  <div className="rounded-lg p-3" style={{ backgroundColor: '#f9fafb' }}>
+                    <div className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#6b7280' }}>
                       Quốc tịch
                     </div>
-                    <div className="text-sm sm:text-base font-bold text-gray-900">{job.nationality}</div>
+                    <div className="text-sm sm:text-base font-bold" style={{ color: '#111827' }}>{job.nationality}</div>
                   </div>
                 )}
 
                 {/* Application Category */}
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                <div className="rounded-lg p-3" style={{ backgroundColor: '#f9fafb' }}>
+                  <div className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#6b7280' }}>
                     Danh mục ứng dụng
                   </div>
-                  <div className="text-sm sm:text-base font-bold text-gray-900">Giữa chừng</div>
+                  <div className="text-sm sm:text-base font-bold" style={{ color: '#111827' }}>Giữa chừng</div>
                 </div>
 
                 {/* Number of Companies */}
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                <div className="rounded-lg p-3" style={{ backgroundColor: '#f9fafb' }}>
+                  <div className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#6b7280' }}>
                     Số lượng công ty có kinh nghiệm
                   </div>
-                  <div className="text-sm sm:text-base font-bold text-gray-900">Không có câu hỏi</div>
+                  <div className="text-sm sm:text-base font-bold" style={{ color: '#111827' }}>Không có câu hỏi</div>
                 </div>
 
                 {/* Gender */}
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                <div className="rounded-lg p-3" style={{ backgroundColor: '#f9fafb' }}>
+                  <div className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#6b7280' }}>
                     Tình dục
                   </div>
-                  <div className="text-sm sm:text-base font-bold text-gray-900">Không có câu hỏi</div>
+                  <div className="text-sm sm:text-base font-bold" style={{ color: '#111827' }}>Không có câu hỏi</div>
                 </div>
 
                 {/* Education Level */}
                 {job.educationLevel && (
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  <div className="rounded-lg p-3" style={{ backgroundColor: '#f9fafb' }}>
+                    <div className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#6b7280' }}>
                       Trình độ học vấn
                     </div>
-                    <div className="text-sm sm:text-base font-bold text-gray-900">{job.educationLevel}</div>
+                    <div className="text-sm sm:text-base font-bold" style={{ color: '#111827' }}>{job.educationLevel}</div>
                   </div>
                 )}
 
                 {/* Workplace */}
                 {workingLocations.length > 0 && (
-                  <div className="sm:col-span-2 bg-gray-50 rounded-lg p-3">
-                    <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  <div className="sm:col-span-2 rounded-lg p-3" style={{ backgroundColor: '#f9fafb' }}>
+                    <div className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#6b7280' }}>
                       Nơi làm việc
                     </div>
-                    <div className="text-sm sm:text-base font-bold text-gray-900 leading-relaxed">
+                    <div className="text-sm sm:text-base font-bold leading-relaxed" style={{ color: '#111827' }}>
                       {workingLocations.slice(0, 3).join(', ')}
                       {workingLocations.length > 3 && `, ${workingLocations.length - 3} trường hợp khác`}
                     </div>
@@ -643,57 +669,57 @@ const JobsDetail = () => {
             <div className="space-y-6 pt-2">
               {/* Candidate Profile (Thông số kỹ thuật) */}
               <div>
-                <div className="text-xs sm:text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-600" />
+                <div className="text-xs sm:text-sm font-bold mb-3 flex items-center gap-2" style={{ color: '#111827' }}>
+                  <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: '#ea580c' }} />
                   Thông số kỹ thuật
                 </div>
                 <div className="space-y-3 text-xs sm:text-sm">
                   {/* Age */}
                   {job.ageRange && (
                     <div className="flex items-start gap-2">
-                      <span className="text-gray-500 min-w-[120px]">Tuổi:</span>
-                      <span className="text-gray-900 font-medium">{job.ageRange}</span>
+                      <span className="min-w-[120px]" style={{ color: '#6b7280' }}>Tuổi:</span>
+                      <span className="font-medium" style={{ color: '#111827' }}>{job.ageRange}</span>
                     </div>
                   )}
 
                   {/* Number of Companies */}
                   <div className="flex items-start gap-2">
-                    <span className="text-gray-500 min-w-[120px]">Số lượng công ty có kinh nghiệm:</span>
-                    <span className="text-gray-900 font-medium">Không có câu hỏi</span>
+                    <span className="min-w-[120px]" style={{ color: '#6b7280' }}>Số lượng công ty có kinh nghiệm:</span>
+                    <span className="font-medium" style={{ color: '#111827' }}>Không có câu hỏi</span>
                   </div>
 
                   {/* Education */}
                   {job.educationLevel && (
                     <div className="flex items-start gap-2">
-                      <span className="text-gray-500 min-w-[120px]">Trình độ học vấn:</span>
-                      <span className="text-gray-900 font-medium">{job.educationLevel}</span>
+                      <span className="min-w-[120px]" style={{ color: '#6b7280' }}>Trình độ học vấn:</span>
+                      <span className="font-medium" style={{ color: '#111827' }}>{job.educationLevel}</span>
                     </div>
                   )}
 
                   {/* Gender */}
                   <div className="flex items-start gap-2">
-                    <span className="text-gray-500 min-w-[120px]">Giới tính:</span>
-                    <span className="text-gray-900 font-medium">Không có câu hỏi</span>
+                    <span className="min-w-[120px]" style={{ color: '#6b7280' }}>Giới tính:</span>
+                    <span className="font-medium" style={{ color: '#111827' }}>Không có câu hỏi</span>
                   </div>
 
                   {/* Nationality */}
                   {job.nationality && (
                     <div className="flex items-start gap-2">
-                      <span className="text-gray-500 min-w-[120px]">Quốc tịch:</span>
-                      <span className="text-gray-900 font-medium">{job.nationality}</span>
+                      <span className="min-w-[120px]" style={{ color: '#6b7280' }}>Quốc tịch:</span>
+                      <span className="font-medium" style={{ color: '#111827' }}>{job.nationality}</span>
                     </div>
                   )}
 
                   {/* Industry Experience */}
                   <div className="flex items-start gap-2">
-                    <span className="text-gray-500 min-w-[120px]">Số năm kinh nghiệm (ngành):</span>
-                    <span className="text-gray-900 font-medium">Không cho phép kinh nghiệm trong ngành</span>
+                    <span className="min-w-[120px]" style={{ color: '#6b7280' }}>Số năm kinh nghiệm (ngành):</span>
+                    <span className="font-medium" style={{ color: '#111827' }}>Không cho phép kinh nghiệm trong ngành</span>
                   </div>
 
                   {/* Other Experiences */}
                   <div className="flex items-start gap-2">
-                    <span className="text-gray-500 min-w-[120px]">Kinh nghiệm khác:</span>
-                    <span className="text-gray-900 font-medium">Không có (hoàn toàn thiếu kinh nghiệm OK)</span>
+                    <span className="min-w-[120px]" style={{ color: '#6b7280' }}>Kinh nghiệm khác:</span>
+                    <span className="font-medium" style={{ color: '#111827' }}>Không có (hoàn toàn thiếu kinh nghiệm OK)</span>
                   </div>
                 </div>
               </div>
@@ -701,21 +727,21 @@ const JobsDetail = () => {
               {/* Required (Bắt buộc) */}
               {(techniqueRequirements.length > 0 || applicationConditions.length > 0) && (
                 <div>
-                  <div className="text-xs sm:text-sm font-bold text-gray-900 mb-3">Bắt buộc</div>
+                  <div className="text-xs sm:text-sm font-bold mb-3" style={{ color: '#111827' }}>Bắt buộc</div>
                   <div className="space-y-3 text-xs sm:text-sm">
                     {/* Required Years of Experience */}
                     <div className="flex items-start gap-2">
-                      <span className="text-gray-500 min-w-[120px]">Số năm kinh nghiệm (loại công việc):</span>
-                      <span className="text-gray-900 font-medium">Không có kinh nghiệm trong bất kỳ loại công việc OK</span>
+                      <span className="min-w-[120px]" style={{ color: '#6b7280' }}>Số năm kinh nghiệm (loại công việc):</span>
+                      <span className="font-medium" style={{ color: '#111827' }}>Không có kinh nghiệm trong bất kỳ loại công việc OK</span>
                     </div>
 
                     {/* Application Conditions */}
                     {applicationConditions.length > 0 && (
                       <div>
-                        <div className="text-gray-500 mb-2">Điều kiện ứng dụng:</div>
+                        <div className="mb-2" style={{ color: '#6b7280' }}>Điều kiện ứng dụng:</div>
                         <ul className="space-y-1 ml-4">
                           {applicationConditions.map((condition, index) => (
-                            <li key={index} className="text-gray-900">
+                            <li key={index} style={{ color: '#111827' }}>
                               ■ {condition}
                             </li>
                           ))}
@@ -726,10 +752,10 @@ const JobsDetail = () => {
                     {/* Technique Requirements as Application Conditions */}
                     {techniqueRequirements.length > 0 && applicationConditions.length === 0 && (
                       <div>
-                        <div className="text-gray-500 mb-2">Điều kiện ứng dụng:</div>
+                        <div className="mb-2" style={{ color: '#6b7280' }}>Điều kiện ứng dụng:</div>
                         <ul className="space-y-1 ml-4">
                           {techniqueRequirements.map((req, index) => (
-                            <li key={index} className="text-gray-900">
+                            <li key={index} style={{ color: '#111827' }}>
                               ■ {req.content}
                             </li>
                           ))}
@@ -743,8 +769,8 @@ const JobsDetail = () => {
               {/* Welcome Conditions */}
               {welcomeConditions.length > 0 && (
                 <div>
-                  <div className="text-xs sm:text-sm font-bold text-gray-900 mb-3">Điều kiện chào mừng</div>
-                  <ul className="space-y-1 text-xs sm:text-sm text-gray-600 ml-4">
+                  <div className="text-xs sm:text-sm font-bold mb-3" style={{ color: '#111827' }}>Điều kiện chào mừng</div>
+                  <ul className="space-y-1 text-xs sm:text-sm ml-4" style={{ color: '#4b5563' }}>
                     {welcomeConditions.map((condition, index) => (
                       <li key={index}>• {condition}</li>
                     ))}
@@ -755,8 +781,8 @@ const JobsDetail = () => {
               {/* Disqualifications (Mục tiêu NG) */}
               {disqualifications.length > 0 && (
                 <div>
-                  <div className="text-xs sm:text-sm font-bold text-gray-900 mb-3">Mục tiêu NG</div>
-                  <ul className="space-y-1 text-xs sm:text-sm text-gray-600 ml-4">
+                  <div className="text-xs sm:text-sm font-bold mb-3" style={{ color: '#111827' }}>Mục tiêu NG</div>
+                  <ul className="space-y-1 text-xs sm:text-sm ml-4" style={{ color: '#4b5563' }}>
                     {disqualifications.map((item, index) => (
                       <li key={index}>• {item}</li>
                     ))}
@@ -774,7 +800,7 @@ const JobsDetail = () => {
               sectionKey="location"
               defaultExpanded={true}
             >
-              <div className="space-y-2 pt-2 text-xs sm:text-sm text-gray-600">
+              <div className="space-y-2 pt-2 text-xs sm:text-sm" style={{ color: '#4b5563' }}>
                 {workingLocations.map((location, index) => (
                   <div key={index} className="leading-relaxed whitespace-pre-line">
                     {location.includes('•') ? location : `• ${location}`}
@@ -795,11 +821,11 @@ const JobsDetail = () => {
               <div className="space-y-4 pt-2">
                 {benefits.length > 0 && (
                   <div>
-                    <div className="text-xs sm:text-sm font-semibold text-gray-700 mb-2">Phúc lợi:</div>
-                    <ul className="space-y-2 text-xs sm:text-sm text-gray-600">
+                    <div className="text-xs sm:text-sm font-semibold mb-2" style={{ color: '#374151' }}>Phúc lợi:</div>
+                    <ul className="space-y-2 text-xs sm:text-sm" style={{ color: '#4b5563' }}>
                       {benefits.map((benefit, index) => (
                         <li key={index} className="flex items-start gap-2">
-                          <span className="text-gray-400 mt-1 flex-shrink-0">•</span>
+                          <span className="mt-1 flex-shrink-0" style={{ color: '#9ca3af' }}>•</span>
                           <span className="flex-1">{benefit}</span>
                         </li>
                       ))}
@@ -809,8 +835,8 @@ const JobsDetail = () => {
 
                 {workingHours.length > 0 && (
                   <div>
-                    <div className="text-xs sm:text-sm font-semibold text-gray-700 mb-2">Thời gian làm việc:</div>
-                    <ul className="space-y-1 text-xs sm:text-sm text-gray-600">
+                    <div className="text-xs sm:text-sm font-semibold mb-2" style={{ color: '#374151' }}>Thời gian làm việc:</div>
+                    <ul className="space-y-1 text-xs sm:text-sm" style={{ color: '#4b5563' }}>
                       {workingHours.map((hour, index) => (
                         <li key={index}>• {hour}</li>
                       ))}
@@ -820,8 +846,8 @@ const JobsDetail = () => {
 
                 {overtimeAllowances.length > 0 && (
                   <div>
-                    <div className="text-xs sm:text-sm font-semibold text-gray-700 mb-2">Phụ cấp làm thêm:</div>
-                    <ul className="space-y-1 text-xs sm:text-sm text-gray-600">
+                    <div className="text-xs sm:text-sm font-semibold mb-2" style={{ color: '#374151' }}>Phụ cấp làm thêm:</div>
+                    <ul className="space-y-1 text-xs sm:text-sm" style={{ color: '#4b5563' }}>
                       {overtimeAllowances.map((allowance, index) => (
                         <li key={index}>• {allowance}</li>
                       ))}
@@ -831,8 +857,8 @@ const JobsDetail = () => {
 
                 {smokingPolicies.length > 0 && (
                   <div>
-                    <div className="text-xs sm:text-sm font-semibold text-gray-700 mb-2">Chính sách hút thuốc:</div>
-                    <ul className="space-y-1 text-xs sm:text-sm text-gray-600">
+                    <div className="text-xs sm:text-sm font-semibold mb-2" style={{ color: '#374151' }}>Chính sách hút thuốc:</div>
+                    <ul className="space-y-1 text-xs sm:text-sm" style={{ color: '#4b5563' }}>
                       {smokingPolicies.map((policy, index) => (
                         <li key={index}>• {policy}</li>
                       ))}
@@ -842,8 +868,8 @@ const JobsDetail = () => {
 
                 {smokingPolicyDetails.length > 0 && (
                   <div>
-                    <div className="text-xs sm:text-sm font-semibold text-gray-700 mb-2">Chi tiết chính sách hút thuốc:</div>
-                    <ul className="space-y-1 text-xs sm:text-sm text-gray-600">
+                    <div className="text-xs sm:text-sm font-semibold mb-2" style={{ color: '#374151' }}>Chi tiết chính sách hút thuốc:</div>
+                    <ul className="space-y-1 text-xs sm:text-sm" style={{ color: '#4b5563' }}>
                       {smokingPolicyDetails.map((detail, index) => (
                         <li key={index}>• {detail}</li>
                       ))}
@@ -862,7 +888,7 @@ const JobsDetail = () => {
               sectionKey="interview"
               defaultExpanded={true}
             >
-              <div className="pt-2 text-xs sm:text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+              <div className="pt-2 text-xs sm:text-sm leading-relaxed whitespace-pre-line" style={{ color: '#4b5563' }}>
                 {stripHtml(job.instruction)}
               </div>
             </CollapsibleCard>
@@ -880,10 +906,10 @@ const JobsDetail = () => {
                 {/* Recruiting Company */}
                 {job.recruitingCompany && (
                   <div>
-                    <div className="text-xs sm:text-sm font-semibold text-gray-700 mb-3">Công ty tuyển dụng:</div>
-                    <div className="space-y-2 text-xs sm:text-sm text-gray-600">
+                    <div className="text-xs sm:text-sm font-semibold mb-3" style={{ color: '#374151' }}>Công ty tuyển dụng:</div>
+                    <div className="space-y-2 text-xs sm:text-sm" style={{ color: '#4b5563' }}>
                       {job.recruitingCompany.companyName && (
-                        <div className="font-semibold text-gray-900 text-sm sm:text-base">{job.recruitingCompany.companyName}</div>
+                        <div className="font-semibold text-sm sm:text-base" style={{ color: '#111827' }}>{job.recruitingCompany.companyName}</div>
                       )}
                       {job.recruitingCompany.revenue && (
                         <div>
@@ -907,16 +933,16 @@ const JobsDetail = () => {
                       )}
                     </div>
                     {job.recruitingCompany.companyIntroduction && (
-                      <p className="text-xs sm:text-sm text-gray-600 leading-relaxed mt-3">
+                      <p className="text-xs sm:text-sm leading-relaxed mt-3" style={{ color: '#4b5563' }}>
                         {stripHtml(job.recruitingCompany.companyIntroduction)}
                       </p>
                     )}
                     {job.recruitingCompany.services && job.recruitingCompany.services.length > 0 && (
                       <div className="mt-3">
-                        <div className="text-xs font-medium text-gray-500 mb-2">Dịch vụ:</div>
+                        <div className="text-xs font-medium mb-2" style={{ color: '#6b7280' }}>Dịch vụ:</div>
                         <div className="flex flex-wrap gap-1">
                           {job.recruitingCompany.services.map((service, index) => (
-                            <span key={index} className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs">
+                            <span key={index} className="px-2 py-1 rounded text-xs" style={{ backgroundColor: '#eff6ff', color: '#1e40af' }}>
                               {service.serviceName}
                             </span>
                           ))}
@@ -925,10 +951,10 @@ const JobsDetail = () => {
                     )}
                     {job.recruitingCompany.businessSectors && job.recruitingCompany.businessSectors.length > 0 && (
                       <div className="mt-3">
-                        <div className="text-xs font-medium text-gray-500 mb-2">Lĩnh vực:</div>
+                        <div className="text-xs font-medium mb-2" style={{ color: '#6b7280' }}>Lĩnh vực:</div>
                         <div className="flex flex-wrap gap-1">
                           {job.recruitingCompany.businessSectors.map((sector, index) => (
-                            <span key={index} className="px-2 py-1 bg-green-50 text-green-700 rounded text-xs">
+                            <span key={index} className="px-2 py-1 rounded text-xs" style={{ backgroundColor: '#f0fdf4', color: '#15803d' }}>
                               {sector.sectorName}
                             </span>
                           ))}
@@ -951,7 +977,14 @@ const JobsDetail = () => {
             {/* Suggest Candidate Button - Yellow */}
             <button
               onClick={handleApply}
-              className="w-full bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-gray-900 py-3 px-4 rounded-xl transition-all duration-200 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+              onMouseEnter={() => setHoveredSuggestButton(true)}
+              onMouseLeave={() => setHoveredSuggestButton(false)}
+              className="w-full py-3 px-4 rounded-xl transition-all duration-200 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2"
+              style={{
+                backgroundColor: hoveredSuggestButton ? '#facc15' : '#fbbf24',
+                color: '#111827',
+                boxShadow: hoveredSuggestButton ? '0 10px 15px -3px rgba(0, 0, 0, 0.1)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+              }}
             >
               <UserPlus className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>Đề xuất một ứng cử viên</span>
@@ -960,7 +993,15 @@ const JobsDetail = () => {
             {/* Copy URL Button - Light Blue */}
             <button
               onClick={handleCopyUrl}
-              className="w-full border-2 border-blue-400 bg-white text-blue-600 py-3 px-4 rounded-xl hover:bg-blue-50 active:bg-blue-100 transition-all duration-200 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+              onMouseEnter={() => setHoveredCopyButton(true)}
+              onMouseLeave={() => setHoveredCopyButton(false)}
+              className="w-full border-2 py-3 px-4 rounded-xl transition-all duration-200 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2"
+              style={{
+                borderColor: '#60a5fa',
+                backgroundColor: hoveredCopyButton ? '#eff6ff' : 'white',
+                color: '#2563eb',
+                boxShadow: hoveredCopyButton ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+              }}
             >
               <Copy className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
               <span className="text-center leading-tight">Sao chép URL công việc<br />(dành cho ứng viên)</span>
@@ -972,7 +1013,15 @@ const JobsDetail = () => {
                 // TODO: Implement download functionality
                 console.log('Download job:', jobId);
               }}
-              className="w-full border-2 border-blue-400 bg-white text-blue-600 py-3 px-4 rounded-xl hover:bg-blue-50 active:bg-blue-100 transition-all duration-200 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+              onMouseEnter={() => setHoveredDownloadButton(true)}
+              onMouseLeave={() => setHoveredDownloadButton(false)}
+              className="w-full border-2 py-3 px-4 rounded-xl transition-all duration-200 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2"
+              style={{
+                borderColor: '#60a5fa',
+                backgroundColor: hoveredDownloadButton ? '#eff6ff' : 'white',
+                color: '#2563eb',
+                boxShadow: hoveredDownloadButton ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+              }}
             >
               <Download className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>Tải xuống</span>
@@ -982,7 +1031,15 @@ const JobsDetail = () => {
             {/* Save Button - Light Blue */}
             <button
               onClick={handleToggleFavorite}
-              className="w-full border-2 border-blue-400 bg-white text-blue-600 py-3 px-4 rounded-xl hover:bg-blue-50 active:bg-blue-100 transition-all duration-200 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+              onMouseEnter={() => setHoveredSaveButton(true)}
+              onMouseLeave={() => setHoveredSaveButton(false)}
+              className="w-full border-2 py-3 px-4 rounded-xl transition-all duration-200 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2"
+              style={{
+                borderColor: '#60a5fa',
+                backgroundColor: hoveredSaveButton ? '#eff6ff' : 'white',
+                color: '#2563eb',
+                boxShadow: hoveredSaveButton ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+              }}
             >
               <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${isFavorite ? 'fill-current' : ''}`} />
               <span>Giữ gìn</span>

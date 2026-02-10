@@ -5,7 +5,7 @@ import AdminHeader from './AdminHeader';
 
 const AdminLayout = () => {
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen" style={{ backgroundColor: '#f9fafb' }}>
       <AdminSidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <AdminHeader />

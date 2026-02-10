@@ -48,6 +48,21 @@ const EmailsPage = () => {
     subject: '',
     body: ''
   });
+  
+  // Hover states
+  const [hoveredConnectButton, setHoveredConnectButton] = useState(false);
+  const [hoveredSyncButton, setHoveredSyncButton] = useState(false);
+  const [hoveredConnectionItemIndex, setHoveredConnectionItemIndex] = useState(null);
+  const [hoveredToggleSyncButtonIndex, setHoveredToggleSyncButtonIndex] = useState(null);
+  const [hoveredDeleteConnectionButtonIndex, setHoveredDeleteConnectionButtonIndex] = useState(null);
+  const [hoveredComposeButton, setHoveredComposeButton] = useState(false);
+  const [hoveredEmailItemIndex, setHoveredEmailItemIndex] = useState(null);
+  const [hoveredPaginationPrevButton, setHoveredPaginationPrevButton] = useState(false);
+  const [hoveredPaginationNextButton, setHoveredPaginationNextButton] = useState(false);
+  const [hoveredBackButton, setHoveredBackButton] = useState(false);
+  const [hoveredCloseComposeButton, setHoveredCloseComposeButton] = useState(false);
+  const [hoveredCancelComposeButton, setHoveredCancelComposeButton] = useState(false);
+  const [hoveredSendEmailButton, setHoveredSendEmailButton] = useState(false);
 
   useEffect(() => {
     // Xử lý OAuth callback
@@ -261,13 +276,19 @@ const EmailsPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Quản lý Email Outlook</h2>
-          <p className="text-gray-600">Đồng bộ và quản lý email từ tài khoản Outlook</p>
+          <h2 className="text-2xl font-bold mb-2" style={{ color: '#111827' }}>Quản lý Email Outlook</h2>
+          <p style={{ color: '#4b5563' }}>Đồng bộ và quản lý email từ tài khoản Outlook</p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={handleConnect}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+            onMouseEnter={() => setHoveredConnectButton(true)}
+            onMouseLeave={() => setHoveredConnectButton(false)}
+            className="px-4 py-2 rounded-lg flex items-center gap-2"
+            style={{
+              backgroundColor: hoveredConnectButton ? '#1d4ed8' : '#2563eb',
+              color: 'white'
+            }}
           >
             <Plus className="w-4 h-4" />
             Kết nối Outlook
@@ -276,7 +297,17 @@ const EmailsPage = () => {
             <button
               onClick={handleSync}
               disabled={syncing}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 flex items-center gap-2"
+              onMouseEnter={() => !syncing && setHoveredSyncButton(true)}
+              onMouseLeave={() => setHoveredSyncButton(false)}
+              className="px-4 py-2 rounded-lg flex items-center gap-2"
+              style={{
+                backgroundColor: syncing
+                  ? '#9ca3af'
+                  : (hoveredSyncButton ? '#15803d' : '#16a34a'),
+                color: 'white',
+                opacity: syncing ? 0.6 : 1,
+                cursor: syncing ? 'not-allowed' : 'pointer'
+              }}
             >
               <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
               {syncing ? 'Đang đồng bộ...' : 'Đồng bộ'}
@@ -287,28 +318,32 @@ const EmailsPage = () => {
 
       {/* Connections List */}
       {connections.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">Tài khoản đã kết nối</h3>
+        <div className="rounded-lg shadow p-4" style={{ backgroundColor: 'white' }}>
+          <h3 className="text-lg font-semibold mb-3" style={{ color: '#111827' }}>Tài khoản đã kết nối</h3>
           <div className="space-y-2">
-            {connections.map((conn) => (
+            {connections.map((conn, index) => (
               <div
                 key={conn.id}
-                className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                  selectedConnection === conn.id
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
+                className="p-3 border rounded-lg cursor-pointer transition-colors"
+                style={{
+                  borderColor: selectedConnection === conn.id
+                    ? '#2563eb'
+                    : (hoveredConnectionItemIndex === index ? '#d1d5db' : '#e5e7eb'),
+                  backgroundColor: selectedConnection === conn.id ? '#eff6ff' : 'transparent'
+                }}
                 onClick={() => {
                   setSelectedConnection(conn.id);
                   setComposeData(prev => ({ ...prev, connectionId: conn.id }));
                 }}
+                onMouseEnter={() => setHoveredConnectionItemIndex(index)}
+                onMouseLeave={() => setHoveredConnectionItemIndex(null)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Mail className="w-5 h-5 text-gray-500" />
+                    <Mail className="w-5 h-5" style={{ color: '#6b7280' }} />
                     <div>
-                      <p className="font-medium text-gray-900">{conn.email}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="font-medium" style={{ color: '#111827' }}>{conn.email}</p>
+                      <p className="text-xs" style={{ color: '#6b7280' }}>
                         {conn.lastSyncAt
                           ? `Đồng bộ lần cuối: ${formatDate(conn.lastSyncAt)}`
                           : 'Chưa đồng bộ'}
@@ -321,11 +356,15 @@ const EmailsPage = () => {
                         e.stopPropagation();
                         handleToggleSync(conn.id);
                       }}
-                      className={`p-2 rounded ${
-                        conn.syncEnabled
-                          ? 'text-green-600 hover:bg-green-50'
-                          : 'text-gray-400 hover:bg-gray-50'
-                      }`}
+                      onMouseEnter={() => setHoveredToggleSyncButtonIndex(index)}
+                      onMouseLeave={() => setHoveredToggleSyncButtonIndex(null)}
+                      className="p-2 rounded"
+                      style={{
+                        color: conn.syncEnabled ? '#16a34a' : '#9ca3af',
+                        backgroundColor: hoveredToggleSyncButtonIndex === index
+                          ? (conn.syncEnabled ? '#dcfce7' : '#f3f4f6')
+                          : 'transparent'
+                      }}
                       title={conn.syncEnabled ? 'Tắt đồng bộ' : 'Bật đồng bộ'}
                     >
                       {conn.syncEnabled ? <Power className="w-4 h-4" /> : <PowerOff className="w-4 h-4" />}
@@ -335,7 +374,13 @@ const EmailsPage = () => {
                         e.stopPropagation();
                         handleDeleteConnection(conn.id);
                       }}
-                      className="p-2 rounded text-red-600 hover:bg-red-50"
+                      onMouseEnter={() => setHoveredDeleteConnectionButtonIndex(index)}
+                      onMouseLeave={() => setHoveredDeleteConnectionButtonIndex(null)}
+                      className="p-2 rounded"
+                      style={{
+                        color: '#dc2626',
+                        backgroundColor: hoveredDeleteConnectionButtonIndex === index ? '#fef2f2' : 'transparent'
+                      }}
                       title="Xóa kết nối"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -354,17 +399,29 @@ const EmailsPage = () => {
           {/* Email List */}
           <div className="lg:col-span-2 space-y-4">
             {/* Filters */}
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="rounded-lg shadow p-4" style={{ backgroundColor: 'white' }}>
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-gray-500" />
+                  <Filter className="w-4 h-4" style={{ color: '#6b7280' }} />
                   <select
                     value={filters.folder}
                     onChange={(e) => {
                       setFilters(prev => ({ ...prev, folder: e.target.value }));
                       setPagination(prev => ({ ...prev, page: 1 }));
                     }}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   >
                     <option value="inbox">Inbox</option>
                     <option value="sentitems">Sent</option>
@@ -378,7 +435,19 @@ const EmailsPage = () => {
                       setFilters(prev => ({ ...prev, isRead: e.target.value }));
                       setPagination(prev => ({ ...prev, page: 1 }));
                     }}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   >
                     <option value="">Tất cả</option>
                     <option value="false">Chưa đọc</option>
@@ -386,7 +455,7 @@ const EmailsPage = () => {
                   </select>
                 </div>
                 <div className="flex-1 flex items-center gap-2">
-                  <Search className="w-4 h-4 text-gray-500" />
+                  <Search className="w-4 h-4" style={{ color: '#6b7280' }} />
                   <input
                     type="text"
                     placeholder="Tìm kiếm email..."
@@ -395,12 +464,30 @@ const EmailsPage = () => {
                       setFilters(prev => ({ ...prev, search: e.target.value }));
                       setPagination(prev => ({ ...prev, page: 1 }));
                     }}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="flex-1 px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <button
                   onClick={() => setShowCompose(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                  onMouseEnter={() => setHoveredComposeButton(true)}
+                  onMouseLeave={() => setHoveredComposeButton(false)}
+                  className="px-4 py-2 rounded-lg flex items-center gap-2"
+                  style={{
+                    backgroundColor: hoveredComposeButton ? '#1d4ed8' : '#2563eb',
+                    color: 'white'
+                  }}
                 >
                   <Send className="w-4 h-4" />
                   Soạn email
@@ -409,52 +496,59 @@ const EmailsPage = () => {
             </div>
 
             {/* Email List */}
-            <div className="bg-white rounded-lg shadow">
+            <div className="rounded-lg shadow" style={{ backgroundColor: 'white' }}>
               {loading && emails.length === 0 ? (
                 <div className="p-8 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Đang tải...</p>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={{ borderColor: '#2563eb' }}></div>
+                  <p style={{ color: '#4b5563' }}>Đang tải...</p>
                 </div>
               ) : emails.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
+                <div className="p-8 text-center" style={{ color: '#6b7280' }}>
                   <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>Không có email nào</p>
                 </div>
               ) : (
-                <div className="divide-y divide-gray-200">
-                  {emails.map((email) => (
+                <div className="divide-y" style={{ borderColor: '#e5e7eb' }}>
+                  {emails.map((email, index) => (
                     <div
                       key={email.id}
-                      className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
-                        !email.isRead ? 'bg-blue-50' : ''
-                      } ${selectedEmail?.id === email.id ? 'bg-blue-100' : ''}`}
+                      className="p-4 cursor-pointer transition-colors"
+                      style={{
+                        backgroundColor: selectedEmail?.id === email.id
+                          ? '#dbeafe'
+                          : (!email.isRead
+                            ? '#eff6ff'
+                            : (hoveredEmailItemIndex === index ? '#f9fafb' : 'transparent'))
+                      }}
                       onClick={() => handleEmailClick(email)}
+                      onMouseEnter={() => setHoveredEmailItemIndex(index)}
+                      onMouseLeave={() => setHoveredEmailItemIndex(null)}
                     >
                       <div className="flex items-start gap-3">
                         <div className="mt-1">
                           {email.isRead ? (
-                            <Circle className="w-4 h-4 text-gray-400" />
+                            <Circle className="w-4 h-4" style={{ color: '#9ca3af' }} />
                           ) : (
-                            <CheckCircle className="w-4 h-4 text-blue-600" />
+                            <CheckCircle className="w-4 h-4" style={{ color: '#2563eb' }} />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
-                            <p className="font-medium text-gray-900 truncate">
+                            <p className="font-medium truncate" style={{ color: '#111827' }}>
                               {email.fromName || email.fromEmail}
                             </p>
-                            <span className="text-xs text-gray-500 ml-2">
+                            <span className="text-xs ml-2" style={{ color: '#6b7280' }}>
                               {formatDate(email.receivedDateTime)}
                             </span>
                           </div>
-                          <p className="text-sm font-medium text-gray-900 mb-1 truncate">
+                          <p className="text-sm font-medium mb-1 truncate" style={{ color: '#111827' }}>
                             {email.subject || '(Không có tiêu đề)'}
                           </p>
-                          <p className="text-sm text-gray-600 line-clamp-2">
+                          <p className="text-sm line-clamp-2" style={{ color: '#4b5563' }}>
                             {email.bodyPreview || email.body?.substring(0, 100) || ''}
                           </p>
                           {email.hasAttachments && (
-                            <div className="mt-2 flex items-center gap-1 text-xs text-gray-500">
+                            <div className="mt-2 flex items-center gap-1 text-xs" style={{ color: '#6b7280' }}>
                               <Paperclip className="w-3 h-3" />
                               <span>Có đính kèm</span>
                             </div>
@@ -468,22 +562,40 @@ const EmailsPage = () => {
 
               {/* Pagination */}
               {pagination.totalPages > 1 && (
-                <div className="p-4 border-t border-gray-200 flex items-center justify-between">
-                  <p className="text-sm text-gray-600">
+                <div className="p-4 border-t flex items-center justify-between" style={{ borderColor: '#e5e7eb' }}>
+                  <p className="text-sm" style={{ color: '#4b5563' }}>
                     Trang {pagination.page} / {pagination.totalPages} ({pagination.total} email)
                   </p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
                       disabled={pagination.page === 1}
-                      className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50"
+                      onMouseEnter={() => pagination.page !== 1 && setHoveredPaginationPrevButton(true)}
+                      onMouseLeave={() => setHoveredPaginationPrevButton(false)}
+                      className="px-3 py-1 border rounded text-sm"
+                      style={{
+                        borderColor: '#d1d5db',
+                        backgroundColor: hoveredPaginationPrevButton ? '#f9fafb' : 'transparent',
+                        color: '#374151',
+                        opacity: pagination.page === 1 ? 0.5 : 1,
+                        cursor: pagination.page === 1 ? 'not-allowed' : 'pointer'
+                      }}
                     >
                       Trước
                     </button>
                     <button
                       onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
                       disabled={pagination.page === pagination.totalPages}
-                      className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50"
+                      onMouseEnter={() => pagination.page !== pagination.totalPages && setHoveredPaginationNextButton(true)}
+                      onMouseLeave={() => setHoveredPaginationNextButton(false)}
+                      className="px-3 py-1 border rounded text-sm"
+                      style={{
+                        borderColor: '#d1d5db',
+                        backgroundColor: hoveredPaginationNextButton ? '#f9fafb' : 'transparent',
+                        color: '#374151',
+                        opacity: pagination.page === pagination.totalPages ? 0.5 : 1,
+                        cursor: pagination.page === pagination.totalPages ? 'not-allowed' : 'pointer'
+                      }}
                     >
                       Sau
                     </button>
@@ -496,51 +608,57 @@ const EmailsPage = () => {
           {/* Email Detail */}
           <div className="lg:col-span-1">
             {selectedEmail ? (
-              <div className="bg-white rounded-lg shadow p-6 sticky top-4">
+              <div className="rounded-lg shadow p-6 sticky top-4" style={{ backgroundColor: 'white' }}>
                 <div className="mb-4">
                   <button
                     onClick={() => setSelectedEmail(null)}
-                    className="text-sm text-gray-600 hover:text-gray-900"
+                    onMouseEnter={() => setHoveredBackButton(true)}
+                    onMouseLeave={() => setHoveredBackButton(false)}
+                    className="text-sm"
+                    style={{
+                      color: hoveredBackButton ? '#111827' : '#4b5563'
+                    }}
                   >
                     ← Quay lại
                   </button>
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-4">{selectedEmail.subject}</h3>
+                <h3 className="text-lg font-bold mb-4" style={{ color: '#111827' }}>{selectedEmail.subject}</h3>
                 <div className="space-y-3 mb-4 text-sm">
                   <div>
-                    <span className="text-gray-600">Từ:</span>{' '}
-                    <span className="font-medium">
+                    <span style={{ color: '#4b5563' }}>Từ:</span>{' '}
+                    <span className="font-medium" style={{ color: '#111827' }}>
                       {selectedEmail.fromName} &lt;{selectedEmail.fromEmail}&gt;
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Đến:</span>{' '}
-                    <span className="font-medium">
+                    <span style={{ color: '#4b5563' }}>Đến:</span>{' '}
+                    <span className="font-medium" style={{ color: '#111827' }}>
                       {selectedEmail.toRecipients?.map(r => r.email).join(', ') || ''}
                     </span>
                   </div>
                   {selectedEmail.ccRecipients && selectedEmail.ccRecipients.length > 0 && (
                     <div>
-                      <span className="text-gray-600">CC:</span>{' '}
-                      <span className="font-medium">
+                      <span style={{ color: '#4b5563' }}>CC:</span>{' '}
+                      <span className="font-medium" style={{ color: '#111827' }}>
                         {selectedEmail.ccRecipients.map(r => r.email).join(', ')}
                       </span>
                     </div>
                   )}
                   <div>
-                    <span className="text-gray-600">Ngày:</span>{' '}
-                    <span className="font-medium">
+                    <span style={{ color: '#4b5563' }}>Ngày:</span>{' '}
+                    <span className="font-medium" style={{ color: '#111827' }}>
                       {new Date(selectedEmail.receivedDateTime).toLocaleString('vi-VN')}
                     </span>
                   </div>
                 </div>
                 <div
-                  className="prose prose-sm max-w-none border-t border-gray-200 pt-4"
+                  className="prose prose-sm max-w-none border-t pt-4"
+                  style={{ borderColor: '#e5e7eb' }}
                   dangerouslySetInnerHTML={{ __html: selectedEmail.body || selectedEmail.bodyPreview }}
                 />
               </div>
             ) : (
-              <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+              <div className="rounded-lg shadow p-6 text-center" style={{ backgroundColor: 'white', color: '#6b7280' }}>
                 <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>Chọn một email để xem chi tiết</p>
               </div>
@@ -551,80 +669,161 @@ const EmailsPage = () => {
 
       {/* Compose Modal */}
       {showCompose && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+          <div className="rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" style={{ backgroundColor: 'white' }}>
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-900">Soạn email mới</h3>
+                <h3 className="text-xl font-bold" style={{ color: '#111827' }}>Soạn email mới</h3>
                 <button
                   onClick={() => setShowCompose(false)}
-                  className="text-gray-500 hover:text-gray-700"
+                  onMouseEnter={() => setHoveredCloseComposeButton(true)}
+                  onMouseLeave={() => setHoveredCloseComposeButton(false)}
+                  style={{
+                    color: hoveredCloseComposeButton ? '#374151' : '#6b7280'
+                  }}
                 >
                   ✕
                 </button>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Đến</label>
+                  <label className="block text-sm font-medium mb-1" style={{ color: '#374151' }}>Đến</label>
                   <input
                     type="text"
                     value={composeData.to}
                     onChange={(e) => setComposeData(prev => ({ ...prev, to: e.target.value }))}
                     placeholder="email1@example.com, email2@example.com"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    className="w-full px-3 py-2 border rounded-lg"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">CC (tùy chọn)</label>
+                  <label className="block text-sm font-medium mb-1" style={{ color: '#374151' }}>CC (tùy chọn)</label>
                   <input
                     type="text"
                     value={composeData.cc}
                     onChange={(e) => setComposeData(prev => ({ ...prev, cc: e.target.value }))}
                     placeholder="email1@example.com, email2@example.com"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    className="w-full px-3 py-2 border rounded-lg"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">BCC (tùy chọn)</label>
+                  <label className="block text-sm font-medium mb-1" style={{ color: '#374151' }}>BCC (tùy chọn)</label>
                   <input
                     type="text"
                     value={composeData.bcc}
                     onChange={(e) => setComposeData(prev => ({ ...prev, bcc: e.target.value }))}
                     placeholder="email1@example.com, email2@example.com"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    className="w-full px-3 py-2 border rounded-lg"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tiêu đề</label>
+                  <label className="block text-sm font-medium mb-1" style={{ color: '#374151' }}>Tiêu đề</label>
                   <input
                     type="text"
                     value={composeData.subject}
                     onChange={(e) => setComposeData(prev => ({ ...prev, subject: e.target.value }))}
                     placeholder="Tiêu đề email"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    className="w-full px-3 py-2 border rounded-lg"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nội dung</label>
+                  <label className="block text-sm font-medium mb-1" style={{ color: '#374151' }}>Nội dung</label>
                   <textarea
                     value={composeData.body}
                     onChange={(e) => setComposeData(prev => ({ ...prev, body: e.target.value }))}
                     placeholder="Nội dung email (HTML)"
                     rows={10}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm"
+                    className="w-full px-3 py-2 border rounded-lg font-mono text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div className="flex gap-2 justify-end">
                   <button
                     onClick={() => setShowCompose(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    onMouseEnter={() => setHoveredCancelComposeButton(true)}
+                    onMouseLeave={() => setHoveredCancelComposeButton(false)}
+                    className="px-4 py-2 border rounded-lg"
+                    style={{
+                      borderColor: '#d1d5db',
+                      backgroundColor: hoveredCancelComposeButton ? '#f9fafb' : 'transparent',
+                      color: '#374151'
+                    }}
                   >
                     Hủy
                   </button>
                   <button
                     onClick={handleSendEmail}
                     disabled={loading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 flex items-center gap-2"
+                    onMouseEnter={() => !loading && setHoveredSendEmailButton(true)}
+                    onMouseLeave={() => setHoveredSendEmailButton(false)}
+                    className="px-4 py-2 rounded-lg flex items-center gap-2"
+                    style={{
+                      backgroundColor: loading
+                        ? '#9ca3af'
+                        : (hoveredSendEmailButton ? '#1d4ed8' : '#2563eb'),
+                      color: 'white',
+                      opacity: loading ? 0.6 : 1,
+                      cursor: loading ? 'not-allowed' : 'pointer'
+                    }}
                   >
                     <Send className="w-4 h-4" />
                     {loading ? 'Đang gửi...' : 'Gửi'}

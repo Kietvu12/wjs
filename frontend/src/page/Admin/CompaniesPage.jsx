@@ -42,6 +42,23 @@ const CompaniesPage = () => {
     limit: 20,
     totalPages: 0
   });
+  
+  // Hover states
+  const [hoveredSearchButton, setHoveredSearchButton] = useState(false);
+  const [hoveredResetButton, setHoveredResetButton] = useState(false);
+  const [hoveredRefreshButton, setHoveredRefreshButton] = useState(false);
+  const [hoveredAddCompanyButton, setHoveredAddCompanyButton] = useState(false);
+  const [hoveredPaginationNavButton, setHoveredPaginationNavButton] = useState(null);
+  const [hoveredPaginationButtonIndex, setHoveredPaginationButtonIndex] = useState(null);
+  const [hoveredRowIndex, setHoveredRowIndex] = useState(null);
+  const [hoveredCompanyIdLinkIndex, setHoveredCompanyIdLinkIndex] = useState(null);
+  const [hoveredCompanyNameLinkIndex, setHoveredCompanyNameLinkIndex] = useState(null);
+  const [hoveredWebsiteLinkIndex, setHoveredWebsiteLinkIndex] = useState(null);
+  const [hoveredJobCountLinkIndex, setHoveredJobCountLinkIndex] = useState(null);
+  const [hoveredToggleStatusButtonIndex, setHoveredToggleStatusButtonIndex] = useState(null);
+  const [hoveredViewButtonIndex, setHoveredViewButtonIndex] = useState(null);
+  const [hoveredEditButtonIndex, setHoveredEditButtonIndex] = useState(null);
+  const [hoveredDeleteButtonIndex, setHoveredDeleteButtonIndex] = useState(null);
 
   useEffect(() => {
     loadCompanies();
@@ -161,45 +178,81 @@ const CompaniesPage = () => {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Filter Section */}
-      <div className="bg-white rounded-lg p-3 border border-gray-200 mb-3 flex-shrink-0">
+      <div className="rounded-lg p-3 border mb-3 flex-shrink-0" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         {/* Search Bar */}
         <div className="flex items-center gap-2 flex-wrap mb-3">
           <div className="flex-1 min-w-[250px]">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: '#9ca3af' }} />
               <input
                 type="text"
                 placeholder="Tìm theo tên, mã công ty, email, số điện thoại..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                className="w-full pl-10 pr-3 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className="w-full pl-10 pr-3 py-1.5 border rounded text-xs"
+                style={{
+                  borderColor: '#d1d5db',
+                  outline: 'none'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#2563eb';
+                  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
             </div>
           </div>
           <button
             onClick={handleSearch}
-            className="px-4 py-1.5 bg-blue-600 text-white rounded text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+            onMouseEnter={() => setHoveredSearchButton(true)}
+            onMouseLeave={() => setHoveredSearchButton(false)}
+            className="px-4 py-1.5 rounded text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredSearchButton ? '#1d4ed8' : '#2563eb',
+              color: 'white'
+            }}
           >
             <Search className="w-3.5 h-3.5" />
             Tìm kiếm
           </button>
           <button
             onClick={handleReset}
-            className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded text-xs font-semibold hover:bg-gray-200 transition-colors"
+            onMouseEnter={() => setHoveredResetButton(true)}
+            onMouseLeave={() => setHoveredResetButton(false)}
+            className="px-3 py-1.5 rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredResetButton ? '#e5e7eb' : '#f3f4f6',
+              color: '#374151'
+            }}
           >
             Reset
           </button>
           <button
             onClick={loadCompanies}
-            className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center gap-1.5"
+            onMouseEnter={() => setHoveredRefreshButton(true)}
+            onMouseLeave={() => setHoveredRefreshButton(false)}
+            className="px-3 py-1.5 rounded text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredRefreshButton ? '#e5e7eb' : '#f3f4f6',
+              color: '#374151'
+            }}
           >
             <ArrowUpDown className="w-3.5 h-3.5" />
             Làm mới
           </button>
           <button
             onClick={() => navigate('/admin/companies/create')}
-            className="px-3 py-1.5 bg-yellow-400 text-gray-900 rounded text-xs font-semibold hover:bg-yellow-500 transition-colors flex items-center gap-1.5"
+            onMouseEnter={() => setHoveredAddCompanyButton(true)}
+            onMouseLeave={() => setHoveredAddCompanyButton(false)}
+            className="px-3 py-1.5 rounded text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredAddCompanyButton ? '#eab308' : '#facc15',
+              color: '#111827'
+            }}
           >
             <Plus className="w-3.5 h-3.5" />
             + Thêm doanh nghiệp
@@ -209,11 +262,23 @@ const CompaniesPage = () => {
         {/* Additional Filters */}
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <label className="text-xs font-semibold text-gray-900">Loại:</label>
+            <label className="text-xs font-semibold" style={{ color: '#111827' }}>Loại:</label>
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="px-2 py-1 border rounded text-xs"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             >
               <option value="">Tất cả</option>
               <option value="Tuyển dụng">Tuyển dụng</option>
@@ -226,11 +291,23 @@ const CompaniesPage = () => {
             </select>
           </div>
           <div className="flex items-center gap-1.5">
-            <label className="text-xs font-semibold text-gray-900">Trạng thái:</label>
+            <label className="text-xs font-semibold" style={{ color: '#111827' }}>Trạng thái:</label>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="px-2 py-1 border rounded text-xs"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             >
               <option value="">Tất cả</option>
               <option value="active">Đang hoạt động</option>
@@ -246,14 +323,32 @@ const CompaniesPage = () => {
           <button
             onClick={() => setCurrentPage(1)}
             disabled={currentPage === 1 || loading}
-            className="px-1.5 py-1 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => !(currentPage === 1 || loading) && setHoveredPaginationNavButton('first')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-1.5 py-1 border rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'first' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: (currentPage === 1 || loading) ? 0.5 : 1,
+              cursor: (currentPage === 1 || loading) ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronsLeft className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setCurrentPage(currentPage - 1)}
             disabled={currentPage === 1 || loading}
-            className="px-1.5 py-1 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => !(currentPage === 1 || loading) && setHoveredPaginationNavButton('prev')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-1.5 py-1 border rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'prev' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: (currentPage === 1 || loading) ? 0.5 : 1,
+              cursor: (currentPage === 1 || loading) ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
@@ -268,18 +363,25 @@ const CompaniesPage = () => {
                     key={pageNum}
                     onClick={() => setCurrentPage(pageNum)}
                     disabled={loading}
-                    className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors ${
-                      currentPage === pageNum
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                    } disabled:opacity-50`}
+                    onMouseEnter={() => !loading && currentPage !== pageNum && setHoveredPaginationButtonIndex(pageNum)}
+                    onMouseLeave={() => setHoveredPaginationButtonIndex(null)}
+                    className="px-2.5 py-1 rounded text-xs font-semibold transition-colors"
+                    style={{
+                      backgroundColor: currentPage === pageNum
+                        ? '#2563eb'
+                        : (hoveredPaginationButtonIndex === pageNum ? '#f9fafb' : 'white'),
+                      border: currentPage === pageNum ? 'none' : '1px solid #d1d5db',
+                      color: currentPage === pageNum ? 'white' : '#374151',
+                      opacity: loading ? 0.5 : 1,
+                      cursor: loading ? 'not-allowed' : 'pointer'
+                    }}
                   >
                     {pageNum}
                   </button>
                 );
               }
               if (pageNum === 2 || pageNum === pagination.totalPages - 1) {
-                return <span key={pageNum} className="px-1 text-xs text-gray-400">...</span>;
+                return <span key={pageNum} className="px-1 text-xs" style={{ color: '#9ca3af' }}>...</span>;
               }
               return null;
             }
@@ -288,11 +390,18 @@ const CompaniesPage = () => {
                 key={pageNum}
                 onClick={() => setCurrentPage(pageNum)}
                 disabled={loading}
-                className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors ${
-                  currentPage === pageNum
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                } disabled:opacity-50`}
+                onMouseEnter={() => !loading && currentPage !== pageNum && setHoveredPaginationButtonIndex(pageNum)}
+                onMouseLeave={() => setHoveredPaginationButtonIndex(null)}
+                className="px-2.5 py-1 rounded text-xs font-semibold transition-colors"
+                style={{
+                  backgroundColor: currentPage === pageNum
+                    ? '#2563eb'
+                    : (hoveredPaginationButtonIndex === pageNum ? '#f9fafb' : 'white'),
+                  border: currentPage === pageNum ? 'none' : '1px solid #d1d5db',
+                  color: currentPage === pageNum ? 'white' : '#374151',
+                  opacity: loading ? 0.5 : 1,
+                  cursor: loading ? 'not-allowed' : 'pointer'
+                }}
               >
                 {pageNum}
               </button>
@@ -301,14 +410,32 @@ const CompaniesPage = () => {
           <button
             onClick={() => setCurrentPage(currentPage + 1)}
             disabled={currentPage >= pagination.totalPages || loading}
-            className="px-1.5 py-1 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => !(currentPage >= pagination.totalPages || loading) && setHoveredPaginationNavButton('next')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-1.5 py-1 border rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'next' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: (currentPage >= pagination.totalPages || loading) ? 0.5 : 1,
+              cursor: (currentPage >= pagination.totalPages || loading) ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setCurrentPage(pagination.totalPages)}
             disabled={currentPage >= pagination.totalPages || loading}
-            className="px-1.5 py-1 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => !(currentPage >= pagination.totalPages || loading) && setHoveredPaginationNavButton('last')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-1.5 py-1 border rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'last' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: (currentPage >= pagination.totalPages || loading) ? 0.5 : 1,
+              cursor: (currentPage >= pagination.totalPages || loading) ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronsRight className="w-3.5 h-3.5" />
           </button>
@@ -321,73 +448,108 @@ const CompaniesPage = () => {
               setCurrentPage(1);
             }}
             disabled={loading}
-            className="px-2.5 py-1 border border-gray-300 rounded text-xs font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50"
+            className="px-2.5 py-1 border rounded text-xs font-semibold"
+            style={{
+              borderColor: '#d1d5db',
+              color: '#374151',
+              outline: 'none',
+              opacity: loading ? 0.5 : 1,
+              cursor: loading ? 'not-allowed' : 'pointer'
+            }}
+            onFocus={(e) => {
+              if (!loading) {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#d1d5db';
+              e.target.style.boxShadow = 'none';
+            }}
           >
             <option value="20">20</option>
             <option value="50">50</option>
             <option value="100">100</option>
           </select>
-          <span className="text-xs text-gray-700 font-semibold">
+          <span className="text-xs font-semibold" style={{ color: '#374151' }}>
             {pagination.total} items
           </span>
         </div>
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-y-auto bg-white rounded-lg border border-gray-200 min-h-0 relative">
+      <div className="flex-1 overflow-y-auto rounded-lg border min-h-0 relative" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#2563eb' }}></div>
           </div>
         ) : companies.length === 0 ? (
-          <div className="text-center py-12 text-sm text-gray-500">
+          <div className="text-center py-12 text-sm" style={{ color: '#6b7280' }}>
             Chưa có doanh nghiệp nào
           </div>
         ) : (
           <div className="overflow-x-auto h-full">
             <table className="w-full">
-              <thead className="bg-gray-50 sticky top-0 z-10">
+              <thead className="sticky top-0 z-10" style={{ backgroundColor: '#f9fafb' }}>
                 <tr>
-                  <th className="px-3 py-2 text-center text-xs font-semibold text-gray-900 border-b border-gray-200 w-10">
+                  <th className="px-3 py-2 text-center text-xs font-semibold border-b w-10" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
                     <input
                       type="checkbox"
                       checked={selectedRows.size === companies.length && companies.length > 0}
                       onChange={handleSelectAll}
-                      className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+                      className="w-3.5 h-3.5 rounded"
+                      style={{
+                        accentColor: '#2563eb',
+                        borderColor: '#d1d5db'
+                      }}
                     />
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">ID</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Tên công ty</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Mã công ty</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Loại</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Email</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Số điện thoại</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Địa chỉ</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Website</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Số job</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Trạng thái</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Ngày tạo</th>
-                  <th className="px-3 py-2 text-center text-xs font-semibold text-gray-900 border-b border-gray-200">Thao tác</th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>ID</th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Tên công ty</th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Mã công ty</th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Loại</th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Email</th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Số điện thoại</th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Địa chỉ</th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Website</th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Số job</th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Trạng thái</th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Ngày tạo</th>
+                  <th className="px-3 py-2 text-center text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y" style={{ borderColor: '#e5e7eb' }}>
                 {companies.map((company, index) => (
                   <tr
                     key={company.id}
-                    className="hover:bg-gray-50 transition-colors"
+                    className="transition-colors"
+                    onMouseEnter={() => setHoveredRowIndex(index)}
+                    onMouseLeave={() => setHoveredRowIndex(null)}
+                    style={{
+                      backgroundColor: hoveredRowIndex === index ? '#f9fafb' : 'transparent'
+                    }}
                   >
                     <td className="px-3 py-2 text-center">
                       <input
                         type="checkbox"
                         checked={selectedRows.has(index)}
                         onChange={() => handleSelectRow(index)}
-                        className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+                        className="w-3.5 h-3.5 rounded"
+                        style={{
+                          accentColor: '#2563eb',
+                          borderColor: '#d1d5db'
+                        }}
                       />
                     </td>
                     <td className="px-3 py-2">
                       <button
                         onClick={() => navigate(`/admin/companies/${company.id}`)}
-                        className="text-blue-600 hover:text-blue-800 font-medium text-xs flex items-center gap-1"
+                        onMouseEnter={() => setHoveredCompanyIdLinkIndex(index)}
+                        onMouseLeave={() => setHoveredCompanyIdLinkIndex(null)}
+                        className="font-medium text-xs flex items-center gap-1"
+                        style={{
+                          color: hoveredCompanyIdLinkIndex === index ? '#1e40af' : '#2563eb'
+                        }}
                       >
                         {company.id}
                         <ExternalLink className="w-3 h-3" />
@@ -402,58 +564,63 @@ const CompaniesPage = () => {
                             className="w-7 h-7 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-[10px]">
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white font-semibold text-[10px]" style={{ backgroundColor: '#2563eb' }}>
                             {company.name?.charAt(0)?.toUpperCase() || 'C'}
                           </div>
                         )}
                         <button
                           onClick={() => navigate(`/admin/companies/${company.id}`)}
-                          className="text-xs font-semibold text-gray-900 hover:text-blue-600"
+                          onMouseEnter={() => setHoveredCompanyNameLinkIndex(index)}
+                          onMouseLeave={() => setHoveredCompanyNameLinkIndex(null)}
+                          className="text-xs font-semibold"
+                          style={{
+                            color: hoveredCompanyNameLinkIndex === index ? '#2563eb' : '#111827'
+                          }}
                         >
                           {company.name || '—'}
                         </button>
                       </div>
                     </td>
                     <td className="px-3 py-2">
-                      <span className="text-xs font-medium text-gray-700">{company.companyCode || '—'}</span>
+                      <span className="text-xs font-medium" style={{ color: '#374151' }}>{company.companyCode || '—'}</span>
                     </td>
                     <td className="px-3 py-2">
                       {company.type ? (
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-[10px] font-medium">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-medium" style={{ backgroundColor: '#f3f4f6', color: '#374151' }}>
                           {company.type}
                         </span>
                       ) : (
-                        <span className="text-xs text-gray-400">—</span>
+                        <span className="text-xs" style={{ color: '#9ca3af' }}>—</span>
                       )}
                     </td>
                     <td className="px-3 py-2">
                       {company.email ? (
-                        <div className="flex items-center gap-1 text-xs text-gray-700">
-                          <Mail className="w-3 h-3 text-gray-400" />
+                        <div className="flex items-center gap-1 text-xs" style={{ color: '#374151' }}>
+                          <Mail className="w-3 h-3" style={{ color: '#9ca3af' }} />
                           {company.email}
                         </div>
                       ) : (
-                        <span className="text-xs text-gray-400">—</span>
+                        <span className="text-xs" style={{ color: '#9ca3af' }}>—</span>
                       )}
                     </td>
                     <td className="px-3 py-2">
                       {company.phone ? (
-                        <div className="flex items-center gap-1 text-xs text-gray-700">
-                          <Phone className="w-3 h-3 text-gray-400" />
+                        <div className="flex items-center gap-1 text-xs" style={{ color: '#374151' }}>
+                          <Phone className="w-3 h-3" style={{ color: '#9ca3af' }} />
                           {company.phone}
                         </div>
                       ) : (
-                        <span className="text-xs text-gray-400">—</span>
+                        <span className="text-xs" style={{ color: '#9ca3af' }}>—</span>
                       )}
                     </td>
                     <td className="px-3 py-2">
                       {company.address ? (
-                        <div className="flex items-center gap-1 text-xs text-gray-700 max-w-[200px] truncate">
-                          <MapPin className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                        <div className="flex items-center gap-1 text-xs max-w-[200px] truncate" style={{ color: '#374151' }}>
+                          <MapPin className="w-3 h-3 flex-shrink-0" style={{ color: '#9ca3af' }} />
                           <span className="truncate">{company.address}</span>
                         </div>
                       ) : (
-                        <span className="text-xs text-gray-400">—</span>
+                        <span className="text-xs" style={{ color: '#9ca3af' }}>—</span>
                       )}
                     </td>
                     <td className="px-3 py-2">
@@ -462,19 +629,29 @@ const CompaniesPage = () => {
                           href={company.website}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                          onMouseEnter={() => setHoveredWebsiteLinkIndex(index)}
+                          onMouseLeave={() => setHoveredWebsiteLinkIndex(null)}
+                          className="text-xs flex items-center gap-1"
+                          style={{
+                            color: hoveredWebsiteLinkIndex === index ? '#1e40af' : '#2563eb'
+                          }}
                         >
                           <Globe className="w-3 h-3" />
                           <span className="truncate max-w-[150px]">Website</span>
                         </a>
                       ) : (
-                        <span className="text-xs text-gray-400">—</span>
+                        <span className="text-xs" style={{ color: '#9ca3af' }}>—</span>
                       )}
                     </td>
                     <td className="px-3 py-2">
                       <button
                         onClick={() => navigate(`/admin/jobs?company=${company.id}`)}
-                        className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                        onMouseEnter={() => setHoveredJobCountLinkIndex(index)}
+                        onMouseLeave={() => setHoveredJobCountLinkIndex(null)}
+                        className="text-xs font-semibold flex items-center gap-1"
+                        style={{
+                          color: hoveredJobCountLinkIndex === index ? '#1e40af' : '#2563eb'
+                        }}
                       >
                         <Briefcase className="w-3 h-3" />
                         {company.jobsCount || 0}
@@ -483,11 +660,15 @@ const CompaniesPage = () => {
                     <td className="px-3 py-2">
                       <button
                         onClick={() => handleToggleStatus(company)}
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold transition-colors ${
-                          company.status
-                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                            : 'bg-red-100 text-red-800 hover:bg-red-200'
-                        }`}
+                        onMouseEnter={() => setHoveredToggleStatusButtonIndex(index)}
+                        onMouseLeave={() => setHoveredToggleStatusButtonIndex(null)}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold transition-colors"
+                        style={{
+                          backgroundColor: company.status
+                            ? (hoveredToggleStatusButtonIndex === index ? '#bbf7d0' : '#dcfce7')
+                            : (hoveredToggleStatusButtonIndex === index ? '#fecaca' : '#fee2e2'),
+                          color: company.status ? '#166534' : '#991b1b'
+                        }}
                       >
                         {company.status ? (
                           <CheckCircle className="w-3 h-3" />
@@ -497,9 +678,9 @@ const CompaniesPage = () => {
                         {company.status ? 'Đang hoạt động' : 'Ngừng hoạt động'}
                       </button>
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-700">
+                    <td className="px-3 py-2 text-xs" style={{ color: '#374151' }}>
                       <div className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-gray-400" />
+                        <Calendar className="w-3 h-3" style={{ color: '#9ca3af' }} />
                         {formatDate(company.createdAt)}
                       </div>
                     </td>
@@ -507,21 +688,39 @@ const CompaniesPage = () => {
                       <div className="flex items-center justify-center gap-1.5">
                         <button
                           onClick={() => navigate(`/admin/companies/${company.id}`)}
-                          className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors"
+                          onMouseEnter={() => setHoveredViewButtonIndex(index)}
+                          onMouseLeave={() => setHoveredViewButtonIndex(null)}
+                          className="p-1 rounded transition-colors"
+                          style={{
+                            color: hoveredViewButtonIndex === index ? '#1e40af' : '#2563eb',
+                            backgroundColor: hoveredViewButtonIndex === index ? '#eff6ff' : 'transparent'
+                          }}
                           title="Xem chi tiết"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => navigate(`/admin/companies/${company.id}/edit`)}
-                          className="text-gray-600 hover:text-gray-800 p-1 rounded hover:bg-gray-100 transition-colors"
+                          onMouseEnter={() => setHoveredEditButtonIndex(index)}
+                          onMouseLeave={() => setHoveredEditButtonIndex(null)}
+                          className="p-1 rounded transition-colors"
+                          style={{
+                            color: hoveredEditButtonIndex === index ? '#1f2937' : '#4b5563',
+                            backgroundColor: hoveredEditButtonIndex === index ? '#f3f4f6' : 'transparent'
+                          }}
                           title="Chỉnh sửa"
                         >
                           <Edit className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDelete(company.id, company.name)}
-                          className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
+                          onMouseEnter={() => setHoveredDeleteButtonIndex(index)}
+                          onMouseLeave={() => setHoveredDeleteButtonIndex(null)}
+                          className="p-1 rounded transition-colors"
+                          style={{
+                            color: hoveredDeleteButtonIndex === index ? '#991b1b' : '#dc2626',
+                            backgroundColor: hoveredDeleteButtonIndex === index ? '#fef2f2' : 'transparent'
+                          }}
                           title="Xóa"
                         >
                           <Trash2 className="w-3.5 h-3.5" />

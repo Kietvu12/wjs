@@ -89,6 +89,36 @@ const AdminAddNominationPage = () => {
   const [editingCV, setEditingCV] = useState(false);
   const [cvEditData, setCvEditData] = useState({});
   const [savingCV, setSavingCV] = useState(false);
+  
+  // Hover states
+  const [hoveredBackButton, setHoveredBackButton] = useState(false);
+  const [hoveredCancelButton, setHoveredCancelButton] = useState(false);
+  const [hoveredSaveButton, setHoveredSaveButton] = useState(false);
+  const [hoveredConfirmButton, setHoveredConfirmButton] = useState(false);
+  const [hoveredEditCVButton, setHoveredEditCVButton] = useState(false);
+  const [hoveredSaveCVButton, setHoveredSaveCVButton] = useState(false);
+  const [hoveredCancelCVButton, setHoveredCancelCVButton] = useState(false);
+  const [hoveredCreateJobButton, setHoveredCreateJobButton] = useState(false);
+  const [hoveredSearchButton, setHoveredSearchButton] = useState(false);
+  const [hoveredJobCardIndex, setHoveredJobCardIndex] = useState(null);
+  const [hoveredRemoveJobButton, setHoveredRemoveJobButton] = useState(false);
+  const [hoveredPaginationButton, setHoveredPaginationButton] = useState(null);
+  const [hoveredAddEducationButton, setHoveredAddEducationButton] = useState(false);
+  const [hoveredRemoveEducationButtonIndex, setHoveredRemoveEducationButtonIndex] = useState(null);
+  const [hoveredAddWorkExperienceButton, setHoveredAddWorkExperienceButton] = useState(false);
+  const [hoveredRemoveWorkExperienceButtonIndex, setHoveredRemoveWorkExperienceButtonIndex] = useState(null);
+  const [hoveredAddCertificateButton, setHoveredAddCertificateButton] = useState(false);
+  const [hoveredRemoveCertificateButtonIndex, setHoveredRemoveCertificateButtonIndex] = useState(null);
+  const [hoveredAddLearnedToolButton, setHoveredAddLearnedToolButton] = useState(false);
+  const [hoveredRemoveLearnedToolButtonIndex, setHoveredRemoveLearnedToolButtonIndex] = useState(null);
+  const [hoveredAddExperienceToolButton, setHoveredAddExperienceToolButton] = useState(false);
+  const [hoveredRemoveExperienceToolButtonIndex, setHoveredRemoveExperienceToolButtonIndex] = useState(null);
+  const [hoveredRemoveCVButtonIndex, setHoveredRemoveCVButtonIndex] = useState(null);
+  const [hoveredUploadArea, setHoveredUploadArea] = useState(false);
+  const [hoveredTabExisting, setHoveredTabExisting] = useState(false);
+  const [hoveredTabNew, setHoveredTabNew] = useState(false);
+  const [hoveredCandidateDropdownItemIndex, setHoveredCandidateDropdownItemIndex] = useState(null);
+  const [hoveredCollaboratorDropdownItemIndex, setHoveredCollaboratorDropdownItemIndex] = useState(null);
 
   // New candidate form data
   const [newCandidateData, setNewCandidateData] = useState({
@@ -1318,23 +1348,34 @@ const AdminAddNominationPage = () => {
     return (
       <div className="space-y-3">
         {/* Header */}
-        <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center justify-between">
+        <div className="rounded-lg p-4 border flex items-center justify-between" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setStep('form')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              onMouseEnter={() => setHoveredBackButton(true)}
+              onMouseLeave={() => setHoveredBackButton(false)}
+              className="p-2 rounded-lg transition-colors"
+              style={{
+                backgroundColor: hoveredBackButton ? '#f3f4f6' : 'transparent'
+              }}
             >
-              <ArrowLeft className="w-4 h-4 text-gray-600" />
+              <ArrowLeft className="w-4 h-4" style={{ color: '#4b5563' }} />
             </button>
             <div>
-              <h1 className="text-lg font-bold text-gray-900">Xác nhận tiến cử</h1>
-              <p className="text-xs text-gray-500 mt-1">Kiểm tra và chỉnh sửa thông tin trước khi tiến cử</p>
+              <h1 className="text-lg font-bold" style={{ color: '#111827' }}>Xác nhận tiến cử</h1>
+              <p className="text-xs mt-1" style={{ color: '#6b7280' }}>Kiểm tra và chỉnh sửa thông tin trước khi tiến cử</p>
             </div>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => setStep('form')}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center gap-1.5"
+              onMouseEnter={() => setHoveredCancelButton(true)}
+              onMouseLeave={() => setHoveredCancelButton(false)}
+              className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+              style={{
+                backgroundColor: hoveredCancelButton ? '#e5e7eb' : '#f3f4f6',
+                color: '#374151'
+              }}
             >
               <X className="w-3.5 h-3.5" />
               Quay lại
@@ -1342,7 +1383,17 @@ const AdminAddNominationPage = () => {
             <button
               onClick={handleSubmit}
               disabled={loading || editingCV}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              onMouseEnter={() => !loading && !editingCV && setHoveredConfirmButton(true)}
+              onMouseLeave={() => setHoveredConfirmButton(false)}
+              className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+              style={{
+                backgroundColor: loading || editingCV
+                  ? '#86efac'
+                  : (hoveredConfirmButton ? '#15803d' : '#16a34a'),
+                color: 'white',
+                opacity: loading || editingCV ? 0.5 : 1,
+                cursor: loading || editingCV ? 'not-allowed' : 'pointer'
+              }}
             >
               <Save className="w-3.5 h-3.5" />
               {loading ? (nominationId ? 'Đang cập nhật...' : 'Đang lưu...') : (nominationId ? 'Cập nhật đơn tiến cử' : 'Xác nhận và tạo đơn tiến cử')}
@@ -1352,50 +1403,50 @@ const AdminAddNominationPage = () => {
 
         {/* Job Information */}
         {selectedJob && (
-          <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <div className="rounded-lg p-6 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
             <div className="flex items-center gap-3 mb-4">
-              <Briefcase className="w-6 h-6 text-blue-600" />
-              <h2 className="text-lg font-bold text-gray-900">Thông tin công việc</h2>
+              <Briefcase className="w-6 h-6" style={{ color: '#2563eb' }} />
+              <h2 className="text-lg font-bold" style={{ color: '#111827' }}>Thông tin công việc</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Tiêu đề</label>
-                <p className="text-sm text-gray-900 font-medium">{selectedJob.title}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Tiêu đề</label>
+                <p className="text-sm font-medium" style={{ color: '#111827' }}>{selectedJob.title}</p>
               </div>
               {selectedJob.company && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Công ty</label>
-                  <p className="text-sm text-gray-900">{selectedJob.company.name}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Công ty</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{selectedJob.company.name}</p>
                 </div>
               )}
               {selectedJob.recruitingCompany?.companyName && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Công ty tuyển dụng</label>
-                  <p className="text-sm text-gray-900">{selectedJob.recruitingCompany.companyName}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Công ty tuyển dụng</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{selectedJob.recruitingCompany.companyName}</p>
                 </div>
               )}
               {selectedJob.workLocation && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Địa điểm</label>
-                  <p className="text-sm text-gray-900 flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Địa điểm</label>
+                  <p className="text-sm flex items-center gap-1" style={{ color: '#111827' }}>
+                    <MapPin className="w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                     {selectedJob.workLocation}
                   </p>
                 </div>
               )}
               {selectedJob.estimatedSalary && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Lương ước tính</label>
-                  <p className="text-sm text-gray-900 flex items-center gap-1">
-                    <DollarSign className="w-3.5 h-3.5 text-gray-400" />
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Lương ước tính</label>
+                  <p className="text-sm flex items-center gap-1" style={{ color: '#111827' }}>
+                    <DollarSign className="w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                     {selectedJob.estimatedSalary}
                   </p>
                 </div>
               )}
               {selectedJob.category && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Danh mục</label>
-                  <p className="text-sm text-gray-900">{selectedJob.category.name}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Danh mục</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{selectedJob.category.name}</p>
                 </div>
               )}
             </div>
@@ -1404,16 +1455,22 @@ const AdminAddNominationPage = () => {
 
         {/* Candidate Information */}
         {selectedCandidate && candidateTab === 'existing' && (
-          <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <div className="rounded-lg p-6 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <User className="w-6 h-6 text-blue-600" />
-                <h2 className="text-lg font-bold text-gray-900">Thông tin ứng viên</h2>
+                <User className="w-6 h-6" style={{ color: '#2563eb' }} />
+                <h2 className="text-lg font-bold" style={{ color: '#111827' }}>Thông tin ứng viên</h2>
               </div>
               {!editingCV ? (
                 <button
                   onClick={() => setEditingCV(true)}
-                  className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+                  onMouseEnter={() => setHoveredEditCVButton(true)}
+                  onMouseLeave={() => setHoveredEditCVButton(false)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+                  style={{
+                    backgroundColor: hoveredEditCVButton ? '#1d4ed8' : '#2563eb',
+                    color: 'white'
+                  }}
                 >
                   <Edit className="w-3.5 h-3.5" />
                   Sửa nhanh
@@ -1441,7 +1498,13 @@ const AdminAddNominationPage = () => {
                         motivation: selectedCandidate.motivation || '',
                       });
                     }}
-                    className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center gap-1.5"
+                    onMouseEnter={() => setHoveredCancelCVButton(true)}
+                    onMouseLeave={() => setHoveredCancelCVButton(false)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+                    style={{
+                      backgroundColor: hoveredCancelCVButton ? '#e5e7eb' : '#f3f4f6',
+                      color: '#374151'
+                    }}
                   >
                     <X className="w-3.5 h-3.5" />
                     Hủy
@@ -1449,7 +1512,17 @@ const AdminAddNominationPage = () => {
                   <button
                     onClick={handleSaveCVEdit}
                     disabled={savingCV}
-                    className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                    onMouseEnter={() => !savingCV && setHoveredSaveCVButton(true)}
+                    onMouseLeave={() => setHoveredSaveCVButton(false)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+                    style={{
+                      backgroundColor: savingCV
+                        ? '#86efac'
+                        : (hoveredSaveCVButton ? '#15803d' : '#16a34a'),
+                      color: 'white',
+                      opacity: savingCV ? 0.5 : 1,
+                      cursor: savingCV ? 'not-allowed' : 'pointer'
+                    }}
                   >
                     <Save className="w-3.5 h-3.5" />
                     {savingCV ? 'Đang lưu...' : 'Lưu'}
@@ -1461,65 +1534,149 @@ const AdminAddNominationPage = () => {
             {editingCV ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-1">Họ tên (Kanji) *</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Họ tên (Kanji) *</label>
                   <input
                     type="text"
                     value={cvEditData.name}
                     onChange={(e) => setCvEditData({ ...cvEditData, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-1">Họ tên (Kana)</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Họ tên (Kana)</label>
                   <input
                     type="text"
                     value={cvEditData.furigana}
                     onChange={(e) => setCvEditData({ ...cvEditData, furigana: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-1">Email</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Email</label>
                   <input
                     type="email"
                     value={cvEditData.email}
                     onChange={(e) => setCvEditData({ ...cvEditData, email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-1">Số điện thoại</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Số điện thoại</label>
                   <input
                     type="tel"
                     value={cvEditData.phone}
                     onChange={(e) => setCvEditData({ ...cvEditData, phone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-1">Ngày sinh</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Ngày sinh</label>
                   <input
                     type="date"
                     value={cvEditData.birthDate}
                     onChange={(e) => setCvEditData({ ...cvEditData, birthDate: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-1">Tuổi</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Tuổi</label>
                   <input
                     type="number"
                     value={cvEditData.age}
                     onChange={(e) => setCvEditData({ ...cvEditData, age: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-1">Giới tính *</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Giới tính *</label>
                   <select
                     value={cvEditData.gender}
                     onChange={(e) => setCvEditData({ ...cvEditData, gender: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   >
                     <option value="">Chọn</option>
                     <option value="1">Nam</option>
@@ -1527,150 +1684,234 @@ const AdminAddNominationPage = () => {
                   </select>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-semibold text-gray-900 mb-1">Địa chỉ</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Địa chỉ</label>
                   <input
                     type="text"
                     value={cvEditData.addressCurrent}
                     onChange={(e) => setCvEditData({ ...cvEditData, addressCurrent: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-1">Lương hiện tại</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Lương hiện tại</label>
                   <input
                     type="text"
                     value={cvEditData.currentIncome}
                     onChange={(e) => setCvEditData({ ...cvEditData, currentIncome: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-1">Lương mong muốn</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Lương mong muốn</label>
                   <input
                     type="text"
                     value={cvEditData.desiredIncome}
                     onChange={(e) => setCvEditData({ ...cvEditData, desiredIncome: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-1">Địa điểm mong muốn</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Địa điểm mong muốn</label>
                   <input
                     type="text"
                     value={cvEditData.desiredWorkLocation}
                     onChange={(e) => setCvEditData({ ...cvEditData, desiredWorkLocation: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-1">Thời gian nhập công ty</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Thời gian nhập công ty</label>
                   <input
                     type="text"
                     value={cvEditData.nyushaTime}
                     onChange={(e) => setCvEditData({ ...cvEditData, nyushaTime: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-semibold text-gray-900 mb-1">Điểm mạnh</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Điểm mạnh</label>
                   <textarea
                     value={cvEditData.strengths}
                     onChange={(e) => setCvEditData({ ...cvEditData, strengths: e.target.value })}
                     rows="3"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-semibold text-gray-900 mb-1">Động lực</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Động lực</label>
                   <textarea
                     value={cvEditData.motivation}
                     onChange={(e) => setCvEditData({ ...cvEditData, motivation: e.target.value })}
                     rows="3"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Mã CV</label>
-                  <p className="text-sm text-gray-900 font-medium">{selectedCandidate.code || '—'}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Mã CV</label>
+                  <p className="text-sm font-medium" style={{ color: '#111827' }}>{selectedCandidate.code || '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Họ tên (Kanji)</label>
-                  <p className="text-sm text-gray-900">{cvEditData.name || selectedCandidate.name || selectedCandidate.fullName || '—'}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Họ tên (Kanji)</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{cvEditData.name || selectedCandidate.name || selectedCandidate.fullName || '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Họ tên (Kana)</label>
-                  <p className="text-sm text-gray-900">{cvEditData.furigana || selectedCandidate.furigana || '—'}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Họ tên (Kana)</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{cvEditData.furigana || selectedCandidate.furigana || '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Email</label>
-                  <p className="text-sm text-gray-900 flex items-center gap-1">
-                    <Mail className="w-3.5 h-3.5 text-gray-400" />
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Email</label>
+                  <p className="text-sm flex items-center gap-1" style={{ color: '#111827' }}>
+                    <Mail className="w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                     {cvEditData.email || selectedCandidate.email || '—'}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Số điện thoại</label>
-                  <p className="text-sm text-gray-900 flex items-center gap-1">
-                    <Phone className="w-3.5 h-3.5 text-gray-400" />
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Số điện thoại</label>
+                  <p className="text-sm flex items-center gap-1" style={{ color: '#111827' }}>
+                    <Phone className="w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                     {cvEditData.phone || selectedCandidate.phone || '—'}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Ngày sinh</label>
-                  <p className="text-sm text-gray-900 flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Ngày sinh</label>
+                  <p className="text-sm flex items-center gap-1" style={{ color: '#111827' }}>
+                    <Calendar className="w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                     {formatDate(cvEditData.birthDate || selectedCandidate.birthDate)}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Tuổi</label>
-                  <p className="text-sm text-gray-900">{cvEditData.age || selectedCandidate.age || selectedCandidate.ages || '—'}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Tuổi</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{cvEditData.age || selectedCandidate.age || selectedCandidate.ages || '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Giới tính</label>
-                  <p className="text-sm text-gray-900">{formatGender(cvEditData.gender || selectedCandidate.gender)}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Giới tính</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{formatGender(cvEditData.gender || selectedCandidate.gender)}</p>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Địa chỉ</label>
-                  <p className="text-sm text-gray-900">{cvEditData.addressCurrent || selectedCandidate.addressCurrent || selectedCandidate.address || '—'}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Địa chỉ</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{cvEditData.addressCurrent || selectedCandidate.addressCurrent || selectedCandidate.address || '—'}</p>
                 </div>
                 {cvEditData.currentIncome || selectedCandidate.currentIncome || selectedCandidate.currentSalary ? (
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Lương hiện tại</label>
-                    <p className="text-sm text-gray-900">{cvEditData.currentIncome || selectedCandidate.currentIncome || selectedCandidate.currentSalary}</p>
+                    <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Lương hiện tại</label>
+                    <p className="text-sm" style={{ color: '#111827' }}>{cvEditData.currentIncome || selectedCandidate.currentIncome || selectedCandidate.currentSalary}</p>
                   </div>
                 ) : null}
                 {cvEditData.desiredIncome || selectedCandidate.desiredIncome || selectedCandidate.desiredSalary ? (
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Lương mong muốn</label>
-                    <p className="text-sm text-gray-900">{cvEditData.desiredIncome || selectedCandidate.desiredIncome || selectedCandidate.desiredSalary}</p>
+                    <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Lương mong muốn</label>
+                    <p className="text-sm" style={{ color: '#111827' }}>{cvEditData.desiredIncome || selectedCandidate.desiredIncome || selectedCandidate.desiredSalary}</p>
                   </div>
                 ) : null}
                 {cvEditData.desiredWorkLocation || selectedCandidate.desiredWorkLocation || selectedCandidate.desiredLocation ? (
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Địa điểm mong muốn</label>
-                    <p className="text-sm text-gray-900">{cvEditData.desiredWorkLocation || selectedCandidate.desiredWorkLocation || selectedCandidate.desiredLocation}</p>
+                    <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Địa điểm mong muốn</label>
+                    <p className="text-sm" style={{ color: '#111827' }}>{cvEditData.desiredWorkLocation || selectedCandidate.desiredWorkLocation || selectedCandidate.desiredLocation}</p>
                   </div>
                 ) : null}
                 {cvEditData.nyushaTime || selectedCandidate.nyushaTime ? (
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Thời gian nhập công ty</label>
-                    <p className="text-sm text-gray-900">{cvEditData.nyushaTime || selectedCandidate.nyushaTime}</p>
+                    <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Thời gian nhập công ty</label>
+                    <p className="text-sm" style={{ color: '#111827' }}>{cvEditData.nyushaTime || selectedCandidate.nyushaTime}</p>
                   </div>
                 ) : null}
                 {cvEditData.strengths || selectedCandidate.strengths ? (
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Điểm mạnh</label>
-                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{cvEditData.strengths || selectedCandidate.strengths}</p>
+                    <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Điểm mạnh</label>
+                    <p className="text-sm whitespace-pre-wrap" style={{ color: '#111827' }}>{cvEditData.strengths || selectedCandidate.strengths}</p>
                   </div>
                 ) : null}
                 {cvEditData.motivation || selectedCandidate.motivation ? (
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Động lực</label>
-                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{cvEditData.motivation || selectedCandidate.motivation}</p>
+                    <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Động lực</label>
+                    <p className="text-sm whitespace-pre-wrap" style={{ color: '#111827' }}>{cvEditData.motivation || selectedCandidate.motivation}</p>
                   </div>
                 ) : null}
               </div>
@@ -1680,19 +1921,19 @@ const AdminAddNominationPage = () => {
 
         {/* New Candidate Preview (if creating new candidate) */}
         {candidateTab === 'new' && (
-          <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <div className="rounded-lg p-6 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
             <div className="flex items-center gap-3 mb-4">
-              <User className="w-6 h-6 text-blue-600" />
-              <h2 className="text-lg font-bold text-gray-900">Thông tin ứng viên mới</h2>
+              <User className="w-6 h-6" style={{ color: '#2563eb' }} />
+              <h2 className="text-lg font-bold" style={{ color: '#111827' }}>Thông tin ứng viên mới</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Họ tên (Kanji)</label>
-                <p className="text-sm text-gray-900">{newCandidateData.nameKanji || '—'}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Họ tên (Kanji)</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{newCandidateData.nameKanji || '—'}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Email</label>
-                <p className="text-sm text-gray-900">{newCandidateData.email || '—'}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Email</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{newCandidateData.email || '—'}</p>
               </div>
             </div>
           </div>
@@ -1705,23 +1946,34 @@ const AdminAddNominationPage = () => {
   return (
     <div className="space-y-3">
       {/* Header */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center justify-between">
+      <div className="rounded-lg p-4 border flex items-center justify-between" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(nominationId ? `/admin/nominations/${nominationId}` : '/admin/nominations')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            onMouseEnter={() => setHoveredBackButton(true)}
+            onMouseLeave={() => setHoveredBackButton(false)}
+            className="p-2 rounded-lg transition-colors"
+            style={{
+              backgroundColor: hoveredBackButton ? '#f3f4f6' : 'transparent'
+            }}
           >
-            <ArrowLeft className="w-4 h-4 text-gray-600" />
+            <ArrowLeft className="w-4 h-4" style={{ color: '#4b5563' }} />
           </button>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">{nominationId ? 'Chỉnh sửa đơn tiến cử' : 'Tạo đơn tiến cử'}</h1>
-            <p className="text-xs text-gray-500 mt-1">{nominationId ? 'Cập nhật thông tin đơn tiến cử' : 'Thêm đơn tiến cử ứng viên vào job mới'}</p>
+            <h1 className="text-lg font-bold" style={{ color: '#111827' }}>{nominationId ? 'Chỉnh sửa đơn tiến cử' : 'Tạo đơn tiến cử'}</h1>
+            <p className="text-xs mt-1" style={{ color: '#6b7280' }}>{nominationId ? 'Cập nhật thông tin đơn tiến cử' : 'Thêm đơn tiến cử ứng viên vào job mới'}</p>
           </div>
         </div>
         <div className="flex gap-2">
           <button
             onClick={handleCancel}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center gap-1.5"
+            onMouseEnter={() => setHoveredCancelButton(true)}
+            onMouseLeave={() => setHoveredCancelButton(false)}
+            className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredCancelButton ? '#e5e7eb' : '#f3f4f6',
+              color: '#374151'
+            }}
           >
             <X className="w-3.5 h-3.5" />
             Hủy
@@ -1733,7 +1985,17 @@ const AdminAddNominationPage = () => {
                 handleGoToConfirm();
               }}
               disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              onMouseEnter={() => !loading && setHoveredConfirmButton(true)}
+              onMouseLeave={() => setHoveredConfirmButton(false)}
+              className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+              style={{
+                backgroundColor: loading
+                  ? '#93c5fd'
+                  : (hoveredConfirmButton ? '#1d4ed8' : '#2563eb'),
+                color: 'white',
+                opacity: loading ? 0.5 : 1,
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
             >
               <ChevronRight className="w-3.5 h-3.5" />
               Xác nhận tiến cử
@@ -1742,7 +2004,17 @@ const AdminAddNominationPage = () => {
             <button
               onClick={handleSubmit}
               disabled={loading || editingCV}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              onMouseEnter={() => !loading && !editingCV && setHoveredSaveButton(true)}
+              onMouseLeave={() => setHoveredSaveButton(false)}
+              className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+              style={{
+                backgroundColor: loading || editingCV
+                  ? '#86efac'
+                  : (hoveredSaveButton ? '#15803d' : '#16a34a'),
+                color: 'white',
+                opacity: loading || editingCV ? 0.5 : 1,
+                cursor: loading || editingCV ? 'not-allowed' : 'pointer'
+              }}
             >
               <Save className="w-3.5 h-3.5" />
               {loading ? (nominationId ? 'Đang cập nhật...' : 'Đang lưu...') : (nominationId ? 'Cập nhật đơn tiến cử' : 'Xác nhận và tạo đơn tiến cử')}
@@ -1756,9 +2028,9 @@ const AdminAddNominationPage = () => {
         {/* Left Column */}
         <div className="space-y-3">
           {/* Collaborator Selection */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <Users className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <Users className="w-4 h-4" style={{ color: '#2563eb' }} />
               Cộng tác viên
               {adminProfile?.role === 2 && (
                 <span className="text-[10px] text-blue-600 font-normal ml-1">
@@ -1768,11 +2040,11 @@ const AdminAddNominationPage = () => {
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Tìm kiếm CTV
                 </label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                   <input
                     type="text"
                     placeholder="Nhập tên hoặc ID CTV..."
@@ -1781,21 +2053,38 @@ const AdminAddNominationPage = () => {
                       setCollaboratorSearch(e.target.value);
                       setShowCollaboratorDropdown(true);
                     }}
-                    onFocus={() => setShowCollaboratorDropdown(true)}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full pl-10 pr-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      setShowCollaboratorDropdown(true);
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                   {showCollaboratorDropdown && filteredCollaborators.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                      {filteredCollaborators.map((collaborator) => (
+                    <div className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg max-h-60 overflow-y-auto" style={{ backgroundColor: 'white', borderColor: '#d1d5db' }}>
+                      {filteredCollaborators.map((collaborator, index) => (
                         <button
                           key={collaborator.id}
                           type="button"
                           onClick={() => handleCollaboratorSelect(collaborator)}
-                          className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 flex items-center justify-between"
+                          onMouseEnter={() => setHoveredCollaboratorDropdownItemIndex(index)}
+                          onMouseLeave={() => setHoveredCollaboratorDropdownItemIndex(null)}
+                          className="w-full px-3 py-2 text-left text-xs flex items-center justify-between"
+                          style={{
+                            backgroundColor: hoveredCollaboratorDropdownItemIndex === index ? '#f3f4f6' : 'transparent'
+                          }}
                         >
                           <div>
-                            <div className="font-medium text-gray-900">{collaborator.name}</div>
-                            <div className="text-gray-500">{collaborator.id} • {collaborator.email}</div>
+                            <div className="font-medium" style={{ color: '#111827' }}>{collaborator.name}</div>
+                            <div style={{ color: '#6b7280' }}>{collaborator.id} • {collaborator.email}</div>
                           </div>
                         </button>
                       ))}
@@ -1803,9 +2092,9 @@ const AdminAddNominationPage = () => {
                   )}
                 </div>
                 {formData.collaboratorId && (
-                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="text-xs font-medium text-blue-900">Đã chọn: {formData.collaboratorName}</div>
-                    <div className="text-[10px] text-blue-700">ID: {formData.collaboratorId}</div>
+                  <div className="mt-2 p-2 border rounded-lg" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
+                    <div className="text-xs font-medium" style={{ color: '#1e3a8a' }}>Đã chọn: {formData.collaboratorName}</div>
+                    <div className="text-[10px]" style={{ color: '#1d4ed8' }}>ID: {formData.collaboratorId}</div>
                   </div>
                 )}
               </div>
@@ -1814,16 +2103,20 @@ const AdminAddNominationPage = () => {
                   <input
                     type="checkbox"
                     id="auto-assign-ctv"
-                    className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+                    className="w-3.5 h-3.5 rounded"
+                    style={{
+                      accentColor: '#2563eb',
+                      borderColor: '#d1d5db'
+                    }}
                   />
-                  <label htmlFor="auto-assign-ctv" className="text-xs text-gray-700">
+                  <label htmlFor="auto-assign-ctv" className="text-xs" style={{ color: '#374151' }}>
                     Tự động gán CTV
                   </label>
                 </div>
               )}
               {adminProfile?.role === 2 && collaborators.length === 0 && (
-                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-xs text-yellow-800">
+                <div className="p-3 border rounded-lg" style={{ backgroundColor: '#fefce8', borderColor: '#fde047' }}>
+                  <p className="text-xs" style={{ color: '#854d0e' }}>
                     Bạn chưa được phân công CTV nào. Vui lòng liên hệ Super Admin để được phân công CTV.
                   </p>
                 </div>
@@ -1832,25 +2125,28 @@ const AdminAddNominationPage = () => {
           </div>
 
           {/* Candidate Selection */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <User className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <User className="w-4 h-4" style={{ color: '#2563eb' }} />
               Ứng viên <span className="text-red-500">*</span>
             </h2>
             
             {/* Tabs */}
-            <div className="flex border-b border-gray-200 mb-3">
+            <div className="flex border-b mb-3" style={{ borderColor: '#e5e7eb' }}>
               <button
                 type="button"
                 onClick={() => {
                   setCandidateTab('existing');
                   setFormData(prev => ({ ...prev, candidateId: null, candidateName: '', name: '', email: '', phone: '', birthDate: '', gender: '' }));
                 }}
-                className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${
-                  candidateTab === 'existing'
-                    ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
+                onMouseEnter={() => candidateTab !== 'existing' && setHoveredTabExisting(true)}
+                onMouseLeave={() => setHoveredTabExisting(false)}
+                className="flex-1 px-3 py-2 text-xs font-medium transition-colors"
+                style={{
+                  backgroundColor: candidateTab === 'existing' ? '#eff6ff' : (hoveredTabExisting ? '#f9fafb' : 'transparent'),
+                  color: candidateTab === 'existing' ? '#1d4ed8' : (hoveredTabExisting ? '#111827' : '#4b5563'),
+                  borderBottom: candidateTab === 'existing' ? '2px solid #1d4ed8' : '2px solid transparent'
+                }}
               >
                 Chọn ứng viên có sẵn
               </button>
@@ -1860,11 +2156,14 @@ const AdminAddNominationPage = () => {
                   setCandidateTab('new');
                   setFormData(prev => ({ ...prev, candidateId: null, candidateName: '', name: '', email: '', phone: '', birthDate: '', gender: '' }));
                 }}
-                className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${
-                  candidateTab === 'new'
-                    ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
+                onMouseEnter={() => candidateTab !== 'new' && setHoveredTabNew(true)}
+                onMouseLeave={() => setHoveredTabNew(false)}
+                className="flex-1 px-3 py-2 text-xs font-medium transition-colors"
+                style={{
+                  backgroundColor: candidateTab === 'new' ? '#eff6ff' : (hoveredTabNew ? '#f9fafb' : 'transparent'),
+                  color: candidateTab === 'new' ? '#1d4ed8' : (hoveredTabNew ? '#111827' : '#4b5563'),
+                  borderBottom: candidateTab === 'new' ? '2px solid #1d4ed8' : '2px solid transparent'
+                }}
               >
                 Tạo ứng viên mới
               </button>
@@ -1873,30 +2172,30 @@ const AdminAddNominationPage = () => {
             {candidateTab === 'existing' ? (
               <div className="space-y-3">
                 {!formData.collaboratorId && (
-                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg mb-3">
-                    <p className="text-xs text-yellow-800">
+                  <div className="p-3 border rounded-lg mb-3" style={{ backgroundColor: '#fefce8', borderColor: '#fde047' }}>
+                    <p className="text-xs" style={{ color: '#854d0e' }}>
                       Vui lòng chọn CTV trước để xem danh sách ứng viên của CTV đó.
                     </p>
                   </div>
                 )}
                 {formData.collaboratorId && candidates.length === 0 && (
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3">
-                    <p className="text-xs text-blue-800">
+                  <div className="p-3 border rounded-lg mb-3" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
+                    <p className="text-xs" style={{ color: '#1e40af' }}>
                       CTV này chưa có ứng viên nào. Bạn có thể tạo ứng viên mới ở tab "Tạo ứng viên mới".
                     </p>
                   </div>
                 )}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Tìm kiếm ứng viên
                     {formData.collaboratorId && (
-                      <span className="text-[10px] text-gray-500 font-normal ml-1">
+                      <span className="text-[10px] font-normal ml-1" style={{ color: '#6b7280' }}>
                         (của CTV: {formData.collaboratorName}) - {candidates.length} ứng viên
                       </span>
                     )}
                   </label>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                     <input
                       type="text"
                       placeholder="Nhập tên hoặc ID ứng viên..."
@@ -1905,47 +2204,64 @@ const AdminAddNominationPage = () => {
                         setCandidateSearch(e.target.value);
                         setShowCandidateDropdown(true);
                       }}
-                      onFocus={() => setShowCandidateDropdown(true)}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      className="w-full pl-10 pr-3 py-2 border rounded-lg text-xs"
+                      style={{
+                        borderColor: '#d1d5db',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        setShowCandidateDropdown(true);
+                        e.target.style.borderColor = '#2563eb';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#d1d5db';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                     {showCandidateDropdown && filteredCandidates.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                        {filteredCandidates.map((candidate) => (
+                      <div className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg max-h-60 overflow-y-auto" style={{ backgroundColor: 'white', borderColor: '#d1d5db' }}>
+                        {filteredCandidates.map((candidate, index) => (
                           <button
                             key={candidate.id}
                             type="button"
                             onClick={() => handleCandidateSelect(candidate)}
-                            className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 flex items-center justify-between"
+                            onMouseEnter={() => setHoveredCandidateDropdownItemIndex(index)}
+                            onMouseLeave={() => setHoveredCandidateDropdownItemIndex(null)}
+                            className="w-full px-3 py-2 text-left text-xs flex items-center justify-between"
+                            style={{
+                              backgroundColor: hoveredCandidateDropdownItemIndex === index ? '#f3f4f6' : 'transparent'
+                            }}
                           >
                             <div>
-                              <div className="font-medium text-gray-900">{candidate.fullName || candidate.name}</div>
-                              <div className="text-gray-500">{candidate.code || candidate.id} • {candidate.email}</div>
+                              <div className="font-medium" style={{ color: '#111827' }}>{candidate.fullName || candidate.name}</div>
+                              <div style={{ color: '#6b7280' }}>{candidate.code || candidate.id} • {candidate.email}</div>
                             </div>
                           </button>
                         ))}
                       </div>
                     )}
                     {showCandidateDropdown && filteredCandidates.length === 0 && candidateSearch && formData.collaboratorId && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-3">
-                        <p className="text-xs text-gray-500">Không tìm thấy ứng viên nào phù hợp với từ khóa "{candidateSearch}"</p>
+                      <div className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg p-3" style={{ backgroundColor: 'white', borderColor: '#d1d5db' }}>
+                        <p className="text-xs" style={{ color: '#6b7280' }}>Không tìm thấy ứng viên nào phù hợp với từ khóa "{candidateSearch}"</p>
                       </div>
                     )}
                     {showCandidateDropdown && candidates.length === 0 && !candidateSearch && formData.collaboratorId && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-3">
-                        <p className="text-xs text-gray-500">CTV này chưa có ứng viên nào. Vui lòng tạo ứng viên mới.</p>
+                      <div className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg p-3" style={{ backgroundColor: 'white', borderColor: '#d1d5db' }}>
+                        <p className="text-xs" style={{ color: '#6b7280' }}>CTV này chưa có ứng viên nào. Vui lòng tạo ứng viên mới.</p>
                       </div>
                     )}
                   </div>
                   {formData.candidateId && (
-                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-                      <div className="text-xs font-medium text-blue-900">Đã chọn: {formData.candidateName}</div>
-                      <div className="text-[10px] text-blue-700">ID: {formData.candidateId}</div>
+                    <div className="mt-2 p-2 border rounded-lg" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
+                      <div className="text-xs font-medium" style={{ color: '#1e3a8a' }}>Đã chọn: {formData.candidateName}</div>
+                      <div className="text-[10px]" style={{ color: '#1d4ed8' }}>ID: {formData.candidateId}</div>
                     </div>
                   )}
-                  {errors.candidateId && <p className="text-[10px] text-red-500 mt-1">{errors.candidateId}</p>}
-                  {errors.name && <p className="text-[10px] text-red-500 mt-1">{errors.name}</p>}
-                  {errors.birthDate && <p className="text-[10px] text-red-500 mt-1">{errors.birthDate}</p>}
-                  {errors.gender && <p className="text-[10px] text-red-500 mt-1">{errors.gender}</p>}
+                  {errors.candidateId && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.candidateId}</p>}
+                  {errors.name && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.name}</p>}
+                  {errors.birthDate && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.birthDate}</p>}
+                  {errors.gender && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.gender}</p>}
                 </div>
               </div>
             ) : (
@@ -1955,7 +2271,7 @@ const AdminAddNominationPage = () => {
                   <h3 className="text-xs font-bold text-gray-900">Thông tin cá nhân</h3>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Họ tên (Kanji) <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -1964,12 +2280,24 @@ const AdminAddNominationPage = () => {
                         value={newCandidateData.nameKanji}
                         onChange={handleNewCandidateInputChange}
                         placeholder="VD: 山田 太郎"
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       />
                       {errors.nameKanji && <p className="text-[10px] text-red-500 mt-1">{errors.nameKanji}</p>}
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Họ tên (Kana)
                       </label>
                       <input
@@ -1978,13 +2306,25 @@ const AdminAddNominationPage = () => {
                         value={newCandidateData.nameKana}
                         onChange={handleNewCandidateInputChange}
                         placeholder="VD: やまだ たろう"
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Ngày sinh
                       </label>
                       <input
@@ -1993,11 +2333,23 @@ const AdminAddNominationPage = () => {
                         value={newCandidateData.birthDate}
                         onChange={handleNewCandidateInputChange}
                         placeholder="1990年1月1日"
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Tuổi
                       </label>
                       <input
@@ -2006,18 +2358,42 @@ const AdminAddNominationPage = () => {
                         value={newCandidateData.age}
                         onChange={handleNewCandidateInputChange}
                         placeholder="30"
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Giới tính
                       </label>
                       <select
                         name="gender"
                         value={newCandidateData.gender}
                         onChange={handleNewCandidateInputChange}
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       >
                         <option value="">Chọn</option>
                         <option value="男">Nam (男)</option>
@@ -2027,7 +2403,7 @@ const AdminAddNominationPage = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Email <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -2036,12 +2412,24 @@ const AdminAddNominationPage = () => {
                         value={newCandidateData.email}
                         onChange={handleNewCandidateInputChange}
                         placeholder="email@example.com"
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       />
                       {errors.email && <p className="text-[10px] text-red-500 mt-1">{errors.email}</p>}
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Điện thoại
                       </label>
                       <input
@@ -2050,7 +2438,19 @@ const AdminAddNominationPage = () => {
                         value={newCandidateData.phone}
                         onChange={handleNewCandidateInputChange}
                         placeholder="090-1234-5678"
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       />
                     </div>
                   </div>
@@ -2064,7 +2464,19 @@ const AdminAddNominationPage = () => {
                       value={newCandidateData.postalCode}
                       onChange={handleNewCandidateInputChange}
                       placeholder="123-4567"
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                     />
                   </div>
                   <div>
@@ -2077,7 +2489,19 @@ const AdminAddNominationPage = () => {
                       value={newCandidateData.address}
                       onChange={handleNewCandidateInputChange}
                       placeholder="東京都渋谷区..."
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                     />
                   </div>
                   <div>
@@ -2090,19 +2514,43 @@ const AdminAddNominationPage = () => {
                       value={newCandidateData.addressOrigin}
                       onChange={handleNewCandidateInputChange}
                       placeholder="Hà Nội, Việt Nam"
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Có hộ chiếu
                       </label>
                       <select
                         name="passport"
                         value={newCandidateData.passport}
                         onChange={handleNewCandidateInputChange}
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       >
                         <option value="">Chọn</option>
                         <option value="1">Có</option>
@@ -2110,14 +2558,26 @@ const AdminAddNominationPage = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Nơi cư trú hiện tại
                       </label>
                       <select
                         name="currentResidence"
                         value={newCandidateData.currentResidence}
                         onChange={handleNewCandidateInputChange}
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       >
                         <option value="">Chọn</option>
                         <option value="1">Việt Nam</option>
@@ -2128,14 +2588,26 @@ const AdminAddNominationPage = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Tình trạng cư trú tại Nhật
                       </label>
                       <select
                         name="jpResidenceStatus"
                         value={newCandidateData.jpResidenceStatus}
                         onChange={handleNewCandidateInputChange}
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       >
                         <option value="">Chọn</option>
                         <option value="1">永住者</option>
@@ -2145,7 +2617,7 @@ const AdminAddNominationPage = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Ngày hết hạn visa
                       </label>
                       <input
@@ -2153,13 +2625,25 @@ const AdminAddNominationPage = () => {
                         name="visaExpirationDate"
                         value={newCandidateData.visaExpirationDate}
                         onChange={handleNewCandidateInputChange}
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Quốc gia khác
                       </label>
                       <input
@@ -2168,18 +2652,42 @@ const AdminAddNominationPage = () => {
                         value={newCandidateData.otherCountry}
                         onChange={handleNewCandidateInputChange}
                         placeholder="VD: USA"
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Có vợ/chồng
                       </label>
                       <select
                         name="spouse"
                         value={newCandidateData.spouse}
                         onChange={handleNewCandidateInputChange}
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       >
                         <option value="">Chọn</option>
                         <option value="1">Có</option>
@@ -2202,7 +2710,12 @@ const AdminAddNominationPage = () => {
                       <button
                         type="button"
                         onClick={handleAddEducation}
-                        className="text-[10px] text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                        onMouseEnter={() => setHoveredAddEducationButton(true)}
+                        onMouseLeave={() => setHoveredAddEducationButton(false)}
+                        className="text-[10px] flex items-center gap-1"
+                        style={{
+                          color: hoveredAddEducationButton ? '#1d4ed8' : '#2563eb'
+                        }}
                       >
                         <Plus className="w-3 h-3" />
                         Thêm
@@ -2216,19 +2729,48 @@ const AdminAddNominationPage = () => {
                             placeholder="Năm"
                             value={edu.year || ''}
                             onChange={(e) => updateEducation(index, 'year', e.target.value)}
-                            className="px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                            className="px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                           />
                           <input
                             type="text"
                             placeholder="Tháng"
                             value={edu.month || ''}
                             onChange={(e) => updateEducation(index, 'month', e.target.value)}
-                            className="px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                            className="px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                           />
                           <button
                             type="button"
                             onClick={() => removeEducation(index)}
-                            className="p-1.5 text-red-500 hover:text-red-700"
+                            onMouseEnter={() => setHoveredRemoveEducationButtonIndex(index)}
+                            onMouseLeave={() => setHoveredRemoveEducationButtonIndex(null)}
+                            className="p-1.5"
+                            style={{
+                              color: hoveredRemoveEducationButtonIndex === index ? '#b91c1c' : '#ef4444'
+                            }}
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -2238,7 +2780,19 @@ const AdminAddNominationPage = () => {
                           value={edu.content || ''}
                           onChange={(e) => updateEducation(index, 'content', e.target.value)}
                           rows="2"
-                          className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                          className="w-full px-2 py-1.5 border rounded text-xs resize-none"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                         />
                       </div>
                     ))}
@@ -2253,7 +2807,12 @@ const AdminAddNominationPage = () => {
                       <button
                         type="button"
                         onClick={handleAddWorkExperience}
-                        className="text-[10px] text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                        onMouseEnter={() => setHoveredAddWorkExperienceButton(true)}
+                        onMouseLeave={() => setHoveredAddWorkExperienceButton(false)}
+                        className="text-[10px] flex items-center gap-1"
+                        style={{
+                          color: hoveredAddWorkExperienceButton ? '#1d4ed8' : '#2563eb'
+                        }}
                       >
                         <Plus className="w-3 h-3" />
                         Thêm
@@ -2267,14 +2826,38 @@ const AdminAddNominationPage = () => {
                             placeholder="Thời gian"
                             value={exp.period || ''}
                             onChange={(e) => updateEmployment(index, 'period', e.target.value)}
-                            className="px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                            className="px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                           />
                           <input
                             type="text"
                             placeholder="Tên công ty"
                             value={exp.company_name || ''}
                             onChange={(e) => updateEmployment(index, 'company_name', e.target.value)}
-                            className="px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                            className="px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                           />
                         </div>
                         <input
@@ -2282,21 +2865,57 @@ const AdminAddNominationPage = () => {
                           placeholder="Mục đích kinh doanh"
                           value={exp.business_purpose || ''}
                           onChange={(e) => updateEmployment(index, 'business_purpose', e.target.value)}
-                          className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                         />
                         <input
                           type="text"
                           placeholder="Quy mô/Vai trò"
                           value={exp.scale_role || ''}
                           onChange={(e) => updateEmployment(index, 'scale_role', e.target.value)}
-                          className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                         />
                         <textarea
                           placeholder="Mô tả công việc..."
                           value={exp.description || ''}
                           onChange={(e) => updateEmployment(index, 'description', e.target.value)}
                           rows="2"
-                          className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                          className="w-full px-2 py-1.5 border rounded text-xs resize-none"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                         />
                         <div className="flex gap-2">
                           <input
@@ -2309,7 +2928,12 @@ const AdminAddNominationPage = () => {
                           <button
                             type="button"
                             onClick={() => removeEmployment(index)}
-                            className="p-1.5 text-red-500 hover:text-red-700"
+                            onMouseEnter={() => setHoveredRemoveWorkExperienceButtonIndex(index)}
+                            onMouseLeave={() => setHoveredRemoveWorkExperienceButtonIndex(null)}
+                            className="p-1.5"
+                            style={{
+                              color: hoveredRemoveWorkExperienceButtonIndex === index ? '#b91c1c' : '#ef4444'
+                            }}
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -2333,7 +2957,19 @@ const AdminAddNominationPage = () => {
                       onChange={handleNewCandidateInputChange}
                       placeholder="VD: Java, React, Node.js..."
                       rows="3"
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                      className="w-full px-2 py-1.5 border rounded text-xs resize-none"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                     />
                   </div>
 
@@ -2345,7 +2981,12 @@ const AdminAddNominationPage = () => {
                       <button
                         type="button"
                         onClick={handleAddCertificate}
-                        className="text-[10px] text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                        onMouseEnter={() => setHoveredAddCertificateButton(true)}
+                        onMouseLeave={() => setHoveredAddCertificateButton(false)}
+                        className="text-[10px] flex items-center gap-1"
+                        style={{
+                          color: hoveredAddCertificateButton ? '#1d4ed8' : '#2563eb'
+                        }}
                       >
                         <Plus className="w-3 h-3" />
                         Thêm
@@ -2359,26 +3000,67 @@ const AdminAddNominationPage = () => {
                             placeholder="Năm"
                             value={cert.year || ''}
                             onChange={(e) => updateCertificate(index, 'year', e.target.value)}
-                            className="px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                            className="px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                           />
                           <input
                             type="text"
                             placeholder="Tháng"
                             value={cert.month || ''}
                             onChange={(e) => updateCertificate(index, 'month', e.target.value)}
-                            className="px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                            className="px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                           />
                           <input
                             type="text"
                             placeholder="Tên chứng chỉ"
                             value={cert.name || ''}
                             onChange={(e) => updateCertificate(index, 'name', e.target.value)}
-                            className="px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                            className="px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                           />
                           <button
                             type="button"
                             onClick={() => removeCertificate(index)}
-                            className="p-1.5 text-red-500 hover:text-red-700"
+                            onMouseEnter={() => setHoveredRemoveCertificateButtonIndex(index)}
+                            onMouseLeave={() => setHoveredRemoveCertificateButtonIndex(null)}
+                            className="p-1.5"
+                            style={{
+                              color: hoveredRemoveCertificateButtonIndex === index ? '#b91c1c' : '#ef4444'
+                            }}
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -2389,7 +3071,7 @@ const AdminAddNominationPage = () => {
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         JLPT Level - 日本語能力試験
                       </label>
                       <div className="flex items-center border border-gray-300 rounded focus-within:ring-2 focus-within:ring-blue-600">
@@ -2408,7 +3090,7 @@ const AdminAddNominationPage = () => {
                       <p className="text-[9px] text-gray-500 mt-0.5">Nhập số từ 1 (N1) đến 5 (N5)</p>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Số năm kinh nghiệm - 経験年数
                       </label>
                       <input
@@ -2418,13 +3100,25 @@ const AdminAddNominationPage = () => {
                         onChange={handleNewCandidateInputChange}
                         placeholder="VD: 3"
                         min="0"
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Chuyên ngành - 専門分野
                       </label>
                       <input
@@ -2434,11 +3128,23 @@ const AdminAddNominationPage = () => {
                         onChange={handleNewCandidateInputChange}
                         placeholder="ID chuyên ngành"
                         min="0"
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Bằng cấp - 資格
                       </label>
                       <input
@@ -2448,7 +3154,19 @@ const AdminAddNominationPage = () => {
                         onChange={handleNewCandidateInputChange}
                         placeholder="ID bằng cấp"
                         min="0"
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       />
                     </div>
                   </div>
@@ -2469,7 +3187,12 @@ const AdminAddNominationPage = () => {
                           <button
                             type="button"
                             onClick={() => removeLearnedTool(index)}
-                            className="p-1.5 text-red-500 hover:text-red-700"
+                            onMouseEnter={() => setHoveredRemoveLearnedToolButtonIndex(index)}
+                            onMouseLeave={() => setHoveredRemoveLearnedToolButtonIndex(null)}
+                            className="p-1.5"
+                            style={{
+                              color: hoveredRemoveLearnedToolButtonIndex === index ? '#b91c1c' : '#ef4444'
+                            }}
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -2478,7 +3201,12 @@ const AdminAddNominationPage = () => {
                       <button
                         type="button"
                         onClick={handleAddLearnedTool}
-                        className="text-[10px] text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                        onMouseEnter={() => setHoveredAddLearnedToolButton(true)}
+                        onMouseLeave={() => setHoveredAddLearnedToolButton(false)}
+                        className="text-[10px] flex items-center gap-1"
+                        style={{
+                          color: hoveredAddLearnedToolButton ? '#1d4ed8' : '#2563eb'
+                        }}
                       >
                         <Plus className="w-3 h-3" />
                         Thêm công cụ đã học
@@ -2502,7 +3230,12 @@ const AdminAddNominationPage = () => {
                           <button
                             type="button"
                             onClick={() => removeExperienceTool(index)}
-                            className="p-1.5 text-red-500 hover:text-red-700"
+                            onMouseEnter={() => setHoveredRemoveExperienceToolButtonIndex(index)}
+                            onMouseLeave={() => setHoveredRemoveExperienceToolButtonIndex(null)}
+                            className="p-1.5"
+                            style={{
+                              color: hoveredRemoveExperienceToolButtonIndex === index ? '#b91c1c' : '#ef4444'
+                            }}
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -2511,7 +3244,12 @@ const AdminAddNominationPage = () => {
                       <button
                         type="button"
                         onClick={handleAddExperienceTool}
-                        className="text-[10px] text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                        onMouseEnter={() => setHoveredAddExperienceToolButton(true)}
+                        onMouseLeave={() => setHoveredAddExperienceToolButton(false)}
+                        className="text-[10px] flex items-center gap-1"
+                        style={{
+                          color: hoveredAddExperienceToolButton ? '#1d4ed8' : '#2563eb'
+                        }}
                       >
                         <Plus className="w-3 h-3" />
                         Thêm công cụ có kinh nghiệm
@@ -2534,7 +3272,19 @@ const AdminAddNominationPage = () => {
                       onChange={handleNewCandidateInputChange}
                       placeholder="Tóm tắt về sự nghiệp của bạn..."
                       rows="3"
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                      className="w-full px-2 py-1.5 border rounded text-xs resize-none"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                     />
                   </div>
                   
@@ -2548,7 +3298,19 @@ const AdminAddNominationPage = () => {
                       onChange={handleNewCandidateInputChange}
                       placeholder="Điểm mạnh của bạn..."
                       rows="2"
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                      className="w-full px-2 py-1.5 border rounded text-xs resize-none"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                     />
                   </div>
                   
@@ -2562,7 +3324,19 @@ const AdminAddNominationPage = () => {
                       onChange={handleNewCandidateInputChange}
                       placeholder="Động lực làm việc của bạn..."
                       rows="2"
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                      className="w-full px-2 py-1.5 border rounded text-xs resize-none"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                     />
                   </div>
                 </div>
@@ -2573,7 +3347,7 @@ const AdminAddNominationPage = () => {
                   
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Lương hiện tại
                       </label>
                       <input
@@ -2582,11 +3356,23 @@ const AdminAddNominationPage = () => {
                         value={newCandidateData.currentSalary}
                         onChange={handleNewCandidateInputChange}
                         placeholder="VD: 500万円"
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Lương mong muốn
                       </label>
                       <input
@@ -2595,7 +3381,19 @@ const AdminAddNominationPage = () => {
                         value={newCandidateData.desiredSalary}
                         onChange={handleNewCandidateInputChange}
                         placeholder="VD: 700万円"
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       />
                     </div>
                   </div>
@@ -2610,7 +3408,19 @@ const AdminAddNominationPage = () => {
                       value={newCandidateData.desiredPosition}
                       onChange={handleNewCandidateInputChange}
                       placeholder="VD: Software Engineer"
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                     />
                   </div>
                   
@@ -2624,13 +3434,25 @@ const AdminAddNominationPage = () => {
                       value={newCandidateData.desiredLocation}
                       onChange={handleNewCandidateInputChange}
                       placeholder="VD: Tokyo"
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                     />
                   </div>
                   
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Thời gian nhập công ty
                       </label>
                       <input
@@ -2639,11 +3461,23 @@ const AdminAddNominationPage = () => {
                         value={newCandidateData.nyushaTime}
                         onChange={handleNewCandidateInputChange}
                         placeholder="VD: 2025年4月"
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-gray-900 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#111827' }}>
                         Thời gian phỏng vấn
                       </label>
                       <input
@@ -2652,7 +3486,19 @@ const AdminAddNominationPage = () => {
                         value={newCandidateData.interviewTime}
                         onChange={handleNewCandidateInputChange}
                         placeholder="VD: 2025年3月"
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                       />
                     </div>
                   </div>
@@ -2666,7 +3512,19 @@ const AdminAddNominationPage = () => {
                       name="desiredStartDate"
                       value={newCandidateData.desiredStartDate}
                       onChange={handleNewCandidateInputChange}
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                     />
                   </div>
                 </div>
@@ -2685,7 +3543,19 @@ const AdminAddNominationPage = () => {
                       value={newCandidateData.otherDocuments}
                       onChange={handleNewCandidateInputChange}
                       placeholder="VD: Portfolio, GitHub..."
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      className="w-full px-2 py-1.5 border rounded text-xs"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                     />
                   </div>
                   
@@ -2699,7 +3569,19 @@ const AdminAddNominationPage = () => {
                       onChange={handleNewCandidateInputChange}
                       placeholder="Ghi chú về ứng viên..."
                       rows="3"
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                      className="w-full px-2 py-1.5 border rounded text-xs resize-none"
+style={{
+  borderColor: '#d1d5db',
+  outline: 'none'
+}}
+onFocus={(e) => {
+  e.target.style.borderColor = '#2563eb';
+  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+}}
+onBlur={(e) => {
+  e.target.style.borderColor = '#d1d5db';
+  e.target.style.boxShadow = 'none';
+}}
                     />
                   </div>
                 </div>
@@ -2708,12 +3590,19 @@ const AdminAddNominationPage = () => {
                 <div className="space-y-2">
                   <h3 className="text-xs font-bold text-gray-900">Upload CV</h3>
                   {cvFiles.length === 0 ? (
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-600 transition-colors">
+                    <div 
+                      className="border-2 border-dashed rounded-lg p-4 text-center transition-colors"
+                      onMouseEnter={() => setHoveredUploadArea(true)}
+                      onMouseLeave={() => setHoveredUploadArea(false)}
+                      style={{
+                        borderColor: hoveredUploadArea ? '#2563eb' : '#d1d5db'
+                      }}
+                    >
                       <label htmlFor="cv-upload" className="cursor-pointer">
                         <div className="flex flex-col items-center gap-2">
-                          <Upload className="w-6 h-6 text-gray-400" />
-                          <p className="text-xs font-semibold text-gray-900">Chọn file PDF</p>
-                          <p className="text-[10px] text-gray-500">Tự động trích xuất dữ liệu</p>
+                          <Upload className="w-6 h-6" style={{ color: '#9ca3af' }} />
+                          <p className="text-xs font-semibold" style={{ color: '#111827' }}>Chọn file PDF</p>
+                          <p className="text-[10px]" style={{ color: '#6b7280' }}>Tự động trích xuất dữ liệu</p>
                         </div>
                         <input
                           id="cv-upload"
@@ -2728,38 +3617,43 @@ const AdminAddNominationPage = () => {
                   ) : (
                     <div className="space-y-2">
                       {cvFiles.map((file, index) => (
-                        <div key={index} className="bg-gray-50 rounded-lg p-2 border border-gray-200 flex items-center justify-between">
+                        <div key={index} className="rounded-lg p-2 border flex items-center justify-between" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
                           <div className="flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-blue-600" />
+                            <FileText className="w-4 h-4" style={{ color: '#2563eb' }} />
                             <div>
-                              <p className="text-xs font-medium text-gray-900">{file.name}</p>
-                              <p className="text-[10px] text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                              <p className="text-xs font-medium" style={{ color: '#111827' }}>{file.name}</p>
+                              <p className="text-[10px]" style={{ color: '#6b7280' }}>{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                             </div>
                           </div>
                           <button
                             type="button"
                             onClick={() => handleRemoveCV(index)}
-                            className="text-gray-400 hover:text-red-600"
+                            onMouseEnter={() => setHoveredRemoveCVButtonIndex(index)}
+                            onMouseLeave={() => setHoveredRemoveCVButtonIndex(null)}
+                            className="disabled:opacity-50"
                             disabled={isParsing}
+                            style={{
+                              color: hoveredRemoveCVButtonIndex === index ? '#dc2626' : '#9ca3af'
+                            }}
                           >
                             <X className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       ))}
                       {isParsing && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
-                          <p className="text-xs text-blue-800">
+                        <div className="border rounded-lg p-2" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
+                          <p className="text-xs" style={{ color: '#1e40af' }}>
                             Đang phân tích... ({parseProgress.current}/{parseProgress.total})
                           </p>
                         </div>
                       )}
                       {parseError && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-2 text-xs text-red-800">
+                        <div className="border rounded-lg p-2 text-xs" style={{ backgroundColor: '#fef2f2', borderColor: '#fecaca', color: '#991b1b' }}>
                           {parseError}
                         </div>
                       )}
                       {parseSuccess && (
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-2 text-xs text-green-800">
+                        <div className="border rounded-lg p-2 text-xs" style={{ backgroundColor: '#f0fdf4', borderColor: '#bbf7d0', color: '#166534' }}>
                           {parseSuccess}
                         </div>
                       )}
@@ -2768,8 +3662,8 @@ const AdminAddNominationPage = () => {
                 </div>
 
                 {/* Note: Simplified - full form can be expanded if needed */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
-                  <p className="text-[10px] text-blue-800">
+                <div className="border rounded-lg p-2" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
+                  <p className="text-[10px]" style={{ color: '#1e40af' }}>
                     Hệ thống sẽ tự động điền thông tin từ CV đã upload. Bạn có thể chỉnh sửa sau.
                   </p>
                 </div>
@@ -2778,16 +3672,21 @@ const AdminAddNominationPage = () => {
           </div>
 
           {/* Job Selection */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
-              <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-blue-600" />
-                Công việc <span className="text-red-500">*</span>
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <div className="flex items-center justify-between mb-4 pb-3 border-b" style={{ borderColor: '#e5e7eb' }}>
+              <h2 className="text-sm font-bold flex items-center gap-2" style={{ color: '#111827' }}>
+                <Briefcase className="w-4 h-4" style={{ color: '#2563eb' }} />
+                Công việc <span style={{ color: '#ef4444' }}>*</span>
               </h2>
               <button
                 type="button"
                 onClick={() => navigate('/admin/jobs/create')}
-                className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                onMouseEnter={() => setHoveredCreateJobButton(true)}
+                onMouseLeave={() => setHoveredCreateJobButton(false)}
+                className="text-xs flex items-center gap-1"
+                style={{
+                  color: hoveredCreateJobButton ? '#1d4ed8' : '#2563eb'
+                }}
               >
                 <Plus className="w-3 h-3" />
                 Tạo job mới
@@ -2796,25 +3695,43 @@ const AdminAddNominationPage = () => {
             <div className="space-y-3">
               {/* Search */}
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Tìm kiếm công việc
                 </label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                     <input
                       type="text"
                       placeholder="Nhập tên job, ID hoặc công ty..."
                       value={jobSearch}
                       onChange={(e) => setJobSearch(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && handleJobSearch()}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      className="w-full pl-10 pr-3 py-2 border rounded-lg text-xs"
+                      style={{
+                        borderColor: '#d1d5db',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#2563eb';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#d1d5db';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
                   <button
                     type="button"
                     onClick={handleJobSearch}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors"
+                    onMouseEnter={() => setHoveredSearchButton(true)}
+                    onMouseLeave={() => setHoveredSearchButton(false)}
+                    className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors"
+                    style={{
+                      backgroundColor: hoveredSearchButton ? '#1d4ed8' : '#2563eb',
+                      color: 'white'
+                    }}
                   >
                     Tìm
                   </button>
@@ -2823,11 +3740,11 @@ const AdminAddNominationPage = () => {
 
               {/* Selected Job */}
               {formData.jobId && (
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="p-3 border rounded-lg" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-xs font-medium text-blue-900">Đã chọn: {formData.jobTitle}</div>
-                      <div className="text-[10px] text-blue-700 mt-1">ID: {formData.jobId}</div>
+                      <div className="text-xs font-medium" style={{ color: '#1e3a8a' }}>Đã chọn: {formData.jobTitle}</div>
+                      <div className="text-[10px] mt-1" style={{ color: '#1d4ed8' }}>ID: {formData.jobId}</div>
                     </div>
                     <button
                       type="button"
@@ -2836,45 +3753,56 @@ const AdminAddNominationPage = () => {
                         setSelectedJob(null);
                         setJobSearch('');
                       }}
-                      className="text-blue-600 hover:text-blue-800"
+                      onMouseEnter={() => setHoveredRemoveJobButton(true)}
+                      onMouseLeave={() => setHoveredRemoveJobButton(false)}
+                      style={{
+                        color: hoveredRemoveJobButton ? '#1e40af' : '#2563eb'
+                      }}
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
               )}
-              {errors.jobId && <p className="text-[10px] text-red-500">{errors.jobId}</p>}
+              {errors.jobId && <p className="text-[10px]" style={{ color: '#ef4444' }}>{errors.jobId}</p>}
 
               {/* Jobs List */}
-              <div className="border border-gray-200 rounded-lg">
+              <div className="border rounded-lg" style={{ borderColor: '#e5e7eb' }}>
                 {jobsLoading ? (
                   <div className="p-8 text-center">
-                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                    <p className="mt-2 text-xs text-gray-500">Đang tải...</p>
+                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2" style={{ borderColor: '#2563eb' }}></div>
+                    <p className="mt-2 text-xs" style={{ color: '#6b7280' }}>Đang tải...</p>
                   </div>
                 ) : jobs.length === 0 ? (
                   <div className="p-8 text-center">
-                    <Briefcase className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-xs text-gray-500">Không tìm thấy công việc nào</p>
+                    <Briefcase className="w-8 h-8 mx-auto mb-2" style={{ color: '#9ca3af' }} />
+                    <p className="text-xs" style={{ color: '#6b7280' }}>Không tìm thấy công việc nào</p>
                   </div>
                 ) : (
                   <>
                     <div className="max-h-96 overflow-y-auto">
-                      {jobs.map((job) => (
+                      {jobs.map((job, index) => (
                         <button
                           key={job.id}
                           type="button"
                           onClick={() => handleJobSelect(job)}
-                          className={`w-full px-4 py-3 text-left border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors ${
-                            formData.jobId === job.id || formData.jobId === job.id.toString()
-                              ? 'bg-blue-50 border-l-4 border-l-blue-600'
-                              : ''
-                          }`}
+                          onMouseEnter={() => setHoveredJobCardIndex(index)}
+                          onMouseLeave={() => setHoveredJobCardIndex(null)}
+                          className="w-full px-4 py-3 text-left border-b last:border-b-0 transition-colors"
+                          style={{
+                            borderColor: '#e5e7eb',
+                            backgroundColor: (formData.jobId === job.id || formData.jobId === job.id.toString())
+                              ? '#eff6ff'
+                              : (hoveredJobCardIndex === index ? '#f9fafb' : 'transparent'),
+                            borderLeft: (formData.jobId === job.id || formData.jobId === job.id.toString())
+                              ? '4px solid #2563eb'
+                              : 'none'
+                          }}
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1">
-                              <div className="text-xs font-semibold text-gray-900 mb-1">{job.title}</div>
-                              <div className="text-[10px] text-gray-500 space-y-0.5">
+                              <div className="text-xs font-semibold mb-1" style={{ color: '#111827' }}>{job.title}</div>
+                              <div className="text-[10px] space-y-0.5" style={{ color: '#6b7280' }}>
                                 <div>Mã: {job.jobCode || job.id}</div>
                                 {job.company?.name || job.companyName ? (
                                   <div className="flex items-center gap-1">
@@ -2897,7 +3825,7 @@ const AdminAddNominationPage = () => {
                               </div>
                             </div>
                             {(formData.jobId === job.id || formData.jobId === job.id.toString()) && (
-                              <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                              <Check className="w-4 h-4 flex-shrink-0" style={{ color: '#2563eb' }} />
                             )}
                           </div>
                         </button>
@@ -2906,8 +3834,8 @@ const AdminAddNominationPage = () => {
 
                     {/* Pagination */}
                     {jobsPagination.totalPages > 1 && (
-                      <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between bg-gray-50">
-                        <div className="text-xs text-gray-700">
+                      <div className="px-4 py-3 border-t flex items-center justify-between" style={{ borderColor: '#e5e7eb', backgroundColor: '#f9fafb' }}>
+                        <div className="text-xs" style={{ color: '#374151' }}>
                           Hiển thị {(jobsPagination.currentPage - 1) * jobsPagination.itemsPerPage + 1} - {Math.min(jobsPagination.currentPage * jobsPagination.itemsPerPage, jobsPagination.total)} của {jobsPagination.total}
                         </div>
                         <div className="flex items-center gap-1">
@@ -2915,7 +3843,13 @@ const AdminAddNominationPage = () => {
                             type="button"
                             onClick={() => loadJobs(1, jobSearch)}
                             disabled={jobsPagination.currentPage === 1 || jobsLoading}
-                            className="p-1.5 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                            onMouseEnter={() => !(jobsPagination.currentPage === 1 || jobsLoading) && setHoveredPaginationButton('first')}
+                            onMouseLeave={() => setHoveredPaginationButton(null)}
+                            className="p-1.5 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{
+                              borderColor: '#d1d5db',
+                              backgroundColor: hoveredPaginationButton === 'first' ? '#f3f4f6' : 'transparent'
+                            }}
                           >
                             <ChevronsLeft className="w-3 h-3" />
                           </button>
@@ -2926,11 +3860,17 @@ const AdminAddNominationPage = () => {
                               loadJobs(newPage, jobSearch);
                             }}
                             disabled={jobsPagination.currentPage === 1 || jobsLoading}
-                            className="p-1.5 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                            onMouseEnter={() => !(jobsPagination.currentPage === 1 || jobsLoading) && setHoveredPaginationButton('prev')}
+                            onMouseLeave={() => setHoveredPaginationButton(null)}
+                            className="p-1.5 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{
+                              borderColor: '#d1d5db',
+                              backgroundColor: hoveredPaginationButton === 'prev' ? '#f3f4f6' : 'transparent'
+                            }}
                           >
                             <ChevronLeft className="w-3 h-3" />
                           </button>
-                          <span className="text-xs text-gray-700 px-2">
+                          <span className="text-xs px-2" style={{ color: '#374151' }}>
                             Trang {jobsPagination.currentPage} / {jobsPagination.totalPages}
                           </span>
                           <button
@@ -2940,7 +3880,13 @@ const AdminAddNominationPage = () => {
                               loadJobs(newPage, jobSearch);
                             }}
                             disabled={jobsPagination.currentPage === jobsPagination.totalPages || jobsLoading}
-                            className="p-1.5 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                            onMouseEnter={() => !(jobsPagination.currentPage === jobsPagination.totalPages || jobsLoading) && setHoveredPaginationButton('next')}
+                            onMouseLeave={() => setHoveredPaginationButton(null)}
+                            className="p-1.5 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{
+                              borderColor: '#d1d5db',
+                              backgroundColor: hoveredPaginationButton === 'next' ? '#f3f4f6' : 'transparent'
+                            }}
                           >
                             <ChevronRight className="w-3 h-3" />
                           </button>
@@ -2948,7 +3894,13 @@ const AdminAddNominationPage = () => {
                             type="button"
                             onClick={() => loadJobs(jobsPagination.totalPages, jobSearch)}
                             disabled={jobsPagination.currentPage === jobsPagination.totalPages || jobsLoading}
-                            className="p-1.5 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                            onMouseEnter={() => !(jobsPagination.currentPage === jobsPagination.totalPages || jobsLoading) && setHoveredPaginationButton('last')}
+                            onMouseLeave={() => setHoveredPaginationButton(null)}
+                            className="p-1.5 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{
+                              borderColor: '#d1d5db',
+                              backgroundColor: hoveredPaginationButton === 'last' ? '#f3f4f6' : 'transparent'
+                            }}
                           >
                             <ChevronsRight className="w-3 h-3" />
                           </button>
@@ -2965,40 +3917,64 @@ const AdminAddNominationPage = () => {
         {/* Right Column */}
         <div className="space-y-3">
           {/* Dates */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <Calendar className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <Calendar className="w-4 h-4" style={{ color: '#2563eb' }} />
               Ngày tháng
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
-                  Ngày tiến cử <span className="text-red-500">*</span>
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+                  Ngày tiến cử <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                   <input
                     type="date"
                     name="appliedDate"
                     value={formData.appliedDate}
                     onChange={handleInputChange}
                     required
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full pl-10 pr-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Ngày phỏng vấn (dự kiến)
                 </label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                   <input
                     type="date"
                     name="interviewDate"
                     value={formData.interviewDate}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full pl-10 pr-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
@@ -3006,21 +3982,33 @@ const AdminAddNominationPage = () => {
           </div>
 
           {/* Status */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <Clock className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <Clock className="w-4 h-4" style={{ color: '#2563eb' }} />
               Trạng thái
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Trạng thái đơn tiến cử
                 </label>
                 <select
                   name="status"
                   value={formData.status}
                   onChange={(e) => setFormData(prev => ({ ...prev, status: parseInt(e.target.value) }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full px-3 py-2 border rounded-lg text-xs"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 >
                   <option value="1">Đang chờ (Admin đang xử lý)</option>
                   <option value="4">Đã phỏng vấn</option>
@@ -3028,10 +4016,10 @@ const AdminAddNominationPage = () => {
                   <option value="15">Đã từ chối</option>
                 </select>
               </div>
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="p-3 rounded-lg border" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
                 <div className="flex items-center gap-2 text-xs">
                   {getStatusIcon(formData.status === 1 ? 'pending' : formData.status === 4 ? 'interviewed' : formData.status === 8 ? 'accepted' : 'rejected')}
-                  <span className="font-medium text-gray-700">
+                  <span className="font-medium" style={{ color: '#374151' }}>
                     {formData.status === 1 && 'Đang chờ xử lý'}
                     {formData.status === 4 && 'Đã được phỏng vấn'}
                     {formData.status === 8 && 'Đã được nhận việc'}
@@ -3043,35 +4031,47 @@ const AdminAddNominationPage = () => {
           </div>
 
           {/* Financial Information */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <DollarSign className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <DollarSign className="w-4 h-4" style={{ color: '#2563eb' }} />
               Thông tin tài chính
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Phí giới thiệu (VNĐ)
                 </label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                   <input
                     type="number"
                     name="referralFee"
                     value={formData.referralFee}
                     onChange={handleInputChange}
                     placeholder="VD: 500000"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full pl-10 pr-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 {formData.referralFee && (
-                  <p className="mt-1 text-[10px] text-gray-500">
+                  <p className="mt-1 text-[10px]" style={{ color: '#6b7280' }}>
                     {Number(formData.referralFee).toLocaleString('vi-VN')} VNĐ
                   </p>
                 )}
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Lương (ước tính)
                 </label>
                   <div>
@@ -3081,7 +4081,19 @@ const AdminAddNominationPage = () => {
                       value={formData.yearlySalary}
                       onChange={handleInputChange}
                       placeholder="VD: 800 (万円/năm)"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      className="w-full px-3 py-2 border rounded-lg text-xs"
+                      style={{
+                        borderColor: '#d1d5db',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#2563eb';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#d1d5db';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
               </div>
@@ -3089,13 +4101,13 @@ const AdminAddNominationPage = () => {
           </div>
 
           {/* Notes */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <FileText className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <FileText className="w-4 h-4" style={{ color: '#2563eb' }} />
               Ghi chú
             </h2>
             <div>
-              <label className="block text-xs font-semibold text-gray-900 mb-2">
+              <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                 Ghi chú nội bộ
               </label>
               <textarea
@@ -3104,7 +4116,19 @@ const AdminAddNominationPage = () => {
                 onChange={handleInputChange}
                 placeholder="Nhập ghi chú về đơn tiến cử này..."
                 rows="4"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                className="w-full px-3 py-2 border rounded-lg text-xs resize-none"
+                style={{
+                  borderColor: '#d1d5db',
+                  outline: 'none'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#2563eb';
+                  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
             </div>
           </div>
@@ -3112,11 +4136,17 @@ const AdminAddNominationPage = () => {
       </form>
 
       {/* Action Buttons */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-end gap-3">
+      <div className="rounded-lg border p-4 flex items-center justify-end gap-3" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <button
           type="button"
           onClick={handleCancel}
-          className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center gap-2"
+          onMouseEnter={() => setHoveredCancelButton(true)}
+          onMouseLeave={() => setHoveredCancelButton(false)}
+          className="px-5 py-2.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2"
+          style={{
+            backgroundColor: hoveredCancelButton ? '#e5e7eb' : '#f3f4f6',
+            color: '#374151'
+          }}
         >
           <X className="w-3.5 h-3.5" />
           Hủy
@@ -3125,7 +4155,17 @@ const AdminAddNominationPage = () => {
           type="submit"
           onClick={handleSubmit}
           disabled={loading}
-          className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          onMouseEnter={() => !loading && setHoveredSaveButton(true)}
+          onMouseLeave={() => setHoveredSaveButton(false)}
+          className="px-5 py-2.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2"
+          style={{
+            backgroundColor: loading
+              ? '#93c5fd'
+              : (hoveredSaveButton ? '#1d4ed8' : '#2563eb'),
+            color: 'white',
+            opacity: loading ? 0.5 : 1,
+            cursor: loading ? 'not-allowed' : 'pointer'
+          }}
         >
           <Save className="w-3.5 h-3.5" />
           {loading ? 'Đang lưu...' : 'Lưu đơn tiến cử'}

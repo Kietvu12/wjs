@@ -30,6 +30,14 @@ const AgentJobsPageSession2 = ({ jobs: propJobs, filters, showAllJobs = false, e
   const [totalJobs, setTotalJobs] = useState(0);
   const [ctvProfile, setCtvProfile] = useState(null);
   const limit = showAllJobs ? 10 : 3; // Show 10 jobs per page if showAllJobs, otherwise 3
+  
+  // Hover states
+  const [hoveredPaginationButton, setHoveredPaginationButton] = useState(null);
+  const [hoveredJobCardIndex, setHoveredJobCardIndex] = useState(null);
+  const [hoveredDownloadButtonIndex, setHoveredDownloadButtonIndex] = useState(null);
+  const [hoveredSaveButtonIndex, setHoveredSaveButtonIndex] = useState(null);
+  const [hoveredSuggestButtonIndex, setHoveredSuggestButtonIndex] = useState(null);
+  const [hoveredViewMoreButton, setHoveredViewMoreButton] = useState(false);
 
   // Load CTV profile to get rank level (only for CTV users)
   useEffect(() => {
@@ -295,6 +303,15 @@ const mockJobs = [
       blue: 'bg-blue-100 text-blue-800 border-blue-300',
     };
     return colors[color] || colors.green;
+  };
+
+  const getTagInlineStyle = (color) => {
+    const colorMap = {
+      green: { backgroundColor: '#dcfce7', color: '#166534', borderColor: '#86efac' },
+      orange: { backgroundColor: '#fed7aa', color: '#9a3412', borderColor: '#fdba74' },
+      blue: { backgroundColor: '#dbeafe', color: '#1e40af', borderColor: '#93c5fd' },
+    };
+    return colorMap[color] || colorMap.green;
   };
 
   // Strip HTML tags and format text
@@ -670,9 +687,9 @@ const mockJobs = [
         <div className="flex-1 overflow-y-auto pr-1 sm:pr-2 min-h-0 relative">
         {/* Pagination - Show at top if showAllJobs and enablePagination */}
         {showAllJobs && enablePagination && (
-          <div className="sticky top-0 z-10 mb-4 bg-white rounded-lg shadow-sm p-2 sm:p-3">
+          <div className="sticky top-0 z-10 mb-4 rounded-lg shadow-sm p-2 sm:p-3" style={{ backgroundColor: 'white', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
-              <div className="text-xs sm:text-sm text-gray-600 w-full sm:w-auto">
+              <div className="text-xs sm:text-sm w-full sm:w-auto" style={{ color: '#4b5563' }}>
                 {language === 'vi' 
                   ? `Hiển thị ${jobs.length} / ${totalJobs} công việc`
                   : language === 'en'
@@ -684,8 +701,16 @@ const mockJobs = [
                 <button
                   onClick={() => handlePageChange(1)}
                   disabled={currentPage === 1 || loading}
-                  className="flex items-center justify-center w-8 h-8 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  onMouseEnter={() => setHoveredPaginationButton('first')}
+                  onMouseLeave={() => setHoveredPaginationButton(null)}
+                  className="flex items-center justify-center w-8 h-8 text-sm font-medium rounded-lg transition-colors"
                   title={language === 'vi' ? 'Trang đầu' : language === 'en' ? 'First page' : '最初のページ'}
+                  style={{
+                    color: '#374151',
+                    backgroundColor: hoveredPaginationButton === 'first' && !(currentPage === 1 || loading) ? '#e5e7eb' : '#f3f4f6',
+                    opacity: (currentPage === 1 || loading) ? 0.5 : 1,
+                    cursor: (currentPage === 1 || loading) ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   <ChevronLeft className="w-4 h-4" />
                   <ChevronLeft className="w-4 h-4 -ml-2" />
@@ -693,8 +718,16 @@ const mockJobs = [
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1 || loading}
-                  className="flex items-center justify-center w-8 h-8 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  onMouseEnter={() => setHoveredPaginationButton('prev')}
+                  onMouseLeave={() => setHoveredPaginationButton(null)}
+                  className="flex items-center justify-center w-8 h-8 text-sm font-medium rounded-lg transition-colors"
                   title={language === 'vi' ? 'Trang trước' : language === 'en' ? 'Previous page' : '前のページ'}
+                  style={{
+                    color: '#374151',
+                    backgroundColor: hoveredPaginationButton === 'prev' && !(currentPage === 1 || loading) ? '#e5e7eb' : '#f3f4f6',
+                    opacity: (currentPage === 1 || loading) ? 0.5 : 1,
+                    cursor: (currentPage === 1 || loading) ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -710,16 +743,21 @@ const mockJobs = [
                     } else {
                       pageNum = currentPage - 2 + i;
                     }
+                    const isActive = currentPage === pageNum;
                     return (
                       <button
                         key={pageNum}
                         onClick={() => handlePageChange(pageNum)}
                         disabled={loading}
-                        className={`w-8 h-8 text-xs font-medium rounded-lg ${
-                          currentPage === pageNum
-                            ? 'bg-blue-600 text-white'
-                            : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
-                        } disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
+                        onMouseEnter={() => setHoveredPaginationButton(`page-${pageNum}`)}
+                        onMouseLeave={() => setHoveredPaginationButton(null)}
+                        className="w-8 h-8 text-xs font-medium rounded-lg transition-colors"
+                        style={{
+                          backgroundColor: isActive ? '#2563eb' : (hoveredPaginationButton === `page-${pageNum}` ? '#e5e7eb' : '#f3f4f6'),
+                          color: isActive ? 'white' : '#374151',
+                          opacity: loading ? 0.5 : 1,
+                          cursor: loading ? 'not-allowed' : 'pointer'
+                        }}
                       >
                         {pageNum}
                       </button>
@@ -729,16 +767,32 @@ const mockJobs = [
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages || loading}
-                  className="flex items-center justify-center w-8 h-8 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  onMouseEnter={() => setHoveredPaginationButton('next')}
+                  onMouseLeave={() => setHoveredPaginationButton(null)}
+                  className="flex items-center justify-center w-8 h-8 text-sm font-medium rounded-lg transition-colors"
                   title={language === 'vi' ? 'Trang sau' : language === 'en' ? 'Next page' : '次のページ'}
+                  style={{
+                    color: '#374151',
+                    backgroundColor: hoveredPaginationButton === 'next' && !(currentPage === totalPages || loading) ? '#e5e7eb' : '#f3f4f6',
+                    opacity: (currentPage === totalPages || loading) ? 0.5 : 1,
+                    cursor: (currentPage === totalPages || loading) ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => handlePageChange(totalPages)}
                   disabled={currentPage === totalPages || loading}
-                  className="flex items-center justify-center w-8 h-8 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  onMouseEnter={() => setHoveredPaginationButton('last')}
+                  onMouseLeave={() => setHoveredPaginationButton(null)}
+                  className="flex items-center justify-center w-8 h-8 text-sm font-medium rounded-lg transition-colors"
                   title={language === 'vi' ? 'Trang cuối' : language === 'en' ? 'Last page' : '最後のページ'}
+                  style={{
+                    color: '#374151',
+                    backgroundColor: hoveredPaginationButton === 'last' && !(currentPage === totalPages || loading) ? '#e5e7eb' : '#f3f4f6',
+                    opacity: (currentPage === totalPages || loading) ? 0.5 : 1,
+                    cursor: (currentPage === totalPages || loading) ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   <ChevronRight className="w-4 h-4" />
                   <ChevronRight className="w-4 h-4 -ml-2" />
@@ -750,13 +804,13 @@ const mockJobs = [
 
         {loading ? (
           <div className="flex items-center justify-center h-full">
-            <div className="text-gray-500">Đang tải...</div>
+            <div style={{ color: '#6b7280' }}>Đang tải...</div>
           </div>
         ) : displayJobs.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <p className="text-gray-500 text-lg mb-2">Không tìm thấy công việc nào</p>
-              <p className="text-gray-400 text-sm">Vui lòng thử lại với bộ lọc khác</p>
+              <p className="text-lg mb-2" style={{ color: '#6b7280' }}>Không tìm thấy công việc nào</p>
+              <p className="text-sm" style={{ color: '#9ca3af' }}>Vui lòng thử lại với bộ lọc khác</p>
             </div>
           </div>
         ) : (
@@ -786,16 +840,23 @@ const mockJobs = [
                   state: { from: fromPage }
                 });
               }}
-              className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 md:p-5 lg:p-6 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
+              onMouseEnter={() => setHoveredJobCardIndex(job.id)}
+              onMouseLeave={() => setHoveredJobCardIndex(null)}
+              className="border rounded-lg p-3 sm:p-4 md:p-5 lg:p-6 transition-all duration-200 cursor-pointer"
+              style={{
+                backgroundColor: 'white',
+                borderColor: '#e5e7eb',
+                boxShadow: hoveredJobCardIndex === job.id ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+              }}
             >
               <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 lg:gap-6">
                 {/* Main Content - Left Column */}
                 <div className="flex-1 flex flex-col space-y-4 min-w-0">
                   {/* Header Section */}
-                  <div className="space-y-3 pb-2 border-b border-gray-100">
+                  <div className="space-y-3 pb-2 border-b" style={{ borderColor: '#f3f4f6' }}>
                     {/* Job Code */}
-                    <div className="text-xs sm:text-xs text-gray-500 font-medium">
-                      {language === 'vi' ? 'ID công việc' : language === 'en' ? 'Job ID' : '求人ID'}: <span className="text-gray-700">{job.jobCode}</span>
+                    <div className="text-xs sm:text-xs font-medium" style={{ color: '#6b7280' }}>
+                      {language === 'vi' ? 'ID công việc' : language === 'en' ? 'Job ID' : '求人ID'}: <span style={{ color: '#374151' }}>{job.jobCode}</span>
                     </div>
                     
                     {/* Tags */}
@@ -804,7 +865,8 @@ const mockJobs = [
                         {job.tags.map((tag, index) => (
                           <span
                             key={index}
-                            className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium border ${getTagColorClass(tag.color)}`}
+                            className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium border"
+                            style={getTagInlineStyle(tag.color)}
                           >
                             {tag.label}
                           </span>
@@ -813,24 +875,24 @@ const mockJobs = [
                     )}
 
                     {/* Job Title */}
-                    <h2 className="text-base sm:text-lg md:text-xl font-bold text-blue-600 leading-tight pr-2">
+                    <h2 className="text-base sm:text-lg md:text-xl font-bold leading-tight pr-2" style={{ color: '#2563eb' }}>
                       {job.title}
                     </h2>
 
                     {/* Category and Company */}
                     <div className="space-y-1.5 sm:space-y-2">
                       {job.category && (
-                        <div className="text-xs sm:text-sm text-gray-700">
-                          <span className="font-semibold text-gray-600">{language === 'vi' ? 'Phân loại công việc' : language === 'en' ? 'Job Category' : '職種分類'}:</span>
+                        <div className="text-xs sm:text-sm" style={{ color: '#374151' }}>
+                          <span className="font-semibold" style={{ color: '#4b5563' }}>{language === 'vi' ? 'Phân loại công việc' : language === 'en' ? 'Job Category' : '職種分類'}:</span>
                           <span className="ml-1 sm:ml-2 break-words">{job.category}</span>
                         </div>
                       )}
 
                       {/* Company Name */}
                       <div className="flex items-start gap-1.5 sm:gap-2">
-                        <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                        <div className="text-xs sm:text-sm text-gray-700">
-                          <span className="font-semibold text-gray-600">{t.hiringCompany}:</span>
+                        <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mt-0.5 flex-shrink-0" style={{ color: '#6b7280' }} />
+                        <div className="text-xs sm:text-sm" style={{ color: '#374151' }}>
+                          <span className="font-semibold" style={{ color: '#4b5563' }}>{t.hiringCompany}:</span>
                           <span className="ml-1 sm:ml-2 break-words">{job.recruitingCompany?.companyName || job.company?.name || 'N/A'}</span>
                         </div>
                       </div>
@@ -841,13 +903,13 @@ const mockJobs = [
                   <div className="grid grid-cols-1 gap-4">
                     {/* Nội dung công việc - Scrollable */}
                     {job.jobContent && (
-                      <div className="flex flex-col h-40 sm:h-48 md:h-52 border border-gray-200 rounded-lg bg-gray-50/50">
-                        <div className="px-3 sm:px-4 pt-2 sm:pt-3 pb-2 border-b border-gray-200 bg-white rounded-t-lg flex-shrink-0">
-                          <div className="text-xs sm:text-sm font-semibold text-gray-800">
+                      <div className="flex flex-col h-40 sm:h-48 md:h-52 border rounded-lg flex-shrink-0" style={{ borderColor: '#e5e7eb', backgroundColor: 'rgba(249, 250, 251, 0.5)' }}>
+                        <div className="px-3 sm:px-4 pt-2 sm:pt-3 pb-2 border-b rounded-t-lg flex-shrink-0" style={{ borderColor: '#e5e7eb', backgroundColor: 'white' }}>
+                          <div className="text-xs sm:text-sm font-semibold" style={{ color: '#1f2937' }}>
                             {language === 'vi' ? 'Nội dung công việc' : language === 'en' ? 'Job Content' : '仕事内容'}
                           </div>
                         </div>
-                        <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 leading-relaxed whitespace-pre-line custom-scrollbar min-h-0">
+                        <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm leading-relaxed whitespace-pre-line custom-scrollbar min-h-0" style={{ color: '#374151' }}>
                           {job.jobContent}
                         </div>
                       </div>
@@ -855,16 +917,16 @@ const mockJobs = [
 
                     {/* Điều kiện ứng tuyển - Scrollable */}
                     {job.applicationConditions && job.applicationConditions.length > 0 && (
-                      <div className="flex flex-col h-40 sm:h-48 md:h-52 border border-gray-200 rounded-lg bg-gray-50/50">
-                        <div className="px-3 sm:px-4 pt-2 sm:pt-3 pb-2 border-b border-gray-200 bg-white rounded-t-lg flex-shrink-0">
-                          <div className="text-xs sm:text-sm font-semibold text-gray-800">
+                      <div className="flex flex-col h-40 sm:h-48 md:h-52 border rounded-lg flex-shrink-0" style={{ borderColor: '#e5e7eb', backgroundColor: 'rgba(249, 250, 251, 0.5)' }}>
+                        <div className="px-3 sm:px-4 pt-2 sm:pt-3 pb-2 border-b rounded-t-lg flex-shrink-0" style={{ borderColor: '#e5e7eb', backgroundColor: 'white' }}>
+                          <div className="text-xs sm:text-sm font-semibold" style={{ color: '#1f2937' }}>
                             {language === 'vi' ? 'Điều kiện ứng tuyển' : language === 'en' ? 'Application Conditions' : '応募条件'}
                           </div>
                         </div>
-                        <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 space-y-2 custom-scrollbar min-h-0">
+                        <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm space-y-2 custom-scrollbar min-h-0" style={{ color: '#374151' }}>
                           {job.applicationConditions.map((condition, index) => (
                             <div key={index} className="flex items-start gap-2 sm:gap-2.5">
-                              <span className="text-blue-500 flex-shrink-0 mt-0.5 font-bold">•</span>
+                              <span className="flex-shrink-0 mt-0.5 font-bold" style={{ color: '#3b82f6' }}>•</span>
                               <span className="whitespace-pre-line leading-relaxed">{condition}</span>
                             </div>
                           ))}
@@ -878,80 +940,80 @@ const mockJobs = [
                 <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 space-y-3 sm:space-y-4">
                   {/* Commission Section */}
                   {job.commission && (
-                    <div className="bg-gradient-to-br from-red-50 via-red-50 to-red-100 border-2 border-red-300 rounded-lg p-3 sm:p-4 md:p-5 shadow-sm">
-                      <div className="text-xs font-semibold text-red-800 mb-2 sm:mb-3 uppercase tracking-wider">
+                    <div className="border-2 rounded-lg p-3 sm:p-4 md:p-5 shadow-sm" style={{ background: 'linear-gradient(to bottom right, #fef2f2, #fef2f2, #fee2e2)', borderColor: '#fca5a5', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
+                      <div className="text-xs font-semibold mb-2 sm:mb-3 uppercase tracking-wider" style={{ color: '#991b1b' }}>
                         {t.companyCommission || 'Hoa hồng'}
                       </div>
-                      <div className="text-xl sm:text-2xl md:text-3xl font-bold text-red-900 leading-tight">
+                      <div className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight" style={{ color: '#7f1d1d' }}>
                         {job.commission}
                       </div>
                     </div>
                   )}
 
                   {/* Quick Info Panel */}
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 sm:p-4 md:p-5 shadow-sm">
-                    <div className="text-sm sm:text-base font-bold text-gray-800 mb-3 sm:mb-4 pb-2 border-b border-gray-300">
+                  <div className="border rounded-lg p-3 sm:p-4 md:p-5 shadow-sm" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
+                    <div className="text-sm sm:text-base font-bold mb-3 sm:mb-4 pb-2 border-b" style={{ color: '#1f2937', borderColor: '#d1d5db' }}>
                       {language === 'vi' ? 'Thông tin nhanh' : language === 'en' ? 'Quick Info' : 'クイック情報'}
                     </div>
                     
                     <div className="space-y-3 sm:space-y-4">
                       {/* Thu nhập hàng năm */}
                       {job.salary && (
-                        <div className="pb-2 sm:pb-3 border-b border-gray-200 last:border-0">
-                          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 sm:mb-1.5">
+                        <div className="pb-2 sm:pb-3 border-b last:border-0" style={{ borderColor: '#e5e7eb' }}>
+                          <div className="text-xs font-semibold uppercase tracking-wide mb-1 sm:mb-1.5" style={{ color: '#6b7280' }}>
                             {language === 'vi' ? 'Thu nhập hàng năm' : language === 'en' ? 'Annual income' : '年収'}
                           </div>
-                          <div className="text-xs sm:text-sm text-gray-900 font-semibold leading-relaxed break-words">{job.salary}</div>
+                          <div className="text-xs sm:text-sm font-semibold leading-relaxed break-words" style={{ color: '#111827' }}>{job.salary}</div>
                         </div>
                       )}
 
                       {/* Tuổi */}
                       {job.ageRange && (
-                        <div className="pb-2 sm:pb-3 border-b border-gray-200 last:border-0">
-                          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 sm:mb-1.5">
+                        <div className="pb-2 sm:pb-3 border-b last:border-0" style={{ borderColor: '#e5e7eb' }}>
+                          <div className="text-xs font-semibold uppercase tracking-wide mb-1 sm:mb-1.5" style={{ color: '#6b7280' }}>
                             {language === 'vi' ? 'Tuổi' : language === 'en' ? 'Age' : '年齢'}
                           </div>
-                          <div className="text-xs sm:text-sm text-gray-900 font-semibold break-words">{job.ageRange}</div>
+                          <div className="text-xs sm:text-sm font-semibold break-words" style={{ color: '#111827' }}>{job.ageRange}</div>
                         </div>
                       )}
 
                       {/* Quốc tịch */}
                       {job.nationality && (
-                        <div className="pb-2 sm:pb-3 border-b border-gray-200 last:border-0">
-                          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 sm:mb-1.5">
+                        <div className="pb-2 sm:pb-3 border-b last:border-0" style={{ borderColor: '#e5e7eb' }}>
+                          <div className="text-xs font-semibold uppercase tracking-wide mb-1 sm:mb-1.5" style={{ color: '#6b7280' }}>
                             {language === 'vi' ? 'Quốc tịch' : language === 'en' ? 'Nationality' : '国籍'}
                           </div>
-                          <div className="text-xs sm:text-sm text-gray-900 font-semibold break-words">{job.nationality}</div>
+                          <div className="text-xs sm:text-sm font-semibold break-words" style={{ color: '#111827' }}>{job.nationality}</div>
                         </div>
                       )}
 
                       {/* Giới tính */}
                       {job.gender && (
-                        <div className="pb-2 sm:pb-3 border-b border-gray-200 last:border-0">
-                          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 sm:mb-1.5">
+                        <div className="pb-2 sm:pb-3 border-b last:border-0" style={{ borderColor: '#e5e7eb' }}>
+                          <div className="text-xs font-semibold uppercase tracking-wide mb-1 sm:mb-1.5" style={{ color: '#6b7280' }}>
                             {language === 'vi' ? 'Giới tính' : language === 'en' ? 'Gender' : '性別'}
                           </div>
-                          <div className="text-xs sm:text-sm text-gray-900 font-semibold break-words">{job.gender}</div>
+                          <div className="text-xs sm:text-sm font-semibold break-words" style={{ color: '#111827' }}>{job.gender}</div>
                         </div>
                       )}
 
                       {/* Trình độ học vấn */}
                       {job.educationLevel && (
-                        <div className="pb-2 sm:pb-3 border-b border-gray-200 last:border-0">
-                          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 sm:mb-1.5">
+                        <div className="pb-2 sm:pb-3 border-b last:border-0" style={{ borderColor: '#e5e7eb' }}>
+                          <div className="text-xs font-semibold uppercase tracking-wide mb-1 sm:mb-1.5" style={{ color: '#6b7280' }}>
                             {language === 'vi' ? 'Trình độ học vấn' : language === 'en' ? 'Education level' : '学歴'}
                           </div>
-                          <div className="text-xs sm:text-sm text-gray-900 font-semibold break-words">{job.educationLevel}</div>
+                          <div className="text-xs sm:text-sm font-semibold break-words" style={{ color: '#111827' }}>{job.educationLevel}</div>
                         </div>
                       )}
 
                       {/* Địa chỉ làm việc */}
                       {job.location && (
-                        <div className="pb-2 sm:pb-3 border-b border-gray-200 last:border-0">
-                          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 sm:mb-1.5">
+                        <div className="pb-2 sm:pb-3 border-b last:border-0" style={{ borderColor: '#e5e7eb' }}>
+                          <div className="text-xs font-semibold uppercase tracking-wide mb-1 sm:mb-1.5" style={{ color: '#6b7280' }}>
                             {language === 'vi' ? 'Nơi làm việc' : language === 'en' ? 'Work locations' : '勤務地'}
                           </div>
-                          <div className="text-xs sm:text-sm text-gray-900 font-semibold leading-relaxed whitespace-pre-line break-words">{job.location}</div>
+                          <div className="text-xs sm:text-sm font-semibold leading-relaxed whitespace-pre-line break-words" style={{ color: '#111827' }}>{job.location}</div>
                         </div>
                       )}
                     </div>
@@ -960,22 +1022,22 @@ const mockJobs = [
               </div>
 
               {/* Footer Section - Dates and Action Buttons */}
-              <div className="flex flex-col gap-3 sm:gap-4 pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-gray-200">
+              <div className="flex flex-col gap-3 sm:gap-4 pt-3 sm:pt-4 mt-3 sm:mt-4 border-t" style={{ borderColor: '#e5e7eb' }}>
                 {/* Date Information - Left Side */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm" style={{ color: '#4b5563' }}>
                   {job.updatedAt && (
                     <>
                       <div className="flex items-center gap-1.5 sm:gap-2">
-                        <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
+                        <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" style={{ color: '#6b7280' }} />
                         <span className="break-words">
                           {language === 'vi' ? 'Ngày cập nhật' : language === 'en' ? 'Update date' : '更新日'}: {job.updatedAt}
                         </span>
                       </div>
                       {job.publishedAt && (
                         <>
-                          <div className="hidden sm:block h-4 w-px bg-gray-300"></div>
+                          <div className="hidden sm:block h-4 w-px" style={{ backgroundColor: '#d1d5db' }}></div>
                           <div className="flex items-center gap-1.5 sm:gap-2">
-                            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
+                            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" style={{ color: '#6b7280' }} />
                             <span className="break-words">
                               {language === 'vi' ? 'Ngày xuất bản' : language === 'en' ? 'Publication date' : '公開日'}: {job.publishedAt}
                             </span>
@@ -986,7 +1048,7 @@ const mockJobs = [
                   )}
                   {!job.updatedAt && job.publishedAt && (
                     <div className="flex items-center gap-1.5 sm:gap-2">
-                      <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
+                      <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" style={{ color: '#6b7280' }} />
                       <span className="break-words">
                         {language === 'vi' ? 'Ngày xuất bản' : language === 'en' ? 'Publication date' : '公開日'}: {job.publishedAt}
                       </span>
@@ -1003,7 +1065,14 @@ const mockJobs = [
                       // TODO: Implement download functionality
                       console.log('Download job:', job.id);
                     }}
-                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 border border-blue-400 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors text-xs sm:text-sm font-medium"
+                    onMouseEnter={() => setHoveredDownloadButtonIndex(job.id)}
+                    onMouseLeave={() => setHoveredDownloadButtonIndex(null)}
+                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 border rounded-lg transition-colors text-xs sm:text-sm font-medium"
+                    style={{
+                      borderColor: '#60a5fa',
+                      color: '#2563eb',
+                      backgroundColor: hoveredDownloadButtonIndex === job.id ? '#eff6ff' : 'transparent'
+                    }}
                   >
                     <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                     <span className="hidden sm:inline">{language === 'vi' ? 'Tải xuống' : language === 'en' ? 'Download' : 'ダウンロード'}</span>
@@ -1018,7 +1087,14 @@ const mockJobs = [
                       // TODO: Implement save functionality
                       console.log('Save job:', job.id);
                     }}
-                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 border border-blue-400 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors text-xs sm:text-sm font-medium"
+                    onMouseEnter={() => setHoveredSaveButtonIndex(job.id)}
+                    onMouseLeave={() => setHoveredSaveButtonIndex(null)}
+                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 border rounded-lg transition-colors text-xs sm:text-sm font-medium"
+                    style={{
+                      borderColor: '#60a5fa',
+                      color: '#2563eb',
+                      backgroundColor: hoveredSaveButtonIndex === job.id ? '#eff6ff' : 'transparent'
+                    }}
                   >
                     <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                     <span>{language === 'vi' ? 'Giữ gìn' : language === 'en' ? 'Save' : '保存'}</span>
@@ -1031,7 +1107,13 @@ const mockJobs = [
                       // TODO: Implement suggest candidate functionality
                       console.log('Suggest candidate for job:', job.id);
                     }}
-                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 rounded-lg transition-colors text-xs sm:text-sm font-medium"
+                    onMouseEnter={() => setHoveredSuggestButtonIndex(job.id)}
+                    onMouseLeave={() => setHoveredSuggestButtonIndex(null)}
+                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm font-medium"
+                    style={{
+                      backgroundColor: hoveredSuggestButtonIndex === job.id ? '#facc15' : '#facc15',
+                      color: '#111827'
+                    }}
                   >
                     <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                     <span className="hidden sm:inline">{language === 'vi' ? 'Đề xuất một ứng cử viên' : language === 'en' ? 'Suggest a candidate' : '候補者を提案'}</span>
@@ -1049,7 +1131,14 @@ const mockJobs = [
           <div className="sticky bottom-4 text-center z-10 mt-4">
             <button 
               onClick={() => navigate(useAdminAPI ? '/admin/jobs' : '/agent/jobs')}
-              className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold text-lg shadow-2xl"
+              onMouseEnter={() => setHoveredViewMoreButton(true)}
+              onMouseLeave={() => setHoveredViewMoreButton(false)}
+              className="px-8 py-4 rounded-lg transition-colors font-semibold text-lg shadow-2xl"
+              style={{
+                backgroundColor: hoveredViewMoreButton ? '#2563eb' : '#2563eb',
+                color: 'white',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+              }}
             >
               {t.viewMore}
             </button>

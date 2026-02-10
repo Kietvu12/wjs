@@ -40,6 +40,14 @@ const AdminSidebar = () => {
   const [dropdownItem, setDropdownItem] = useState(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const buttonRefs = useRef({});
+  
+  // Hover states
+  const [hoveredMenuItemIndex, setHoveredMenuItemIndex] = useState(null);
+  const [hoveredSubmenuItemIndex, setHoveredSubmenuItemIndex] = useState(null);
+  const [hoveredAccountsItem, setHoveredAccountsItem] = useState(false);
+  const [hoveredSettingsItem, setHoveredSettingsItem] = useState(false);
+  const [hoveredExpandButton, setHoveredExpandButton] = useState(false);
+  const [hoveredDropdownItemIndex, setHoveredDropdownItemIndex] = useState(null);
 
   // Check if user is Super Admin (role = 1)
   const isSuperAdmin = adminProfile?.role === 1;
@@ -303,14 +311,14 @@ const AdminSidebar = () => {
 
   return (
     <>
-    <div className={`hidden lg:flex ${isExpanded ? 'w-64' : 'w-28'} bg-white h-screen flex flex-col shadow-sm border-r border-gray-200 transition-all duration-300 relative`}>
+    <div className={`hidden lg:flex ${isExpanded ? 'w-64' : 'w-28'} h-screen flex flex-col shadow-sm border-r transition-all duration-300 relative`} style={{ backgroundColor: 'white', borderColor: '#e5e7eb', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
       {/* Logo Section */}
-      <div className={`${isExpanded ? 'p-6' : 'p-4'} border-b border-gray-100 flex items-center ${isExpanded ? 'justify-start' : 'justify-center'}`}>
+      <div className={`${isExpanded ? 'p-6' : 'p-4'} border-b flex items-center ${isExpanded ? 'justify-start' : 'justify-center'}`} style={{ borderColor: '#f3f4f6' }}>
         <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
-          <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center">
-            <Check className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded flex items-center justify-center" style={{ backgroundColor: '#dc2626' }}>
+            <Check className="w-5 h-5" style={{ color: 'white' }} />
           </div>
-          {isExpanded && <span className="text-xl font-bold text-gray-900">JobShare Admin</span>}
+          {isExpanded && <span className="text-xl font-bold" style={{ color: '#111827' }}>JobShare Admin</span>}
         </Link>
       </div>
 
@@ -348,22 +356,26 @@ const AdminSidebar = () => {
                         }
                       }
                     }}
-                    className={`w-full flex ${isExpanded ? 'items-center gap-3' : 'flex-col items-center gap-1'} px-2 py-2.5 rounded-lg transition-colors relative ${
-                      active
-                        ? 'bg-gray-100 text-red-600'
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
+                    onMouseEnter={() => setHoveredMenuItemIndex(item.id)}
+                    onMouseLeave={() => setHoveredMenuItemIndex(null)}
+                    className={`w-full flex ${isExpanded ? 'items-center gap-3' : 'flex-col items-center gap-1'} px-2 py-2.5 rounded-lg transition-colors relative`}
+                    style={{
+                      backgroundColor: active 
+                        ? '#f3f4f6' 
+                        : (hoveredMenuItemIndex === item.id ? '#f9fafb' : 'transparent'),
+                      color: active ? '#dc2626' : '#374151'
+                    }}
                   >
-                    <Icon className={`w-5 h-5 flex-shrink-0 ${active ? 'text-red-600' : 'text-gray-600'}`} />
+                    <Icon className="w-5 h-5 flex-shrink-0" style={{ color: active ? '#dc2626' : '#4b5563' }} />
                     {isExpanded ? (
                       <>
-                        <span className={`text-sm font-medium flex-1 text-left ${active ? 'text-red-600' : 'text-gray-700'}`}>
+                        <span className="text-sm font-medium flex-1 text-left" style={{ color: active ? '#dc2626' : '#374151' }}>
                           {item.label}
                         </span>
-                        <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${showCollaboratorSubmenu ? 'rotate-90' : ''}`} />
+                        <ChevronRight className={`w-4 h-4 transition-transform ${showCollaboratorSubmenu ? 'rotate-90' : ''}`} style={{ color: '#9ca3af' }} />
                       </>
                     ) : (
-                      <span className={`text-[10px] font-medium text-center leading-tight break-words ${active ? 'text-red-600' : 'text-gray-700'}`}>
+                      <span className="text-[10px] font-medium text-center leading-tight break-words" style={{ color: active ? '#dc2626' : '#374151' }}>
                         {item.label}
                       </span>
                     )}
@@ -379,14 +391,18 @@ const AdminSidebar = () => {
                           <Link
                             key={subItem.id}
                             to={subItem.path}
-                            className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                              subActive
-                                ? 'bg-red-50 text-red-600'
-                                : 'text-gray-700 hover:bg-gray-50'
-                            }`}
+                            onMouseEnter={() => setHoveredSubmenuItemIndex(subItem.id)}
+                            onMouseLeave={() => setHoveredSubmenuItemIndex(null)}
+                            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-colors"
+                            style={{
+                              backgroundColor: subActive 
+                                ? '#fef2f2' 
+                                : (hoveredSubmenuItemIndex === subItem.id ? '#f9fafb' : 'transparent'),
+                              color: subActive ? '#dc2626' : '#374151'
+                            }}
                           >
-                            <SubIcon className={`w-4 h-4 ${subActive ? 'text-red-600' : 'text-gray-500'}`} />
-                            <span className={`text-sm flex-1 text-left ${subActive ? 'text-red-600 font-medium' : 'text-gray-700'}`}>
+                            <SubIcon className="w-4 h-4" style={{ color: subActive ? '#dc2626' : '#6b7280' }} />
+                            <span className={`text-sm flex-1 text-left ${subActive ? 'font-medium' : ''}`} style={{ color: subActive ? '#dc2626' : '#374151' }}>
                               {subItem.label}
                             </span>
                           </Link>
@@ -402,19 +418,23 @@ const AdminSidebar = () => {
               <Link
                 key={item.id}
                 to={item.path}
-                className={`w-full flex ${isExpanded ? 'items-center gap-3' : 'flex-col items-center gap-1'} px-2 py-2.5 rounded-lg transition-colors ${
-                  active
-                    ? 'bg-gray-100 text-red-600'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
+                onMouseEnter={() => setHoveredMenuItemIndex(item.id)}
+                onMouseLeave={() => setHoveredMenuItemIndex(null)}
+                className={`w-full flex ${isExpanded ? 'items-center gap-3' : 'flex-col items-center gap-1'} px-2 py-2.5 rounded-lg transition-colors`}
+                style={{
+                  backgroundColor: active 
+                    ? '#f3f4f6' 
+                    : (hoveredMenuItemIndex === item.id ? '#f9fafb' : 'transparent'),
+                  color: active ? '#dc2626' : '#374151'
+                }}
               >
-                <Icon className={`w-5 h-5 flex-shrink-0 ${active ? 'text-red-600' : 'text-gray-600'}`} />
+                <Icon className="w-5 h-5 flex-shrink-0" style={{ color: active ? '#dc2626' : '#4b5563' }} />
                 {isExpanded ? (
-                  <span className={`text-sm font-medium flex-1 text-left ${active ? 'text-red-600' : 'text-gray-700'}`}>
+                  <span className="text-sm font-medium flex-1 text-left" style={{ color: active ? '#dc2626' : '#374151' }}>
                     {item.label}
                   </span>
                 ) : (
-                  <span className={`text-[10px] font-medium text-center leading-tight break-words ${active ? 'text-red-600' : 'text-gray-700'}`}>
+                  <span className="text-[10px] font-medium text-center leading-tight break-words" style={{ color: active ? '#dc2626' : '#374151' }}>
                     {item.label}
                   </span>
                 )}
@@ -425,22 +445,26 @@ const AdminSidebar = () => {
       </div>
 
       {/* Account Management Section */}
-      <div className={`${isExpanded ? 'p-4' : 'p-2'} border-t border-gray-100`}>
+      <div className={`${isExpanded ? 'p-4' : 'p-2'} border-t`} style={{ borderColor: '#f3f4f6' }}>
         <Link
           to="/admin/accounts"
-          className={`w-full flex ${isExpanded ? 'items-center gap-3' : 'flex-col items-center gap-1'} px-2 py-2.5 rounded-lg transition-colors ${
-            isActive('/admin/accounts')
-              ? 'bg-gray-100 text-red-600'
-              : 'text-gray-700 hover:bg-gray-50'
-          }`}
+          onMouseEnter={() => setHoveredAccountsItem(true)}
+          onMouseLeave={() => setHoveredAccountsItem(false)}
+          className={`w-full flex ${isExpanded ? 'items-center gap-3' : 'flex-col items-center gap-1'} px-2 py-2.5 rounded-lg transition-colors`}
+          style={{
+            backgroundColor: isActive('/admin/accounts')
+              ? '#f3f4f6'
+              : (hoveredAccountsItem ? '#f9fafb' : 'transparent'),
+            color: isActive('/admin/accounts') ? '#dc2626' : '#374151'
+          }}
         >
-          <UserCog className={`w-5 h-5 flex-shrink-0 ${isActive('/admin/accounts') ? 'text-red-600' : 'text-gray-600'}`} />
+          <UserCog className="w-5 h-5 flex-shrink-0" style={{ color: isActive('/admin/accounts') ? '#dc2626' : '#4b5563' }} />
           {isExpanded ? (
-            <span className={`text-sm font-medium ${isActive('/admin/accounts') ? 'text-red-600' : 'text-gray-700'}`}>
+            <span className="text-sm font-medium" style={{ color: isActive('/admin/accounts') ? '#dc2626' : '#374151' }}>
               Quản lý tài khoản
             </span>
           ) : (
-            <span className={`text-[10px] font-medium text-center leading-tight break-words ${isActive('/admin/accounts') ? 'text-red-600' : 'text-gray-700'}`}>
+            <span className="text-[10px] font-medium text-center leading-tight break-words" style={{ color: isActive('/admin/accounts') ? '#dc2626' : '#374151' }}>
               Quản lý tài khoản
             </span>
           )}
@@ -451,19 +475,23 @@ const AdminSidebar = () => {
       <div className={`${isExpanded ? 'px-4' : 'px-2'} pb-4`}>
         <Link
           to="/admin/settings"
-          className={`w-full flex ${isExpanded ? 'items-center gap-3' : 'flex-col items-center gap-1'} px-2 py-2.5 rounded-lg transition-colors ${
-            isActive('/admin/settings')
-              ? 'bg-gray-100 text-red-600'
-              : 'text-gray-700 hover:bg-gray-50'
-          }`}
+          onMouseEnter={() => setHoveredSettingsItem(true)}
+          onMouseLeave={() => setHoveredSettingsItem(false)}
+          className={`w-full flex ${isExpanded ? 'items-center gap-3' : 'flex-col items-center gap-1'} px-2 py-2.5 rounded-lg transition-colors`}
+          style={{
+            backgroundColor: isActive('/admin/settings')
+              ? '#f3f4f6'
+              : (hoveredSettingsItem ? '#f9fafb' : 'transparent'),
+            color: isActive('/admin/settings') ? '#dc2626' : '#374151'
+          }}
         >
-          <Settings className={`w-5 h-5 flex-shrink-0 ${isActive('/admin/settings') ? 'text-red-600' : 'text-gray-600'}`} />
+          <Settings className="w-5 h-5 flex-shrink-0" style={{ color: isActive('/admin/settings') ? '#dc2626' : '#4b5563' }} />
           {isExpanded ? (
-            <span className={`text-sm font-medium ${isActive('/admin/settings') ? 'text-red-600' : 'text-gray-700'}`}>
+            <span className="text-sm font-medium" style={{ color: isActive('/admin/settings') ? '#dc2626' : '#374151' }}>
               Cài đặt
             </span>
           ) : (
-            <span className={`text-[10px] font-medium text-center leading-tight break-words ${isActive('/admin/settings') ? 'text-red-600' : 'text-gray-700'}`}>
+            <span className="text-[10px] font-medium text-center leading-tight break-words" style={{ color: isActive('/admin/settings') ? '#dc2626' : '#374151' }}>
               Cài đặt
             </span>
           )}
@@ -471,10 +499,16 @@ const AdminSidebar = () => {
       </div>
 
       {/* Expand/Collapse Button */}
-      <div className={`${isExpanded ? 'p-4' : 'p-2'} border-t border-gray-100`}>
+      <div className={`${isExpanded ? 'p-4' : 'p-2'} border-t`} style={{ borderColor: '#f3f4f6' }}>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className={`w-full bg-red-600 text-white rounded-lg ${isExpanded ? 'px-3 py-2.5 flex items-center gap-2' : 'px-2 py-2 flex flex-col items-center gap-1'} hover:bg-red-700 transition-colors`}
+          onMouseEnter={() => setHoveredExpandButton(true)}
+          onMouseLeave={() => setHoveredExpandButton(false)}
+          className={`w-full rounded-lg ${isExpanded ? 'px-3 py-2.5 flex items-center gap-2' : 'px-2 py-2 flex flex-col items-center gap-1'} transition-colors`}
+          style={{
+            backgroundColor: hoveredExpandButton ? '#b91c1c' : '#dc2626',
+            color: 'white'
+          }}
         >
           {isExpanded ? (
             <>
@@ -495,8 +529,11 @@ const AdminSidebar = () => {
     {!isExpanded && showDropdown && dropdownItem?.submenu && (
       <div 
         data-dropdown="admin-sidebar"
-        className="fixed bg-white rounded-lg shadow-xl border border-gray-200 py-1 min-w-[200px] z-[9999]"
+        className="fixed rounded-lg shadow-xl border py-1 min-w-[200px] z-[9999]"
         style={{
+          backgroundColor: 'white',
+          borderColor: '#e5e7eb',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
           top: `${dropdownPosition.top}px`,
           left: `${dropdownPosition.left}px`
         }}
@@ -514,14 +551,18 @@ const AdminSidebar = () => {
                 e.stopPropagation();
                 setShowDropdown(false);
               }}
-              className={`w-full flex items-center gap-2 px-3 py-2 transition-colors ${
-                subActive
-                  ? 'bg-red-50 text-red-600'
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}
+              onMouseEnter={() => setHoveredDropdownItemIndex(subItem.id)}
+              onMouseLeave={() => setHoveredDropdownItemIndex(null)}
+              className="w-full flex items-center gap-2 px-3 py-2 transition-colors"
+              style={{
+                backgroundColor: subActive 
+                  ? '#fef2f2' 
+                  : (hoveredDropdownItemIndex === subItem.id ? '#f9fafb' : 'transparent'),
+                color: subActive ? '#dc2626' : '#374151'
+              }}
             >
-              <SubIcon className={`w-4 h-4 ${subActive ? 'text-red-600' : 'text-gray-500'}`} />
-              <span className={`text-sm flex-1 text-left ${subActive ? 'text-red-600 font-medium' : 'text-gray-700'}`}>
+              <SubIcon className="w-4 h-4" style={{ color: subActive ? '#dc2626' : '#6b7280' }} />
+              <span className={`text-sm flex-1 text-left ${subActive ? 'font-medium' : ''}`} style={{ color: subActive ? '#dc2626' : '#374151' }}>
                 {subItem.label}
               </span>
             </Link>

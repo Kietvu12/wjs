@@ -35,6 +35,13 @@ const CandidateDetail = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('personal');
 
+  // Hover states
+  const [hoveredBackButton, setHoveredBackButton] = useState(false);
+  const [hoveredEditButton, setHoveredEditButton] = useState(false);
+  const [hoveredBackToListButton, setHoveredBackToListButton] = useState(false);
+  const [hoveredDownloadButton, setHoveredDownloadButton] = useState(false);
+  const [hoveredTabButtons, setHoveredTabButtons] = useState({});
+
   useEffect(() => {
     loadCandidateDetail();
   }, [candidateId]);
@@ -152,8 +159,8 @@ const CandidateDetail = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t.loadingCandidate || 'Đang tải thông tin ứng viên...'}</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#ef4444' }}></div>
+          <p style={{ color: '#4b5563' }}>{t.loadingCandidate || 'Đang tải thông tin ứng viên...'}</p>
         </div>
       </div>
     );
@@ -162,10 +169,16 @@ const CandidateDetail = () => {
   if (error) {
     return (
       <div className="text-center py-8">
-        <div className="text-red-500 mb-4">{error}</div>
+        <div className="mb-4" style={{ color: '#ef4444' }}>{error}</div>
         <button
           onClick={() => navigate('/agent/candidates')}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          onMouseEnter={() => setHoveredBackToListButton(true)}
+          onMouseLeave={() => setHoveredBackToListButton(false)}
+          className="px-4 py-2 rounded-lg transition-colors"
+          style={{
+            backgroundColor: hoveredBackToListButton ? '#1d4ed8' : '#2563eb',
+            color: 'white'
+          }}
         >
           Quay lại danh sách ứng viên
         </button>
@@ -176,10 +189,16 @@ const CandidateDetail = () => {
   if (!candidate) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-600 mb-4">{t.candidateNotFound || 'Không tìm thấy thông tin ứng viên.'}</p>
+        <p className="mb-4" style={{ color: '#4b5563' }}>{t.candidateNotFound || 'Không tìm thấy thông tin ứng viên.'}</p>
         <button
           onClick={() => navigate('/agent/candidates')}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          onMouseEnter={() => setHoveredBackToListButton(true)}
+          onMouseLeave={() => setHoveredBackToListButton(false)}
+          className="px-4 py-2 rounded-lg transition-colors"
+          style={{
+            backgroundColor: hoveredBackToListButton ? '#1d4ed8' : '#2563eb',
+            color: 'white'
+          }}
         >
           {t.backToCandidates || 'Quay lại danh sách ứng viên'}
         </button>
@@ -219,34 +238,45 @@ const CandidateDetail = () => {
   ];
 
   return (
-    <div className="h-full flex flex-col overflow-hidden bg-gray-50">
+    <div className="h-full flex flex-col overflow-hidden" style={{ backgroundColor: '#f9fafb' }}>
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
+      <div className="border-b px-6 py-4 flex-shrink-0" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/agent/candidates')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              onMouseEnter={() => setHoveredBackButton(true)}
+              onMouseLeave={() => setHoveredBackButton(false)}
+              className="p-2 rounded-lg transition-colors"
+              style={{
+                backgroundColor: hoveredBackButton ? '#f3f4f6' : 'transparent'
+              }}
             >
-              <ArrowLeft className="w-5 h-5 text-gray-700" />
+              <ArrowLeft className="w-5 h-5" style={{ color: '#374151' }} />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <h1 className="text-2xl font-bold flex items-center gap-2" style={{ color: '#111827' }}>
                 {candidate.name || candidate.nameKanji || 'Ứng viên'}
                 {candidate.isDuplicate && (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs font-medium">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium" style={{ backgroundColor: '#fed7aa', color: '#c2410c' }}>
                     <AlertTriangle className="w-3 h-3" />
                     Duplicate
                   </span>
                 )}
               </h1>
-              <p className="text-sm text-gray-600 mt-1">ID: {candidate.code || candidate.id}</p>
+              <p className="text-sm mt-1" style={{ color: '#4b5563' }}>ID: {candidate.code || candidate.id}</p>
             </div>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => navigate(`/agent/candidates/${candidateId}/edit`)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700 transition-colors flex items-center gap-2"
+              onMouseEnter={() => setHoveredEditButton(true)}
+              onMouseLeave={() => setHoveredEditButton(false)}
+              className="px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
+              style={{
+                backgroundColor: hoveredEditButton ? '#1d4ed8' : '#2563eb',
+                color: 'white'
+              }}
             >
               <Edit className="w-4 h-4" />
               {t.edit || 'Chỉnh sửa'}
@@ -256,7 +286,7 @@ const CandidateDetail = () => {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white border-b border-gray-200 px-6 flex-shrink-0 overflow-x-auto">
+      <div className="border-b px-6 flex-shrink-0 overflow-x-auto" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div className="flex gap-1 min-w-max">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -275,15 +305,17 @@ const CandidateDetail = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-3 flex items-center gap-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                  isActive
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
-                }`}
+                onMouseEnter={() => !isActive && setHoveredTabButtons(prev => ({ ...prev, [tab.id]: true }))}
+                onMouseLeave={() => setHoveredTabButtons(prev => ({ ...prev, [tab.id]: false }))}
+                className="px-4 py-3 flex items-center gap-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+                style={{
+                  borderColor: isActive ? '#2563eb' : (hoveredTabButtons[tab.id] ? '#d1d5db' : 'transparent'),
+                  color: isActive ? '#2563eb' : (hoveredTabButtons[tab.id] ? '#111827' : '#4b5563')
+                }}
               >
                 <Icon className="w-4 h-4" />
                 {tab.label}
-                {!hasData && <span className="text-gray-400 text-xs">(—)</span>}
+                {!hasData && <span className="text-xs" style={{ color: '#9ca3af' }}>(—)</span>}
               </button>
             );
           })}
@@ -295,86 +327,92 @@ const CandidateDetail = () => {
         <div>
           {/* Personal Information */}
           {activeTab === 'personal' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <User className="w-6 h-6 text-red-600" />
+            <div className="rounded-xl shadow-sm border p-6" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2" style={{ color: '#111827' }}>
+                <User className="w-6 h-6" style={{ color: '#ef4444' }} />
                 Thông tin cá nhân
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Họ tên (Kanji)</label>
-                  <p className="text-sm text-gray-900 font-medium">{candidate.name || candidate.nameKanji || '—'}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Họ tên (Kanji)</label>
+                  <p className="text-sm font-medium" style={{ color: '#111827' }}>{candidate.name || candidate.nameKanji || '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Họ tên (Kana)</label>
-                  <p className="text-sm text-gray-900">{candidate.furigana || candidate.nameKana || '—'}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Họ tên (Kana)</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{candidate.furigana || candidate.nameKana || '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Ngày sinh</label>
-                  <p className="text-sm text-gray-900 flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-400" />
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Ngày sinh</label>
+                  <p className="text-sm flex items-center gap-2" style={{ color: '#111827' }}>
+                    <Calendar className="w-4 h-4" style={{ color: '#9ca3af' }} />
                     {formatDate(candidate.birthDate)}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Tuổi</label>
-                  <p className="text-sm text-gray-900">{candidate.ages || candidate.age || '—'}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Tuổi</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{candidate.ages || candidate.age || '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Giới tính</label>
-                  <p className="text-sm text-gray-900">{formatGender(candidate.gender)}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Giới tính</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{formatGender(candidate.gender)}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Trạng thái</label>
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                    candidate.status === 1 ? 'bg-green-100 text-green-700' :
-                    candidate.status === 2 ? 'bg-gray-100 text-gray-700' :
-                    'bg-yellow-100 text-yellow-700'
-                  }`}>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Trạng thái</label>
+                  <span className="inline-block px-3 py-1 rounded-full text-xs font-medium" style={
+                    candidate.status === 1 ? { backgroundColor: '#dcfce7', color: '#15803d' } :
+                    candidate.status === 2 ? { backgroundColor: '#f3f4f6', color: '#374151' } :
+                    { backgroundColor: '#fef9c3', color: '#854d0e' }
+                  }>
                     {formatStatus(candidate.status)}
                   </span>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Email</label>
-                  <p className="text-sm text-gray-900 flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-gray-400" />
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Email</label>
+                  <p className="text-sm flex items-center gap-2" style={{ color: '#111827' }}>
+                    <Mail className="w-4 h-4" style={{ color: '#9ca3af' }} />
                     {candidate.email || '—'}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Điện thoại</label>
-                  <p className="text-sm text-gray-900 flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-gray-400" />
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Điện thoại</label>
+                  <p className="text-sm flex items-center gap-2" style={{ color: '#111827' }}>
+                    <Phone className="w-4 h-4" style={{ color: '#9ca3af' }} />
                     {candidate.phone || '—'}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Mã bưu điện</label>
-                  <p className="text-sm text-gray-900">{candidate.postalCode || '—'}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Mã bưu điện</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{candidate.postalCode || '—'}</p>
                 </div>
                 <div className="md:col-span-2 lg:col-span-3">
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Địa chỉ hiện tại</label>
-                  <p className="text-sm text-gray-900 flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-gray-400" />
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Địa chỉ hiện tại</label>
+                  <p className="text-sm flex items-center gap-2" style={{ color: '#111827' }}>
+                    <MapPin className="w-4 h-4" style={{ color: '#9ca3af' }} />
                     {candidate.addressCurrent || candidate.address || '—'}
                   </p>
                 </div>
                 <div className="md:col-span-2 lg:col-span-3">
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Địa chỉ gốc</label>
-                  <p className="text-sm text-gray-900">{candidate.addressOrigin || '—'}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Địa chỉ gốc</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{candidate.addressOrigin || '—'}</p>
                 </div>
                 {candidate.cvFile && (
-                  <div className="md:col-span-2 lg:col-span-3 pt-4 border-t border-gray-200">
-                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">File CV</label>
+                  <div className="md:col-span-2 lg:col-span-3 pt-4 border-t" style={{ borderColor: '#e5e7eb' }}>
+                    <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>File CV</label>
                     <div className="flex items-center gap-3">
-                      <FileText className="w-8 h-8 text-gray-400" />
+                      <FileText className="w-8 h-8" style={{ color: '#9ca3af' }} />
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900">CV File</p>
-                        <p className="text-xs text-gray-500">{candidate.cvFile}</p>
+                        <p className="text-sm font-medium" style={{ color: '#111827' }}>CV File</p>
+                        <p className="text-xs" style={{ color: '#6b7280' }}>{candidate.cvFile}</p>
                       </div>
                       <button
                         onClick={() => downloadCV(candidate.cvFile)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+                        onMouseEnter={() => setHoveredDownloadButton(true)}
+                        onMouseLeave={() => setHoveredDownloadButton(false)}
+                        className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                        style={{
+                          backgroundColor: hoveredDownloadButton ? '#1d4ed8' : '#2563eb',
+                          color: 'white'
+                        }}
                       >
                         <Download className="w-4 h-4" />
                         Tải xuống
@@ -388,35 +426,35 @@ const CandidateDetail = () => {
 
           {/* Visa & Residence */}
           {activeTab === 'visa' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <Globe className="w-6 h-6 text-red-600" />
+            <div className="rounded-xl shadow-sm border p-6" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2" style={{ color: '#111827' }}>
+                <Globe className="w-6 h-6" style={{ color: '#ef4444' }} />
                 Thông tin visa & cư trú
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Nơi cư trú hiện tại</label>
-                  <p className="text-sm text-gray-900">{formatResidence(candidate.currentResidence)}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Nơi cư trú hiện tại</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{formatResidence(candidate.currentResidence)}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Tình trạng cư trú tại Nhật</label>
-                  <p className="text-sm text-gray-900">{formatJPResidenceStatus(candidate.jpResidenceStatus)}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Tình trạng cư trú tại Nhật</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{formatJPResidenceStatus(candidate.jpResidenceStatus)}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Ngày hết hạn visa</label>
-                  <p className="text-sm text-gray-900">{formatDate(candidate.visaExpirationDate)}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Ngày hết hạn visa</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{formatDate(candidate.visaExpirationDate)}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Quốc gia khác</label>
-                  <p className="text-sm text-gray-900">{candidate.otherCountry || '—'}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Quốc gia khác</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{candidate.otherCountry || '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Có hộ chiếu</label>
-                  <p className="text-sm text-gray-900">{candidate.passport ? (t.yes || 'Có') : (t.no || 'Không')}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Có hộ chiếu</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{candidate.passport ? (t.yes || 'Có') : (t.no || 'Không')}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Có vợ/chồng</label>
-                  <p className="text-sm text-gray-900">{candidate.spouse ? (t.yes || 'Có') : (t.no || 'Không')}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Có vợ/chồng</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{candidate.spouse ? (t.yes || 'Có') : (t.no || 'Không')}</p>
                 </div>
               </div>
             </div>
@@ -424,35 +462,35 @@ const CandidateDetail = () => {
 
           {/* Career & Salary */}
           {activeTab === 'career' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <DollarSign className="w-6 h-6 text-red-600" />
+            <div className="rounded-xl shadow-sm border p-6" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2" style={{ color: '#111827' }}>
+                <DollarSign className="w-6 h-6" style={{ color: '#ef4444' }} />
                 Thông tin nghề nghiệp & lương
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Lương hiện tại</label>
-                  <p className="text-sm text-gray-900 font-medium">{formatIncome(candidate.currentIncome)}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Lương hiện tại</label>
+                  <p className="text-sm font-medium" style={{ color: '#111827' }}>{formatIncome(candidate.currentIncome)}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Lương mong muốn</label>
-                  <p className="text-sm text-gray-900 font-medium">{formatIncome(candidate.desiredIncome)}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Lương mong muốn</label>
+                  <p className="text-sm font-medium" style={{ color: '#111827' }}>{formatIncome(candidate.desiredIncome)}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Địa điểm làm việc mong muốn</label>
-                  <p className="text-sm text-gray-900">{candidate.desiredWorkLocation || candidate.desiredLocation || '—'}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Địa điểm làm việc mong muốn</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{candidate.desiredWorkLocation || candidate.desiredLocation || '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Vị trí mong muốn</label>
-                  <p className="text-sm text-gray-900">{candidate.desiredPosition || '—'}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Vị trí mong muốn</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{candidate.desiredPosition || '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Thời gian nhập công ty</label>
-                  <p className="text-sm text-gray-900">{candidate.nyushaTime || candidate.desiredStartDate || '—'}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Thời gian nhập công ty</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{candidate.nyushaTime || candidate.desiredStartDate || '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Thời gian phỏng vấn</label>
-                  <p className="text-sm text-gray-900">{candidate.interviewTime || '—'}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Thời gian phỏng vấn</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{candidate.interviewTime || '—'}</p>
                 </div>
               </div>
             </div>
@@ -460,31 +498,31 @@ const CandidateDetail = () => {
 
           {/* Skills & Experience */}
           {activeTab === 'skills' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <Briefcase className="w-6 h-6 text-red-600" />
+            <div className="rounded-xl shadow-sm border p-6" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2" style={{ color: '#111827' }}>
+                <Briefcase className="w-6 h-6" style={{ color: '#ef4444' }} />
                 Kỹ năng & Kinh nghiệm
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Kỹ năng kỹ thuật</label>
-                  <p className="text-sm text-gray-900 whitespace-pre-wrap bg-gray-50 p-4 rounded-lg">{candidate.technicalSkills || '—'}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Kỹ năng kỹ thuật</label>
+                  <p className="text-sm whitespace-pre-wrap p-4 rounded-lg" style={{ color: '#111827', backgroundColor: '#f9fafb' }}>{candidate.technicalSkills || '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Số năm kinh nghiệm</label>
-                  <p className="text-sm text-gray-900">{candidate.experienceYears ? `${candidate.experienceYears} ${t.years || 'năm'}` : '—'}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Số năm kinh nghiệm</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{candidate.experienceYears ? `${candidate.experienceYears} ${t.years || 'năm'}` : '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Trình độ JLPT</label>
-                  <p className="text-sm text-gray-900">{candidate.jlptLevel ? `N${candidate.jlptLevel}` : '—'}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Trình độ JLPT</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{candidate.jlptLevel ? `N${candidate.jlptLevel}` : '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Chuyên ngành</label>
-                  <p className="text-sm text-gray-900">{candidate.specialization || '—'}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Chuyên ngành</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{candidate.specialization || '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Trình độ chuyên môn</label>
-                  <p className="text-sm text-gray-900">{candidate.qualification || '—'}</p>
+                  <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Trình độ chuyên môn</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{candidate.qualification || '—'}</p>
                 </div>
               </div>
             </div>
@@ -492,113 +530,113 @@ const CandidateDetail = () => {
 
           {/* Education */}
           {activeTab === 'education' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <GraduationCap className="w-6 h-6 text-red-600" />
+            <div className="rounded-xl shadow-sm border p-6" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2" style={{ color: '#111827' }}>
+                <GraduationCap className="w-6 h-6" style={{ color: '#ef4444' }} />
                 Học vấn
               </h2>
               {educations.length > 0 ? (
                 <div className="space-y-4">
                   {educations.map((edu, index) => (
-                    <div key={index} className="border-l-4 border-red-600 pl-6 py-4 bg-gray-50 rounded-r-lg">
-                      <p className="font-semibold text-base text-gray-900 mb-1">{edu.school || edu.name || edu.content || '—'}</p>
-                      {edu.major && <p className="text-sm text-gray-600 mb-2">{edu.major}</p>}
-                      <p className="text-xs text-gray-500">
+                    <div key={index} className="border-l-4 pl-6 py-4 rounded-r-lg" style={{ borderColor: '#ef4444', backgroundColor: '#f9fafb' }}>
+                      <p className="font-semibold text-base mb-1" style={{ color: '#111827' }}>{edu.school || edu.name || edu.content || '—'}</p>
+                      {edu.major && <p className="text-sm mb-2" style={{ color: '#4b5563' }}>{edu.major}</p>}
+                      <p className="text-xs" style={{ color: '#6b7280' }}>
                         {edu.startDate || edu.year || '—'} - {edu.endDate || '—'}
                       </p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-8">Chưa có thông tin học vấn</p>
+                <p className="text-center py-8" style={{ color: '#6b7280' }}>Chưa có thông tin học vấn</p>
               )}
             </div>
           )}
 
           {/* Work Experience */}
           {activeTab === 'work' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <Briefcase className="w-6 h-6 text-red-600" />
+            <div className="rounded-xl shadow-sm border p-6" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2" style={{ color: '#111827' }}>
+                <Briefcase className="w-6 h-6" style={{ color: '#ef4444' }} />
                 Kinh nghiệm làm việc
               </h2>
               {workExperiences.length > 0 ? (
                 <div className="space-y-4">
                   {workExperiences.map((exp, index) => (
-                    <div key={index} className="border-l-4 border-blue-600 pl-6 py-4 bg-gray-50 rounded-r-lg">
-                      <p className="font-semibold text-base text-gray-900 mb-1">{exp.company || exp.company_name || exp.name || '—'}</p>
+                    <div key={index} className="border-l-4 pl-6 py-4 rounded-r-lg" style={{ borderColor: '#2563eb', backgroundColor: '#f9fafb' }}>
+                      <p className="font-semibold text-base mb-1" style={{ color: '#111827' }}>{exp.company || exp.company_name || exp.name || '—'}</p>
                       {(exp.position || exp.role || exp.scale_role) && (
-                        <p className="text-sm text-gray-600 mb-2">{exp.position || exp.role || exp.scale_role}</p>
+                        <p className="text-sm mb-2" style={{ color: '#4b5563' }}>{exp.position || exp.role || exp.scale_role}</p>
                       )}
-                      <p className="text-xs text-gray-500 mb-2">
+                      <p className="text-xs mb-2" style={{ color: '#6b7280' }}>
                         {exp.period || exp.startDate || '—'} - {exp.endDate || (language === 'ja' ? '現在' : language === 'en' ? 'Current' : 'Hiện tại')}
                       </p>
                       {exp.description && (
-                        <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">{exp.description}</p>
+                        <p className="text-sm mt-2 whitespace-pre-wrap" style={{ color: '#374151' }}>{exp.description}</p>
                       )}
                       {exp.tools_tech && (
-                        <p className="text-xs text-gray-600 mt-2">Công cụ: {exp.tools_tech}</p>
+                        <p className="text-xs mt-2" style={{ color: '#4b5563' }}>Công cụ: {exp.tools_tech}</p>
                       )}
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-8">Chưa có thông tin kinh nghiệm làm việc</p>
+                <p className="text-center py-8" style={{ color: '#6b7280' }}>Chưa có thông tin kinh nghiệm làm việc</p>
               )}
             </div>
           )}
 
           {/* Certificates */}
           {activeTab === 'certificates' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <Award className="w-6 h-6 text-red-600" />
+            <div className="rounded-xl shadow-sm border p-6" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2" style={{ color: '#111827' }}>
+                <Award className="w-6 h-6" style={{ color: '#ef4444' }} />
                 Chứng chỉ
               </h2>
               {certificates.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {certificates.map((cert, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <p className="font-semibold text-base text-gray-900 mb-1">{cert.name || cert.title || '—'}</p>
-                      {cert.organization && <p className="text-sm text-gray-600 mb-1">{cert.organization}</p>}
-                      <p className="text-xs text-gray-500">{cert.date || cert.year || '—'}</p>
+                    <div key={index} className="border rounded-lg p-4 transition-shadow" style={{ borderColor: '#e5e7eb' }}>
+                      <p className="font-semibold text-base mb-1" style={{ color: '#111827' }}>{cert.name || cert.title || '—'}</p>
+                      {cert.organization && <p className="text-sm mb-1" style={{ color: '#4b5563' }}>{cert.organization}</p>}
+                      <p className="text-xs" style={{ color: '#6b7280' }}>{cert.date || cert.year || '—'}</p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-8">Chưa có chứng chỉ</p>
+                <p className="text-center py-8" style={{ color: '#6b7280' }}>Chưa có chứng chỉ</p>
               )}
             </div>
           )}
 
           {/* Self Introduction */}
           {activeTab === 'introduction' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <UserCircle className="w-6 h-6 text-red-600" />
+            <div className="rounded-xl shadow-sm border p-6" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+              <h2 className="text-xl font-bold mb-6 flex items-center gap-2" style={{ color: '#111827' }}>
+                <UserCircle className="w-6 h-6" style={{ color: '#ef4444' }} />
                 Giới thiệu bản thân
               </h2>
               <div className="space-y-6">
                 {candidate.careerSummary && (
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Tóm tắt nghề nghiệp</label>
-                    <p className="text-sm text-gray-900 whitespace-pre-wrap bg-gray-50 p-4 rounded-lg">{candidate.careerSummary}</p>
+                    <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Tóm tắt nghề nghiệp</label>
+                    <p className="text-sm whitespace-pre-wrap p-4 rounded-lg" style={{ color: '#111827', backgroundColor: '#f9fafb' }}>{candidate.careerSummary}</p>
                   </div>
                 )}
                 {candidate.strengths && (
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Điểm mạnh</label>
-                    <p className="text-sm text-gray-900 whitespace-pre-wrap bg-gray-50 p-4 rounded-lg">{candidate.strengths}</p>
+                    <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Điểm mạnh</label>
+                    <p className="text-sm whitespace-pre-wrap p-4 rounded-lg" style={{ color: '#111827', backgroundColor: '#f9fafb' }}>{candidate.strengths}</p>
                   </div>
                 )}
                 {candidate.motivation && (
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Động lực ứng tuyển</label>
-                    <p className="text-sm text-gray-900 whitespace-pre-wrap bg-gray-50 p-4 rounded-lg">{candidate.motivation}</p>
+                    <label className="block text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: '#6b7280' }}>Động lực ứng tuyển</label>
+                    <p className="text-sm whitespace-pre-wrap p-4 rounded-lg" style={{ color: '#111827', backgroundColor: '#f9fafb' }}>{candidate.motivation}</p>
                   </div>
                 )}
                 {!candidate.careerSummary && !candidate.strengths && !candidate.motivation && (
-                  <p className="text-gray-500 text-center py-8">Chưa có thông tin giới thiệu</p>
+                  <p className="text-center py-8" style={{ color: '#6b7280' }}>Chưa có thông tin giới thiệu</p>
                 )}
               </div>
             </div>
@@ -606,12 +644,12 @@ const CandidateDetail = () => {
 
           {/* Duplicate Warning */}
           {candidate.isDuplicate && (
-            <div className="mt-6 bg-orange-50 border border-orange-200 rounded-xl p-6">
+            <div className="mt-6 rounded-xl p-6" style={{ backgroundColor: '#fff7ed', borderColor: '#fed7aa', borderWidth: '1px', borderStyle: 'solid' }}>
               <div className="flex items-start gap-3">
-                <AlertTriangle className="w-6 h-6 text-orange-600 flex-shrink-0 mt-0.5" />
+                <AlertTriangle className="w-6 h-6 flex-shrink-0 mt-0.5" style={{ color: '#ea580c' }} />
                 <div>
-                  <h3 className="font-bold text-orange-900 mb-1">Cảnh báo: Hồ sơ trùng lặp</h3>
-                  <p className="text-sm text-orange-700">
+                  <h3 className="font-bold mb-1" style={{ color: '#9a3412' }}>Cảnh báo: Hồ sơ trùng lặp</h3>
+                  <p className="text-sm" style={{ color: '#c2410c' }}>
                     Hồ sơ này đã được đánh dấu là trùng lặp với hồ sơ khác trong hệ thống.
                     {candidate.duplicateWithCvId && (
                       <span className="block mt-1">

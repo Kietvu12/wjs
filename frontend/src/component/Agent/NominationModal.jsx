@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, UserPlus, Search, AlertTriangle, CheckCircle, FileText, User, GraduationCap, Briefcase, Award, MapPin, Phone, Mail, Calendar, Upload, Plus, Trash2 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { translations } from '../../translations/translations';
+import apiService from '../../services/api';
 
 
 const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
@@ -47,6 +48,22 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
   const [duplicateInfo, setDuplicateInfo] = useState(null);
   const [checkingDuplicate, setCheckingDuplicate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  
+  // Hover states
+  const [hoveredCloseButton, setHoveredCloseButton] = useState(false);
+  const [hoveredTabExisting, setHoveredTabExisting] = useState(false);
+  const [hoveredTabNew, setHoveredTabNew] = useState(false);
+  const [hoveredCvCardIndex, setHoveredCvCardIndex] = useState(null);
+  const [hoveredRemoveCvButtonIndex, setHoveredRemoveCvButtonIndex] = useState(null);
+  const [hoveredAddFileButton, setHoveredAddFileButton] = useState(false);
+  const [hoveredRemoveEducationIndex, setHoveredRemoveEducationIndex] = useState(null);
+  const [hoveredAddEducationButton, setHoveredAddEducationButton] = useState(false);
+  const [hoveredRemoveEmploymentIndex, setHoveredRemoveEmploymentIndex] = useState(null);
+  const [hoveredAddEmploymentButton, setHoveredAddEmploymentButton] = useState(false);
+  const [hoveredRemoveCertificateIndex, setHoveredRemoveCertificateIndex] = useState(null);
+  const [hoveredAddCertificateButton, setHoveredAddCertificateButton] = useState(false);
+  const [hoveredCancelButton, setHoveredCancelButton] = useState(false);
+  const [hoveredSubmitButton, setHoveredSubmitButton] = useState(false);
 
   // API Base URL for CV parsing
   const API_BASE_URL = 'https://unboiled-nonprescriptive-hiedi.ngrok-free.dev';
@@ -454,45 +471,56 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+      <div className="rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" style={{ backgroundColor: 'white', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: '#e5e7eb' }}>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-xl font-bold" style={{ color: '#111827' }}>
               {t.recommendCandidate || 'Tiến cử ứng viên'}
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm mt-1" style={{ color: '#4b5563' }}>
               {jobTitle || 'Job Title'}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            onMouseEnter={() => setHoveredCloseButton(true)}
+            onMouseLeave={() => setHoveredCloseButton(false)}
+            className="p-2 rounded-lg transition-colors"
+            style={{
+              backgroundColor: hoveredCloseButton ? '#f3f4f6' : 'transparent'
+            }}
           >
-            <X className="w-5 h-5 text-gray-600" />
+            <X className="w-5 h-5" style={{ color: '#4b5563' }} />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200">
+        <div className="flex border-b" style={{ borderColor: '#e5e7eb' }}>
           <button
             onClick={() => setActiveTab('existing')}
-            className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'existing'
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
+            onMouseEnter={() => setHoveredTabExisting(true)}
+            onMouseLeave={() => setHoveredTabExisting(false)}
+            className="flex-1 px-6 py-3 text-sm font-medium transition-colors"
+            style={{
+              backgroundColor: activeTab === 'existing' ? '#eff6ff' : (hoveredTabExisting ? '#f9fafb' : 'transparent'),
+              color: activeTab === 'existing' ? '#1d4ed8' : (hoveredTabExisting ? '#111827' : '#4b5563'),
+              borderBottom: activeTab === 'existing' ? '2px solid #1d4ed8' : '2px solid transparent'
+            }}
           >
             {t.selectExistingCV || 'Chọn ứng viên có sẵn'}
           </button>
           <button
             onClick={() => setActiveTab('new')}
-            className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'new'
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
+            onMouseEnter={() => setHoveredTabNew(true)}
+            onMouseLeave={() => setHoveredTabNew(false)}
+            className="flex-1 px-6 py-3 text-sm font-medium transition-colors"
+            style={{
+              backgroundColor: activeTab === 'new' ? '#eff6ff' : (hoveredTabNew ? '#f9fafb' : 'transparent'),
+              color: activeTab === 'new' ? '#1d4ed8' : (hoveredTabNew ? '#111827' : '#4b5563'),
+              borderBottom: activeTab === 'new' ? '2px solid #1d4ed8' : '2px solid transparent'
+            }}
           >
             {t.createNewCV || 'Tạo hồ sơ mới'}
           </button>
@@ -504,23 +532,27 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
             <div className="space-y-4">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#9ca3af' }} />
                 <input
                   type="text"
                   placeholder={t.searchCV || 'Tìm kiếm ứng viên...'}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none"
+                  style={{
+                    borderColor: '#d1d5db',
+                    focusRingColor: '#3b82f6'
+                  }}
                 />
               </div>
 
               {/* CV List */}
               {loading ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8" style={{ color: '#6b7280' }}>
                   {t.loading || 'Đang tải...'}
                 </div>
               ) : filteredCVStorages.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8" style={{ color: '#6b7280' }}>
                   {t.noCVFound || 'Không tìm thấy ứng viên nào'}
                 </div>
               ) : (
@@ -529,25 +561,27 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                     <div
                       key={cv.id}
                       onClick={() => setSelectedCvId(cv.id)}
-                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                        selectedCvId === cv.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                      onMouseEnter={() => setHoveredCvCardIndex(cv.id)}
+                      onMouseLeave={() => setHoveredCvCardIndex(null)}
+                      className="p-4 border-2 rounded-lg cursor-pointer transition-all"
+                      style={{
+                        borderColor: selectedCvId === cv.id ? '#3b82f6' : (hoveredCvCardIndex === cv.id ? '#d1d5db' : '#e5e7eb'),
+                        backgroundColor: selectedCvId === cv.id ? '#eff6ff' : 'transparent'
+                      }}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold" style={{ backgroundColor: '#3b82f6' }}>
                             {cv.name ? cv.name.charAt(0) : '?'}
                           </div>
                           <div>
-                            <p className="font-semibold text-gray-900">{cv.name || 'N/A'}</p>
-                            <p className="text-sm text-gray-600">{cv.email || 'N/A'}</p>
-                            <p className="text-xs text-gray-500">{cv.code}</p>
+                            <p className="font-semibold" style={{ color: '#111827' }}>{cv.name || 'N/A'}</p>
+                            <p className="text-sm" style={{ color: '#4b5563' }}>{cv.email || 'N/A'}</p>
+                            <p className="text-xs" style={{ color: '#6b7280' }}>{cv.code}</p>
                           </div>
                         </div>
                         {selectedCvId === cv.id && (
-                          <CheckCircle className="w-5 h-5 text-blue-500" />
+                          <CheckCircle className="w-5 h-5" style={{ color: '#3b82f6' }} />
                         )}
                       </div>
                     </div>
@@ -559,17 +593,17 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
             <form onSubmit={handleSubmitNew} className="space-y-4">
               {/* Duplicate Warning */}
               {isDuplicate && (
-                <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4 flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <div className="border-2 rounded-lg p-4 flex items-start gap-3" style={{ backgroundColor: '#fef2f2', borderColor: '#fca5a5' }}>
+                  <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#dc2626' }} />
                   <div className="flex-1">
-                    <p className="font-semibold text-red-900 mb-1">
+                    <p className="font-semibold mb-1" style={{ color: '#7f1d1d' }}>
                       {t.duplicateCVDetected || 'Phát hiện hồ sơ trùng lặp'}
                     </p>
-                    <p className="text-sm text-red-700">
+                    <p className="text-sm" style={{ color: '#991b1b' }}>
                       {t.duplicateCVWarning || 'Hồ sơ này đã tồn tại trong hệ thống. Bạn không thể tiến cử ứng viên này.'}
                     </p>
                     {duplicateInfo && duplicateInfo.duplicateCount > 0 && (
-                      <p className="text-xs text-red-600 mt-2">
+                      <p className="text-xs mt-2" style={{ color: '#dc2626' }}>
                         {t.duplicateCount || 'Số lượng hồ sơ trùng'}: {duplicateInfo.duplicateCount}
                       </p>
                     )}
@@ -579,14 +613,14 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
 
               {/* Personal Information */}
               <div className="space-y-4">
-                <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                  <User className="w-4 h-4 text-blue-600" />
+                <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: '#111827' }}>
+                  <User className="w-4 h-4" style={{ color: '#2563eb' }} />
                   Thông tin cá nhân
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-1">
-                      {t.nameKanji || 'Họ tên (Kanji)'} <span className="text-red-500">*</span>
+                    <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
+                      {t.nameKanji || 'Họ tên (Kanji)'} <span style={{ color: '#ef4444' }}>*</span>
                     </label>
                     <input
                       type="text"
@@ -594,11 +628,12 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                       value={formData.nameKanji}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                      style={{ borderColor: '#d1d5db' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-1">
+                    <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
                       {t.nameKana || 'Họ tên (Kana)'}
                     </label>
                     <input
@@ -606,14 +641,15 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                       name="nameKana"
                       value={formData.nameKana}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                      style={{ borderColor: '#d1d5db' }}
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-1">
+                    <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
                       Ngày sinh
                     </label>
                     <input
@@ -622,11 +658,12 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                       value={formData.birthDate}
                       onChange={handleInputChange}
                       placeholder="1990年1月1日"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                      style={{ borderColor: '#d1d5db' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-1">
+                    <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
                       Tuổi
                     </label>
                     <input
@@ -635,18 +672,20 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                       value={formData.age}
                       onChange={handleInputChange}
                       placeholder="30"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                      style={{ borderColor: '#d1d5db' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-1">
+                    <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
                       Giới tính
                     </label>
                     <select
                       name="gender"
                       value={formData.gender}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                      style={{ borderColor: '#d1d5db' }}
                     >
                       <option value="">Chọn</option>
                       <option value="男">Nam (男)</option>
@@ -657,8 +696,8 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-1">
-                      {t.email || 'Email'} <span className="text-red-500">*</span>
+                    <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
+                      {t.email || 'Email'} <span style={{ color: '#ef4444' }}>*</span>
                     </label>
                     <input
                       type="email"
@@ -666,11 +705,12 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                       value={formData.email}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                      style={{ borderColor: '#d1d5db' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-1">
+                    <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
                       {t.phone || 'Điện thoại'}
                     </label>
                     <input
@@ -678,14 +718,15 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                      style={{ borderColor: '#d1d5db' }}
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-1">
+                    <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
                       Mã bưu điện
                     </label>
                     <input
@@ -694,11 +735,12 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                       value={formData.postalCode}
                       onChange={handleInputChange}
                       placeholder="123-4567"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                      style={{ borderColor: '#d1d5db' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-1">
+                    <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
                       Địa chỉ
                     </label>
                     <input
@@ -707,7 +749,8 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                       value={formData.address}
                       onChange={handleInputChange}
                       placeholder="東京都渋谷区..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                      style={{ borderColor: '#d1d5db' }}
                     />
                   </div>
                 </div>
@@ -715,23 +758,30 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
 
               {/* CV File Upload */}
               <div className="space-y-3">
-                <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-blue-600" />
+                <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: '#111827' }}>
+                  <FileText className="w-4 h-4" style={{ color: '#2563eb' }} />
                   Upload CV
                 </h3>
                 {cvFiles.length === 0 ? (
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-600 transition-colors">
+                  <div 
+                    className="border-2 border-dashed rounded-lg p-6 text-center transition-colors"
+                    onMouseEnter={() => setHoveredAddFileButton(true)}
+                    onMouseLeave={() => setHoveredAddFileButton(false)}
+                    style={{
+                      borderColor: hoveredAddFileButton ? '#2563eb' : '#d1d5db'
+                    }}
+                  >
                     <label htmlFor="cv-upload" className="cursor-pointer">
                       <div className="flex flex-col items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                          <Upload className="w-6 h-6 text-gray-400" />
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#f3f4f6' }}>
+                          <Upload className="w-6 h-6" style={{ color: '#9ca3af' }} />
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-gray-900 mb-1">Kéo thả file CV vào đây</p>
-                          <p className="text-xs text-gray-500">hoặc</p>
-                          <p className="text-sm text-blue-600 font-medium mt-1">Chọn file từ máy tính</p>
+                          <p className="text-sm font-semibold mb-1" style={{ color: '#111827' }}>Kéo thả file CV vào đây</p>
+                          <p className="text-xs" style={{ color: '#6b7280' }}>hoặc</p>
+                          <p className="text-sm font-medium mt-1" style={{ color: '#2563eb' }}>Chọn file từ máy tính</p>
                         </div>
-                        <p className="text-xs text-gray-500">Hỗ trợ nhiều file PDF - Tự động trích xuất dữ liệu</p>
+                        <p className="text-xs" style={{ color: '#6b7280' }}>Hỗ trợ nhiều file PDF - Tự động trích xuất dữ liệu</p>
                       </div>
                       <input
                         id="cv-upload"
@@ -747,22 +797,27 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                   <div className="space-y-3">
                     <div className="space-y-2">
                       {cvFiles.map((file, index) => (
-                        <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                        <div key={index} className="rounded-lg p-3 border" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                                <FileText className="w-4 h-4 text-blue-600" />
+                              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#dbeafe' }}>
+                                <FileText className="w-4 h-4" style={{ color: '#2563eb' }} />
                               </div>
                               <div>
-                                <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                                <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                <p className="text-sm font-medium" style={{ color: '#111827' }}>{file.name}</p>
+                                <p className="text-xs" style={{ color: '#6b7280' }}>{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                               </div>
                             </div>
                             <button
                               type="button"
                               onClick={() => handleRemoveCV(index)}
-                              className="text-gray-400 hover:text-red-600 p-1"
+                              onMouseEnter={() => setHoveredRemoveCvButtonIndex(index)}
+                              onMouseLeave={() => setHoveredRemoveCvButtonIndex(null)}
+                              className="p-1"
                               disabled={isParsing}
+                              style={{
+                                color: hoveredRemoveCvButtonIndex === index ? '#dc2626' : '#9ca3af'
+                              }}
                             >
                               <X className="w-4 h-4" />
                             </button>
@@ -771,7 +826,15 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                       ))}
                     </div>
                     <label htmlFor="cv-upload-more" className="block">
-                      <div className="w-full px-4 py-2 border border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:border-blue-600 hover:text-blue-600 transition-colors text-center cursor-pointer flex items-center justify-center gap-2">
+                      <div 
+                        className="w-full px-4 py-2 border border-dashed rounded-lg text-sm font-medium transition-colors text-center cursor-pointer flex items-center justify-center gap-2"
+                        onMouseEnter={() => setHoveredAddFileButton(true)}
+                        onMouseLeave={() => setHoveredAddFileButton(false)}
+                        style={{
+                          borderColor: hoveredAddFileButton ? '#2563eb' : '#d1d5db',
+                          color: hoveredAddFileButton ? '#2563eb' : '#4b5563'
+                        }}
+                      >
                         <Plus className="w-4 h-4" /> Thêm file PDF
                       </div>
                       <input
@@ -785,32 +848,35 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                       />
                     </label>
                     {isParsing && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <div className="border rounded-lg p-3" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
                         <div className="flex items-center gap-2 mb-2">
-                          <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-                          <p className="text-xs font-medium text-blue-800">
+                          <div className="animate-spin w-4 h-4 border-2 border-t-transparent rounded-full" style={{ borderColor: '#2563eb' }}></div>
+                          <p className="text-xs font-medium" style={{ color: '#1e40af' }}>
                             Đang phân tích CV bằng AI... ({parseProgress.current}/{parseProgress.total})
                           </p>
                         </div>
-                        <div className="w-full bg-blue-200 rounded-full h-1.5">
+                        <div className="w-full rounded-full h-1.5" style={{ backgroundColor: '#bfdbfe' }}>
                           <div
-                            className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
-                            style={{ width: `${(parseProgress.current / parseProgress.total) * 100}%` }}
+                            className="h-1.5 rounded-full transition-all duration-300"
+                            style={{ 
+                              width: `${(parseProgress.current / parseProgress.total) * 100}%`,
+                              backgroundColor: '#2563eb'
+                            }}
                           ></div>
                         </div>
                       </div>
                     )}
                     {parseError && (
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
-                        <span className="text-red-600 mt-0.5 text-xs">⚠️</span>
-                        <pre className="flex-1 text-xs font-medium text-red-800 whitespace-pre-wrap">{parseError}</pre>
-                        <button type="button" onClick={() => setParseError(null)} className="text-red-600 hover:text-red-800 text-xs">✕</button>
+                      <div className="border rounded-lg p-3 flex items-start gap-2" style={{ backgroundColor: '#fef2f2', borderColor: '#fecaca' }}>
+                        <span className="mt-0.5 text-xs" style={{ color: '#dc2626' }}>⚠️</span>
+                        <pre className="flex-1 text-xs font-medium whitespace-pre-wrap" style={{ color: '#991b1b' }}>{parseError}</pre>
+                        <button type="button" onClick={() => setParseError(null)} className="text-xs" style={{ color: '#dc2626' }}>✕</button>
                       </div>
                     )}
                     {parseSuccess && (
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2">
-                        <span className="text-green-600 text-xs">✓</span>
-                        <p className="flex-1 text-xs font-medium text-green-800">{parseSuccess}</p>
+                      <div className="border rounded-lg p-3 flex items-center gap-2" style={{ backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' }}>
+                        <span className="text-xs" style={{ color: '#16a34a' }}>✓</span>
+                        <p className="flex-1 text-xs font-medium" style={{ color: '#166534' }}>{parseSuccess}</p>
                       </div>
                     )}
                   </div>
@@ -819,18 +885,22 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
 
               {/* Education */}
               <div className="space-y-3">
-                <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                  <GraduationCap className="w-4 h-4 text-blue-600" />
+                <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: '#111827' }}>
+                  <GraduationCap className="w-4 h-4" style={{ color: '#2563eb' }} />
                   Học vấn (学歴)
                 </h3>
                 {formData.educations.map((edu, index) => (
-                  <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <div key={index} className="p-3 rounded-lg border" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
                     <div className="flex justify-between items-start mb-2">
-                      <span className="text-xs font-bold text-gray-500">#{index + 1}</span>
+                      <span className="text-xs font-bold" style={{ color: '#6b7280' }}>#{index + 1}</span>
                       <button
                         type="button"
                         onClick={() => removeEducation(index)}
-                        className="text-red-500 hover:text-red-700"
+                        onMouseEnter={() => setHoveredRemoveEducationIndex(index)}
+                        onMouseLeave={() => setHoveredRemoveEducationIndex(null)}
+                        style={{
+                          color: hoveredRemoveEducationIndex === index ? '#b91c1c' : '#ef4444'
+                        }}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -841,21 +911,24 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                         value={edu.year}
                         onChange={(e) => updateEducation(index, 'year', e.target.value)}
                         placeholder="Năm (年)"
-                        className="px-2 py-1.5 border border-gray-300 rounded text-sm"
+                        className="px-2 py-1.5 border rounded text-sm"
+                        style={{ borderColor: '#d1d5db' }}
                       />
                       <input
                         type="text"
                         value={edu.month}
                         onChange={(e) => updateEducation(index, 'month', e.target.value)}
                         placeholder="Tháng (月)"
-                        className="px-2 py-1.5 border border-gray-300 rounded text-sm"
+                        className="px-2 py-1.5 border rounded text-sm"
+                        style={{ borderColor: '#d1d5db' }}
                       />
                       <input
                         type="text"
                         value={edu.content}
                         onChange={(e) => updateEducation(index, 'content', e.target.value)}
                         placeholder="Tên trường, ngành học..."
-                        className="col-span-2 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                        className="col-span-2 px-2 py-1.5 border rounded text-sm"
+                        style={{ borderColor: '#d1d5db' }}
                       />
                     </div>
                   </div>
@@ -863,7 +936,13 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                 <button
                   type="button"
                   onClick={handleAddEducation}
-                  className="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:border-blue-600 hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
+                  onMouseEnter={() => setHoveredAddEducationButton(true)}
+                  onMouseLeave={() => setHoveredAddEducationButton(false)}
+                  className="w-full px-4 py-2 border-2 border-dashed rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                  style={{
+                    borderColor: hoveredAddEducationButton ? '#2563eb' : '#d1d5db',
+                    color: hoveredAddEducationButton ? '#2563eb' : '#4b5563'
+                  }}
                 >
                   <Plus className="w-4 h-4" />
                   Thêm học vấn
@@ -872,18 +951,22 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
 
               {/* Work Experience */}
               <div className="space-y-3">
-                <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                  <Briefcase className="w-4 h-4 text-blue-600" />
+                <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: '#111827' }}>
+                  <Briefcase className="w-4 h-4" style={{ color: '#2563eb' }} />
                   Kinh nghiệm làm việc (職歴)
                 </h3>
                 {formData.workExperiences.map((emp, index) => (
-                  <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <div key={index} className="p-3 rounded-lg border" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
                     <div className="flex justify-between items-start mb-2">
-                      <span className="text-xs font-bold text-gray-500">#{index + 1}</span>
+                      <span className="text-xs font-bold" style={{ color: '#6b7280' }}>#{index + 1}</span>
                       <button
                         type="button"
                         onClick={() => removeEmployment(index)}
-                        className="text-red-500 hover:text-red-700"
+                        onMouseEnter={() => setHoveredRemoveEmploymentIndex(index)}
+                        onMouseLeave={() => setHoveredRemoveEmploymentIndex(null)}
+                        style={{
+                          color: hoveredRemoveEmploymentIndex === index ? '#b91c1c' : '#ef4444'
+                        }}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -895,14 +978,16 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                           value={emp.period}
                           onChange={(e) => updateEmployment(index, 'period', e.target.value)}
                           placeholder="Thời gian (YYYY/MM - YYYY/MM)"
-                          className="px-2 py-1.5 border border-gray-300 rounded text-sm"
+                          className="px-2 py-1.5 border rounded text-sm"
+                          style={{ borderColor: '#d1d5db' }}
                         />
                         <input
                           type="text"
                           value={emp.company_name}
                           onChange={(e) => updateEmployment(index, 'company_name', e.target.value)}
                           placeholder="Tên công ty"
-                          className="px-2 py-1.5 border border-gray-300 rounded text-sm"
+                          className="px-2 py-1.5 border rounded text-sm"
+                          style={{ borderColor: '#d1d5db' }}
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-2">
@@ -911,14 +996,16 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                           value={emp.business_purpose}
                           onChange={(e) => updateEmployment(index, 'business_purpose', e.target.value)}
                           placeholder="Lĩnh vực kinh doanh"
-                          className="px-2 py-1.5 border border-gray-300 rounded text-sm"
+                          className="px-2 py-1.5 border rounded text-sm"
+                          style={{ borderColor: '#d1d5db' }}
                         />
                         <input
                           type="text"
                           value={emp.scale_role}
                           onChange={(e) => updateEmployment(index, 'scale_role', e.target.value)}
                           placeholder="Quy mô / Vai trò"
-                          className="px-2 py-1.5 border border-gray-300 rounded text-sm"
+                          className="px-2 py-1.5 border rounded text-sm"
+                          style={{ borderColor: '#d1d5db' }}
                         />
                       </div>
                       <textarea
@@ -926,14 +1013,16 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                         onChange={(e) => updateEmployment(index, 'description', e.target.value)}
                         placeholder="Mô tả công việc"
                         rows={2}
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
+                        className="w-full px-2 py-1.5 border rounded text-sm"
+                        style={{ borderColor: '#d1d5db' }}
                       />
                       <input
                         type="text"
                         value={emp.tools_tech}
                         onChange={(e) => updateEmployment(index, 'tools_tech', e.target.value)}
                         placeholder="Công cụ, công nghệ"
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
+                        className="w-full px-2 py-1.5 border rounded text-sm"
+                        style={{ borderColor: '#d1d5db' }}
                       />
                     </div>
                   </div>
@@ -941,7 +1030,13 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                 <button
                   type="button"
                   onClick={handleAddWorkExperience}
-                  className="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:border-blue-600 hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
+                  onMouseEnter={() => setHoveredAddEmploymentButton(true)}
+                  onMouseLeave={() => setHoveredAddEmploymentButton(false)}
+                  className="w-full px-4 py-2 border-2 border-dashed rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                  style={{
+                    borderColor: hoveredAddEmploymentButton ? '#2563eb' : '#d1d5db',
+                    color: hoveredAddEmploymentButton ? '#2563eb' : '#4b5563'
+                  }}
                 >
                   <Plus className="w-4 h-4" />
                   Thêm kinh nghiệm
@@ -950,12 +1045,12 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
 
               {/* Skills & Certificates */}
               <div className="space-y-3">
-                <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                  <Award className="w-4 h-4 text-blue-600" />
+                <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: '#111827' }}>
+                  <Award className="w-4 h-4" style={{ color: '#2563eb' }} />
                   Kỹ năng & Chứng chỉ
                 </h3>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-1">
+                  <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
                     Kỹ năng kỹ thuật
                   </label>
                   <textarea
@@ -964,11 +1059,12 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                     onChange={handleInputChange}
                     placeholder="VD: Project Management, React, Python..."
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                    style={{ borderColor: '#d1d5db' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  <label className="block text-sm font-semibold mb-2" style={{ color: '#111827' }}>
                     Chứng chỉ (免許・資格)
                   </label>
                   <div className="space-y-2">
@@ -979,26 +1075,33 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                           value={cert.year}
                           onChange={(e) => updateCertificate(index, 'year', e.target.value)}
                           placeholder="Năm"
-                          className="w-16 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                          className="w-16 px-2 py-1.5 border rounded text-sm"
+                          style={{ borderColor: '#d1d5db' }}
                         />
                         <input
                           type="text"
                           value={cert.month}
                           onChange={(e) => updateCertificate(index, 'month', e.target.value)}
                           placeholder="Tháng"
-                          className="w-16 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                          className="w-16 px-2 py-1.5 border rounded text-sm"
+                          style={{ borderColor: '#d1d5db' }}
                         />
                         <input
                           type="text"
                           value={cert.name}
                           onChange={(e) => updateCertificate(index, 'name', e.target.value)}
                           placeholder="Tên chứng chỉ"
-                          className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm"
+                          className="flex-1 px-2 py-1.5 border rounded text-sm"
+                          style={{ borderColor: '#d1d5db' }}
                         />
                         <button
                           type="button"
                           onClick={() => removeCertificate(index)}
-                          className="text-red-500 hover:text-red-700"
+                          onMouseEnter={() => setHoveredRemoveCertificateIndex(index)}
+                          onMouseLeave={() => setHoveredRemoveCertificateIndex(null)}
+                          style={{
+                            color: hoveredRemoveCertificateIndex === index ? '#b91c1c' : '#ef4444'
+                          }}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1007,7 +1110,12 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                     <button
                       type="button"
                       onClick={handleAddCertificate}
-                      className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                      onMouseEnter={() => setHoveredAddCertificateButton(true)}
+                      onMouseLeave={() => setHoveredAddCertificateButton(false)}
+                      className="text-sm flex items-center gap-1"
+                      style={{
+                        color: hoveredAddCertificateButton ? '#1d4ed8' : '#2563eb'
+                      }}
                     >
                       <Plus className="w-4 h-4" />
                       Thêm chứng chỉ
@@ -1018,12 +1126,12 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
 
               {/* Self Introduction */}
               <div className="space-y-3">
-                <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                  <User className="w-4 h-4 text-blue-600" />
+                <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: '#111827' }}>
+                  <User className="w-4 h-4" style={{ color: '#2563eb' }} />
                   Giới thiệu bản thân
                 </h3>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-1">
+                  <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
                     Tóm tắt nghề nghiệp
                   </label>
                   <textarea
@@ -1032,11 +1140,12 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                     onChange={handleInputChange}
                     placeholder="Tóm tắt kinh nghiệm làm việc..."
                     rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                    style={{ borderColor: '#d1d5db' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-1">
+                  <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
                     Điểm mạnh
                   </label>
                   <textarea
@@ -1045,11 +1154,12 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                     onChange={handleInputChange}
                     placeholder="Điểm mạnh của bạn..."
                     rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                    style={{ borderColor: '#d1d5db' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-1">
+                  <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
                     Động lực ứng tuyển
                   </label>
                   <textarea
@@ -1058,17 +1168,18 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                     onChange={handleInputChange}
                     placeholder="Lý do muốn ứng tuyển..."
                     rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                    style={{ borderColor: '#d1d5db' }}
                   />
                 </div>
               </div>
 
               {/* Preferences */}
               <div className="space-y-3">
-                <h3 className="text-sm font-bold text-gray-900">Mong muốn (希望)</h3>
+                <h3 className="text-sm font-bold" style={{ color: '#111827' }}>Mong muốn (希望)</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-1">
+                    <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
                       Lương hiện tại
                     </label>
                     <input
@@ -1077,11 +1188,12 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                       value={formData.currentSalary}
                       onChange={handleInputChange}
                       placeholder="VD: 500万円"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                      style={{ borderColor: '#d1d5db' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-1">
+                    <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
                       Lương mong muốn
                     </label>
                     <input
@@ -1090,12 +1202,13 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                       value={formData.desiredSalary}
                       onChange={handleInputChange}
                       placeholder="VD: 600万円"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                      style={{ borderColor: '#d1d5db' }}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-1">
+                  <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
                     Vị trí mong muốn
                   </label>
                   <input
@@ -1104,12 +1217,13 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                     value={formData.desiredPosition}
                     onChange={handleInputChange}
                     placeholder="VD: Software Engineer"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                    style={{ borderColor: '#d1d5db' }}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-1">
+                    <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
                       Địa điểm
                     </label>
                     <input
@@ -1118,11 +1232,12 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                       value={formData.desiredLocation}
                       onChange={handleInputChange}
                       placeholder="VD: Tokyo"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                      style={{ borderColor: '#d1d5db' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-1">
+                    <label className="block text-sm font-semibold mb-1" style={{ color: '#111827' }}>
                       Ngày bắt đầu
                     </label>
                     <input
@@ -1131,7 +1246,8 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                       value={formData.desiredStartDate}
                       onChange={handleInputChange}
                       placeholder="VD: 2025年4月"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                      style={{ borderColor: '#d1d5db' }}
                     />
                   </div>
                 </div>
@@ -1141,17 +1257,32 @@ const NominationModal = ({ isOpen, onClose, jobId, jobTitle }) => {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+        <div className="flex items-center justify-end gap-3 p-6 border-t" style={{ borderColor: '#e5e7eb', backgroundColor: '#f9fafb' }}>
           <button
             onClick={onClose}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+            onMouseEnter={() => setHoveredCancelButton(true)}
+            onMouseLeave={() => setHoveredCancelButton(false)}
+            className="px-4 py-2 border rounded-lg font-medium transition-colors"
+            style={{
+              borderColor: '#d1d5db',
+              color: '#374151',
+              backgroundColor: hoveredCancelButton ? '#f3f4f6' : 'transparent'
+            }}
           >
             {t.cancel || 'Hủy'}
           </button>
           <button
             onClick={activeTab === 'existing' ? handleSubmitExisting : handleSubmitNew}
             disabled={submitting || (activeTab === 'existing' && !selectedCvId) || (activeTab === 'new' && isDuplicate)}
-            className="px-6 py-2 bg-yellow-400 text-blue-700 rounded-lg font-semibold hover:bg-yellow-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => setHoveredSubmitButton(true)}
+            onMouseLeave={() => setHoveredSubmitButton(false)}
+            className="px-6 py-2 rounded-lg font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredSubmitButton ? '#facc15' : '#facc15',
+              color: '#1d4ed8',
+              opacity: (submitting || (activeTab === 'existing' && !selectedCvId) || (activeTab === 'new' && isDuplicate)) ? 0.5 : 1,
+              cursor: (submitting || (activeTab === 'existing' && !selectedCvId) || (activeTab === 'new' && isDuplicate)) ? 'not-allowed' : 'pointer'
+            }}
           >
             {submitting ? (t.submitting || 'Đang xử lý...') : (t.submitNomination || 'Tiến cử')}
           </button>

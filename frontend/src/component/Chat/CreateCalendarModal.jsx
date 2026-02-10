@@ -14,6 +14,11 @@ const CreateCalendarModal = ({ message, jobApplicationId, userType, onClose, onS
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [jobApplication, setJobApplication] = useState(null);
+  
+  // Hover states
+  const [hoveredCloseButton, setHoveredCloseButton] = useState(false);
+  const [hoveredCancelButton, setHoveredCancelButton] = useState(false);
+  const [hoveredSubmitButton, setHoveredSubmitButton] = useState(false);
 
   useEffect(() => {
     parseMessageAndLoadData();
@@ -212,19 +217,24 @@ const CreateCalendarModal = ({ message, jobApplicationId, userType, onClose, onS
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+      <div className="rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" style={{ backgroundColor: 'white', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5 text-blue-600" />
+        <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: '#e5e7eb' }}>
+          <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: '#111827' }}>
+            <CalendarIcon className="w-5 h-5" style={{ color: '#2563eb' }} />
             Tạo lịch hẹn nhanh
           </h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded transition-colors"
+            onMouseEnter={() => setHoveredCloseButton(true)}
+            onMouseLeave={() => setHoveredCloseButton(false)}
+            className="p-1 rounded transition-colors"
+            style={{
+              backgroundColor: hoveredCloseButton ? '#f3f4f6' : 'transparent'
+            }}
           >
-            <X className="w-5 h-5 text-gray-600" />
+            <X className="w-5 h-5" style={{ color: '#4b5563' }} />
           </button>
         </div>
 
@@ -232,9 +242,9 @@ const CreateCalendarModal = ({ message, jobApplicationId, userType, onClose, onS
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {/* Job Application Info */}
           {jobApplication && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <div className="text-xs font-semibold text-blue-900 mb-1">Đơn ứng tuyển</div>
-              <div className="text-sm text-blue-800">
+            <div className="border rounded-lg p-3" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
+              <div className="text-xs font-semibold mb-1" style={{ color: '#1e3a8a' }}>Đơn ứng tuyển</div>
+              <div className="text-sm" style={{ color: '#1e40af' }}>
                 {jobApplication.name || jobApplication.cv?.fullName || 'N/A'} - {jobApplication.job?.title || 'N/A'}
               </div>
             </div>
@@ -242,14 +252,15 @@ const CreateCalendarModal = ({ message, jobApplicationId, userType, onClose, onS
 
           {/* Event Type */}
           <div>
-            <label className="block text-xs font-semibold text-gray-900 mb-2">
-              Loại sự kiện <span className="text-red-500">*</span>
+            <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+              Loại sự kiện <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <select
               name="eventType"
               value={formData.eventType}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+              style={{ borderColor: '#d1d5db' }}
             >
               <option value="1">Phỏng vấn</option>
               <option value="2">Nyusha</option>
@@ -259,8 +270,8 @@ const CreateCalendarModal = ({ message, jobApplicationId, userType, onClose, onS
 
           {/* Title */}
           <div>
-            <label className="block text-xs font-semibold text-gray-900 mb-2">
-              Tiêu đề <span className="text-red-500">*</span>
+            <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+              Tiêu đề <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <input
               type="text"
@@ -268,57 +279,60 @@ const CreateCalendarModal = ({ message, jobApplicationId, userType, onClose, onS
               value={formData.title}
               onChange={handleInputChange}
               placeholder="VD: Phỏng vấn ứng viên..."
-              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-                errors.title ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+              style={{
+                borderColor: errors.title ? '#ef4444' : '#d1d5db'
+              }}
             />
-            {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
+            {errors.title && <p className="text-xs mt-1" style={{ color: '#ef4444' }}>{errors.title}</p>}
           </div>
 
           {/* Start Date & Time */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-gray-900 mb-2">
-                Thời gian bắt đầu <span className="text-red-500">*</span>
+              <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+                Thời gian bắt đầu <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <div className="relative">
-                <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: '#9ca3af' }} />
                 <input
                   type="datetime-local"
                   name="startAt"
                   value={formData.startAt}
                   onChange={handleInputChange}
-                  className={`w-full pl-10 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-                    errors.startAt ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className="w-full pl-10 pr-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: errors.startAt ? '#ef4444' : '#d1d5db'
+                  }}
                 />
               </div>
-              {errors.startAt && <p className="text-xs text-red-500 mt-1">{errors.startAt}</p>}
+              {errors.startAt && <p className="text-xs mt-1" style={{ color: '#ef4444' }}>{errors.startAt}</p>}
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-900 mb-2">
+              <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                 Thời gian kết thúc
               </label>
               <div className="relative">
-                <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: '#9ca3af' }} />
                 <input
                   type="datetime-local"
                   name="endAt"
                   value={formData.endAt}
                   onChange={handleInputChange}
                   min={formData.startAt}
-                  className={`w-full pl-10 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-                    errors.endAt ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className="w-full pl-10 pr-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: errors.endAt ? '#ef4444' : '#d1d5db'
+                  }}
                 />
               </div>
-              {errors.endAt && <p className="text-xs text-red-500 mt-1">{errors.endAt}</p>}
+              {errors.endAt && <p className="text-xs mt-1" style={{ color: '#ef4444' }}>{errors.endAt}</p>}
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-semibold text-gray-900 mb-2">
+            <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
               Mô tả / Ghi chú
             </label>
             <textarea
@@ -327,20 +341,22 @@ const CreateCalendarModal = ({ message, jobApplicationId, userType, onClose, onS
               onChange={handleInputChange}
               placeholder="Nhập mô tả hoặc ghi chú cho lịch hẹn..."
               rows="3"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none resize-none"
+              style={{ borderColor: '#d1d5db' }}
             />
           </div>
 
           {/* Status */}
           <div>
-            <label className="block text-xs font-semibold text-gray-900 mb-2">
+            <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
               Trạng thái
             </label>
             <select
               name="status"
               value={formData.status}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+              style={{ borderColor: '#d1d5db' }}
             >
               <option value="0">Chờ xác nhận</option>
               <option value="1">Đã xác nhận</option>
@@ -349,18 +365,32 @@ const CreateCalendarModal = ({ message, jobApplicationId, userType, onClose, onS
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t" style={{ borderColor: '#e5e7eb' }}>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors"
+              onMouseEnter={() => setHoveredCancelButton(true)}
+              onMouseLeave={() => setHoveredCancelButton(false)}
+              className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+              style={{
+                backgroundColor: hoveredCancelButton ? '#e5e7eb' : '#f3f4f6',
+                color: '#374151'
+              }}
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+              onMouseEnter={() => setHoveredSubmitButton(true)}
+              onMouseLeave={() => setHoveredSubmitButton(false)}
+              className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
+              style={{
+                backgroundColor: hoveredSubmitButton ? '#2563eb' : '#2563eb',
+                color: 'white',
+                opacity: loading ? 0.5 : 1,
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
             >
               <Save className="w-4 h-4" />
               {loading ? 'Đang tạo...' : 'Tạo lịch hẹn'}

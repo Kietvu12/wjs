@@ -16,6 +16,14 @@ const Header = () => {
   const languageMenuRef = useRef(null);
   const userMenuRef = useRef(null);
   const t = translations[language];
+  
+  // Hover states
+  const [hoveredHelpButton, setHoveredHelpButton] = useState(false);
+  const [hoveredLanguageButton, setHoveredLanguageButton] = useState(false);
+  const [hoveredLanguageMenuItemIndex, setHoveredLanguageMenuItemIndex] = useState(null);
+  const [hoveredNotificationButton, setHoveredNotificationButton] = useState(false);
+  const [hoveredUserButton, setHoveredUserButton] = useState(false);
+  const [hoveredUserMenuItemIndex, setHoveredUserMenuItemIndex] = useState(null);
 
   // Lấy thông tin user từ localStorage
   useEffect(() => {
@@ -105,11 +113,11 @@ const Header = () => {
   ];
 
   return (
-    <header className="bg-white border-b border-gray-200 px-3 sm:px-4 py-2 sm:py-3 shadow-sm">
+    <header className="px-3 sm:px-4 py-2 sm:py-3 shadow-sm border-b" style={{ backgroundColor: 'white', borderColor: '#e5e7eb', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
       <div className="flex items-center justify-between gap-2 sm:gap-3">
         {/* Left side - Page Title */}
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
+          <h1 className="text-lg sm:text-xl font-semibold truncate" style={{ color: '#111827' }}>
             {getPageTitle()}
           </h1>
         </div>
@@ -121,11 +129,16 @@ const Header = () => {
             href="https://dust-camel-0dd.notion.site/2c6563f4199880ae9cf0cbe005546446?v=2c6563f41998818a8e4d000cd327e761"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 sm:px-3 sm:py-2.5 transition-colors flex items-center gap-2"
+            onMouseEnter={() => setHoveredHelpButton(true)}
+            onMouseLeave={() => setHoveredHelpButton(false)}
+            className="rounded-lg px-3 py-2 sm:px-3 sm:py-2.5 transition-colors flex items-center gap-2"
+            style={{
+              backgroundColor: hoveredHelpButton ? '#e5e7eb' : '#f3f4f6'
+            }}
             title={language === 'vi' ? 'Hướng dẫn sử dụng' : language === 'en' ? 'User Guide' : 'ユーザーガイド'}
           >
-            <BookOpen className="w-5 h-5 text-gray-700" />
-            <span className="hidden sm:inline text-sm font-medium text-gray-700">
+            <BookOpen className="w-5 h-5" style={{ color: '#374151' }} />
+            <span className="hidden sm:inline text-sm font-medium" style={{ color: '#374151' }}>
               {language === 'vi' ? 'Hướng dẫn sử dụng' : language === 'en' ? 'User Guide' : 'ユーザーガイド'}
             </span>
           </a>
@@ -134,13 +147,18 @@ const Header = () => {
           <div className="relative" ref={languageMenuRef}>
             <button
               onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-              className="bg-gray-100 hover:bg-gray-200 rounded-lg p-2 sm:p-2.5 transition-colors"
+              onMouseEnter={() => setHoveredLanguageButton(true)}
+              onMouseLeave={() => setHoveredLanguageButton(false)}
+              className="rounded-lg p-2 sm:p-2.5 transition-colors"
+              style={{
+                backgroundColor: hoveredLanguageButton ? '#e5e7eb' : '#f3f4f6'
+              }}
               title={languages.find(lang => lang.code === language)?.name}
             >
-              <Globe className="w-5 h-5 text-gray-700" />
+              <Globe className="w-5 h-5" style={{ color: '#374151' }} />
             </button>
             {showLanguageMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+              <div className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg border z-50" style={{ backgroundColor: 'white', borderColor: '#e5e7eb', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }}>
                 {languages.map((lang) => (
                   <button
                     key={lang.code}
@@ -148,14 +166,20 @@ const Header = () => {
                       changeLanguage(lang.code);
                       setShowLanguageMenu(false);
                     }}
-                    className={`w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-gray-50 transition-colors ${
-                      language === lang.code ? 'bg-red-50 text-red-600' : 'text-gray-700'
-                    }`}
+                    onMouseEnter={() => setHoveredLanguageMenuItemIndex(lang.code)}
+                    onMouseLeave={() => setHoveredLanguageMenuItemIndex(null)}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-left transition-colors"
+                    style={{
+                      backgroundColor: language === lang.code 
+                        ? '#fef2f2' 
+                        : (hoveredLanguageMenuItemIndex === lang.code ? '#f9fafb' : 'transparent'),
+                      color: language === lang.code ? '#dc2626' : '#374151'
+                    }}
                   >
                     <span>{lang.flag}</span>
                     <span className="text-sm font-medium">{lang.name}</span>
                     {language === lang.code && (
-                      <span className="ml-auto text-red-600">✓</span>
+                      <span className="ml-auto" style={{ color: '#dc2626' }}>✓</span>
                     )}
                   </button>
                 ))}
@@ -166,41 +190,65 @@ const Header = () => {
 
           {/* Notification Bell */}
           <button 
-            className="bg-gray-100 hover:bg-gray-200 rounded-lg p-2 sm:p-2.5 relative transition-colors"
+            onMouseEnter={() => setHoveredNotificationButton(true)}
+            onMouseLeave={() => setHoveredNotificationButton(false)}
+            className="rounded-lg p-2 sm:p-2.5 relative transition-colors"
+            style={{
+              backgroundColor: hoveredNotificationButton ? '#e5e7eb' : '#f3f4f6'
+            }}
             title="Thông báo"
           >
-            <Bell className="w-5 h-5 text-gray-700" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            <Bell className="w-5 h-5" style={{ color: '#374151' }} />
+            <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ backgroundColor: '#ef4444' }}></span>
           </button>
 
           {/* User Profile */}
           <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="bg-gray-100 hover:bg-gray-200 rounded-lg p-2 sm:p-2.5 transition-colors"
+              onMouseEnter={() => setHoveredUserButton(true)}
+              onMouseLeave={() => setHoveredUserButton(false)}
+              className="rounded-lg p-2 sm:p-2.5 transition-colors"
+              style={{
+                backgroundColor: hoveredUserButton ? '#e5e7eb' : '#f3f4f6'
+              }}
               title={userInfo?.name || 'Tài khoản'}
             >
-              <div className="w-5 h-5 bg-red-600 rounded-full flex items-center justify-center">
-                <User className="w-3.5 h-3.5 text-white" />
+              <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#dc2626' }}>
+                <User className="w-3.5 h-3.5" style={{ color: 'white' }} />
               </div>
             </button>
             {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+              <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg border z-50" style={{ backgroundColor: 'white', borderColor: '#e5e7eb', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }}>
                 {userInfo && (
-                  <div className="p-4 border-b border-gray-200">
-                    <p className="text-sm font-medium text-gray-900">{userInfo.name || 'CTV'}</p>
-                    <p className="text-xs text-gray-500">{userInfo.email || ''}</p>
+                  <div className="p-4 border-b" style={{ borderColor: '#e5e7eb' }}>
+                    <p className="text-sm font-medium" style={{ color: '#111827' }}>{userInfo.name || 'CTV'}</p>
+                    <p className="text-xs" style={{ color: '#6b7280' }}>{userInfo.email || ''}</p>
                   </div>
                 )}
                 <div className="py-1">
-                  <button className="w-full flex items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                  <button 
+                    onMouseEnter={() => setHoveredUserMenuItemIndex('account')}
+                    onMouseLeave={() => setHoveredUserMenuItemIndex(null)}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-left text-sm transition-colors"
+                    style={{
+                      backgroundColor: hoveredUserMenuItemIndex === 'account' ? '#f9fafb' : 'transparent',
+                      color: '#374151'
+                    }}
+                  >
                     <User className="w-4 h-4" />
                     Thông tin tài khoản
                   </button>
-                  <div className="border-t border-gray-200 my-1"></div>
+                  <div className="border-t my-1" style={{ borderColor: '#e5e7eb' }}></div>
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    onMouseEnter={() => setHoveredUserMenuItemIndex('logout')}
+                    onMouseLeave={() => setHoveredUserMenuItemIndex(null)}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-left text-sm transition-colors"
+                    style={{
+                      backgroundColor: hoveredUserMenuItemIndex === 'logout' ? '#fef2f2' : 'transparent',
+                      color: '#dc2626'
+                    }}
                   >
                     <LogOut className="w-4 h-4" />
                     Đăng xuất

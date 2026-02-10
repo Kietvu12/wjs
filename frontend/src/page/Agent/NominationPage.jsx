@@ -64,6 +64,20 @@ const NominationPage = () => {
   const [recentTotalItems, setRecentTotalItems] = useState(0);
   const [recentTotalPages, setRecentTotalPages] = useState(0);
 
+  // Hover states
+  const [hoveredBackButton, setHoveredBackButton] = useState(false);
+  const [hoveredBackButtonConfirm, setHoveredBackButtonConfirm] = useState(false);
+  const [hoveredEditButton, setHoveredEditButton] = useState(false);
+  const [hoveredCancelButton, setHoveredCancelButton] = useState(false);
+  const [hoveredSaveButton, setHoveredSaveButton] = useState(false);
+  const [hoveredBackToListButton, setHoveredBackToListButton] = useState(false);
+  const [hoveredSubmitButton, setHoveredSubmitButton] = useState(false);
+  const [hoveredCVItem, setHoveredCVItem] = useState(null);
+  const [hoveredPaginationButton, setHoveredPaginationButton] = useState(null);
+  const [hoveredRecentPaginationButton, setHoveredRecentPaginationButton] = useState(null);
+  const [focusedInput, setFocusedInput] = useState(null);
+  const [focusedSelect, setFocusedSelect] = useState(null);
+
   useEffect(() => {
     loadJobDetail();
   }, [jobId]);
@@ -395,8 +409,8 @@ const NominationPage = () => {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Đang tải thông tin...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#2563eb' }}></div>
+          <p style={{ color: '#4b5563' }}>Đang tải thông tin...</p>
         </div>
       </div>
     );
@@ -407,7 +421,7 @@ const NominationPage = () => {
     return (
       <div className="space-y-4">
         {/* Header */}
-        <div className="bg-white rounded-2xl p-4 border border-gray-200 flex items-center justify-between">
+        <div className="rounded-2xl p-4 border flex items-center justify-between" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
           <div className="flex items-center gap-4">
             <button
               onClick={() => {
@@ -416,63 +430,68 @@ const NominationPage = () => {
                 setSelectedCV(null);
                 setEditingCV(false);
               }}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              onMouseEnter={() => setHoveredBackButtonConfirm(true)}
+              onMouseLeave={() => setHoveredBackButtonConfirm(false)}
+              className="p-2 rounded-lg transition-colors"
+              style={{
+                backgroundColor: hoveredBackButtonConfirm ? '#f3f4f6' : 'transparent'
+              }}
             >
-              <ArrowLeft className="w-5 h-5 text-gray-700" />
+              <ArrowLeft className="w-5 h-5" style={{ color: '#374151' }} />
             </button>
             <div>
-              <h1 className="text-lg font-bold text-gray-900">Xác nhận tiến cử</h1>
-              <p className="text-sm text-gray-600 mt-1">Kiểm tra và chỉnh sửa thông tin trước khi tiến cử</p>
+              <h1 className="text-lg font-bold" style={{ color: '#111827' }}>Xác nhận tiến cử</h1>
+              <p className="text-sm mt-1" style={{ color: '#4b5563' }}>Kiểm tra và chỉnh sửa thông tin trước khi tiến cử</p>
             </div>
           </div>
         </div>
 
         {/* Job Information */}
         {job && (
-          <div className="bg-white rounded-2xl p-6 border border-gray-200">
+          <div className="rounded-2xl p-6 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
             <div className="flex items-center gap-3 mb-4">
-              <Briefcase className="w-6 h-6 text-blue-600" />
-              <h2 className="text-lg font-bold text-gray-900">Thông tin công việc</h2>
+              <Briefcase className="w-6 h-6" style={{ color: '#2563eb' }} />
+              <h2 className="text-lg font-bold" style={{ color: '#111827' }}>Thông tin công việc</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Tiêu đề</label>
-                <p className="text-sm text-gray-900 font-medium">{job.title}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Tiêu đề</label>
+                <p className="text-sm font-medium" style={{ color: '#111827' }}>{job.title}</p>
               </div>
               {job.company && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Công ty</label>
-                  <p className="text-sm text-gray-900">{job.company.name}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Công ty</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{job.company.name}</p>
                 </div>
               )}
               {job.recruitingCompany?.companyName && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Công ty tuyển dụng</label>
-                  <p className="text-sm text-gray-900">{job.recruitingCompany.companyName}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Công ty tuyển dụng</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{job.recruitingCompany.companyName}</p>
                 </div>
               )}
               {job.workLocation && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Địa điểm</label>
-                  <p className="text-sm text-gray-900 flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Địa điểm</label>
+                  <p className="text-sm flex items-center gap-1" style={{ color: '#111827' }}>
+                    <MapPin className="w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                     {job.workLocation}
                   </p>
                 </div>
               )}
               {job.estimatedSalary && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Lương ước tính</label>
-                  <p className="text-sm text-gray-900 flex items-center gap-1">
-                    <DollarSign className="w-3.5 h-3.5 text-gray-400" />
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Lương ước tính</label>
+                  <p className="text-sm flex items-center gap-1" style={{ color: '#111827' }}>
+                    <DollarSign className="w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                     {job.estimatedSalary}
                   </p>
                 </div>
               )}
               {job.category && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Danh mục</label>
-                  <p className="text-sm text-gray-900">{job.category.name}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Danh mục</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{job.category.name}</p>
                 </div>
               )}
             </div>
@@ -480,16 +499,22 @@ const NominationPage = () => {
         )}
 
         {/* Candidate Information */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-200">
+        <div className="rounded-2xl p-6 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <User className="w-6 h-6 text-blue-600" />
-              <h2 className="text-lg font-bold text-gray-900">Thông tin ứng viên</h2>
+              <User className="w-6 h-6" style={{ color: '#2563eb' }} />
+              <h2 className="text-lg font-bold" style={{ color: '#111827' }}>Thông tin ứng viên</h2>
             </div>
             {!editingCV ? (
               <button
                 onClick={() => setEditingCV(true)}
-                className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+                onMouseEnter={() => setHoveredEditButton(true)}
+                onMouseLeave={() => setHoveredEditButton(false)}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+                style={{
+                  backgroundColor: hoveredEditButton ? '#1d4ed8' : '#2563eb',
+                  color: 'white'
+                }}
               >
                 <Edit className="w-3.5 h-3.5" />
                 Sửa nhanh
@@ -517,7 +542,13 @@ const NominationPage = () => {
                       motivation: selectedCV.motivation || '',
                     });
                   }}
-                  className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center gap-1.5"
+                  onMouseEnter={() => setHoveredCancelButton(true)}
+                  onMouseLeave={() => setHoveredCancelButton(false)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+                  style={{
+                    backgroundColor: hoveredCancelButton ? '#e5e7eb' : '#f3f4f6',
+                    color: '#374151'
+                  }}
                 >
                   <X className="w-3.5 h-3.5" />
                   Hủy
@@ -525,7 +556,13 @@ const NominationPage = () => {
                 <button
                   onClick={handleSaveCVEdit}
                   disabled={savingCV}
-                  className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                  onMouseEnter={() => !savingCV && setHoveredSaveButton(true)}
+                  onMouseLeave={() => setHoveredSaveButton(false)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                  style={{
+                    backgroundColor: hoveredSaveButton ? '#16a34a' : '#22c55e',
+                    color: 'white'
+                  }}
                 >
                   <Save className="w-3.5 h-3.5" />
                   {savingCV ? 'Đang lưu...' : 'Lưu'}
@@ -537,65 +574,107 @@ const NominationPage = () => {
           {editingCV ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-1">Họ tên (Kanji) *</label>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Họ tên (Kanji) *</label>
                 <input
                   type="text"
                   value={cvEditData.name}
                   onChange={(e) => setCvEditData({ ...cvEditData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  onFocus={() => setFocusedInput('name')}
+                  onBlur={() => setFocusedInput(null)}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: focusedInput === 'name' ? '#2563eb' : '#d1d5db',
+                    boxShadow: focusedInput === 'name' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-1">Họ tên (Kana)</label>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Họ tên (Kana)</label>
                 <input
                   type="text"
                   value={cvEditData.furigana}
                   onChange={(e) => setCvEditData({ ...cvEditData, furigana: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  onFocus={() => setFocusedInput('furigana')}
+                  onBlur={() => setFocusedInput(null)}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: focusedInput === 'furigana' ? '#2563eb' : '#d1d5db',
+                    boxShadow: focusedInput === 'furigana' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-1">Email</label>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Email</label>
                 <input
                   type="email"
                   value={cvEditData.email}
                   onChange={(e) => setCvEditData({ ...cvEditData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  onFocus={() => setFocusedInput('email')}
+                  onBlur={() => setFocusedInput(null)}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: focusedInput === 'email' ? '#2563eb' : '#d1d5db',
+                    boxShadow: focusedInput === 'email' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-1">Số điện thoại</label>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Số điện thoại</label>
                 <input
                   type="tel"
                   value={cvEditData.phone}
                   onChange={(e) => setCvEditData({ ...cvEditData, phone: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  onFocus={() => setFocusedInput('phone')}
+                  onBlur={() => setFocusedInput(null)}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: focusedInput === 'phone' ? '#2563eb' : '#d1d5db',
+                    boxShadow: focusedInput === 'phone' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-1">Ngày sinh</label>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Ngày sinh</label>
                 <input
                   type="date"
                   value={cvEditData.birthDate}
                   onChange={(e) => setCvEditData({ ...cvEditData, birthDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  onFocus={() => setFocusedInput('birthDate')}
+                  onBlur={() => setFocusedInput(null)}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: focusedInput === 'birthDate' ? '#2563eb' : '#d1d5db',
+                    boxShadow: focusedInput === 'birthDate' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-1">Tuổi</label>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Tuổi</label>
                 <input
                   type="number"
                   value={cvEditData.age}
                   onChange={(e) => setCvEditData({ ...cvEditData, age: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  onFocus={() => setFocusedInput('age')}
+                  onBlur={() => setFocusedInput(null)}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: focusedInput === 'age' ? '#2563eb' : '#d1d5db',
+                    boxShadow: focusedInput === 'age' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-1">Giới tính *</label>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Giới tính *</label>
                 <select
                   value={cvEditData.gender}
                   onChange={(e) => setCvEditData({ ...cvEditData, gender: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  onFocus={() => setFocusedSelect('gender')}
+                  onBlur={() => setFocusedSelect(null)}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: focusedSelect === 'gender' ? '#2563eb' : '#d1d5db',
+                    boxShadow: focusedSelect === 'gender' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                  }}
                 >
                   <option value="">Chọn</option>
                   <option value="1">Nam</option>
@@ -603,150 +682,192 @@ const NominationPage = () => {
                 </select>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-gray-900 mb-1">Địa chỉ</label>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Địa chỉ</label>
                 <input
                   type="text"
                   value={cvEditData.addressCurrent}
                   onChange={(e) => setCvEditData({ ...cvEditData, addressCurrent: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  onFocus={() => setFocusedInput('addressCurrent')}
+                  onBlur={() => setFocusedInput(null)}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: focusedInput === 'addressCurrent' ? '#2563eb' : '#d1d5db',
+                    boxShadow: focusedInput === 'addressCurrent' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-1">Lương hiện tại</label>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Lương hiện tại</label>
                 <input
                   type="text"
                   value={cvEditData.currentIncome}
                   onChange={(e) => setCvEditData({ ...cvEditData, currentIncome: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  onFocus={() => setFocusedInput('currentIncome')}
+                  onBlur={() => setFocusedInput(null)}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: focusedInput === 'currentIncome' ? '#2563eb' : '#d1d5db',
+                    boxShadow: focusedInput === 'currentIncome' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-1">Lương mong muốn</label>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Lương mong muốn</label>
                 <input
                   type="text"
                   value={cvEditData.desiredIncome}
                   onChange={(e) => setCvEditData({ ...cvEditData, desiredIncome: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  onFocus={() => setFocusedInput('desiredIncome')}
+                  onBlur={() => setFocusedInput(null)}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: focusedInput === 'desiredIncome' ? '#2563eb' : '#d1d5db',
+                    boxShadow: focusedInput === 'desiredIncome' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-1">Địa điểm mong muốn</label>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Địa điểm mong muốn</label>
                 <input
                   type="text"
                   value={cvEditData.desiredWorkLocation}
                   onChange={(e) => setCvEditData({ ...cvEditData, desiredWorkLocation: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  onFocus={() => setFocusedInput('desiredWorkLocation')}
+                  onBlur={() => setFocusedInput(null)}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: focusedInput === 'desiredWorkLocation' ? '#2563eb' : '#d1d5db',
+                    boxShadow: focusedInput === 'desiredWorkLocation' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-1">Thời gian nhập công ty</label>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Thời gian nhập công ty</label>
                 <input
                   type="text"
                   value={cvEditData.nyushaTime}
                   onChange={(e) => setCvEditData({ ...cvEditData, nyushaTime: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  onFocus={() => setFocusedInput('nyushaTime')}
+                  onBlur={() => setFocusedInput(null)}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: focusedInput === 'nyushaTime' ? '#2563eb' : '#d1d5db',
+                    boxShadow: focusedInput === 'nyushaTime' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                  }}
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-gray-900 mb-1">Điểm mạnh</label>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Điểm mạnh</label>
                 <textarea
                   value={cvEditData.strengths}
                   onChange={(e) => setCvEditData({ ...cvEditData, strengths: e.target.value })}
+                  onFocus={() => setFocusedInput('strengths')}
+                  onBlur={() => setFocusedInput(null)}
                   rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: focusedInput === 'strengths' ? '#2563eb' : '#d1d5db',
+                    boxShadow: focusedInput === 'strengths' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                  }}
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-gray-900 mb-1">Động lực</label>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#111827' }}>Động lực</label>
                 <textarea
                   value={cvEditData.motivation}
                   onChange={(e) => setCvEditData({ ...cvEditData, motivation: e.target.value })}
+                  onFocus={() => setFocusedInput('motivation')}
+                  onBlur={() => setFocusedInput(null)}
                   rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: focusedInput === 'motivation' ? '#2563eb' : '#d1d5db',
+                    boxShadow: focusedInput === 'motivation' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                  }}
                 />
               </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Mã CV</label>
-                <p className="text-sm text-gray-900 font-medium">{selectedCV.code || '—'}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Mã CV</label>
+                <p className="text-sm font-medium" style={{ color: '#111827' }}>{selectedCV.code || '—'}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Họ tên (Kanji)</label>
-                <p className="text-sm text-gray-900">{cvEditData.name || selectedCV.name || '—'}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Họ tên (Kanji)</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{cvEditData.name || selectedCV.name || '—'}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Họ tên (Kana)</label>
-                <p className="text-sm text-gray-900">{cvEditData.furigana || selectedCV.furigana || '—'}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Họ tên (Kana)</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{cvEditData.furigana || selectedCV.furigana || '—'}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Email</label>
-                <p className="text-sm text-gray-900 flex items-center gap-1">
-                  <Mail className="w-3.5 h-3.5 text-gray-400" />
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Email</label>
+                <p className="text-sm flex items-center gap-1" style={{ color: '#111827' }}>
+                  <Mail className="w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                   {cvEditData.email || selectedCV.email || '—'}
                 </p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Số điện thoại</label>
-                <p className="text-sm text-gray-900 flex items-center gap-1">
-                  <Phone className="w-3.5 h-3.5 text-gray-400" />
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Số điện thoại</label>
+                <p className="text-sm flex items-center gap-1" style={{ color: '#111827' }}>
+                  <Phone className="w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                   {cvEditData.phone || selectedCV.phone || '—'}
                 </p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Ngày sinh</label>
-                <p className="text-sm text-gray-900 flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Ngày sinh</label>
+                <p className="text-sm flex items-center gap-1" style={{ color: '#111827' }}>
+                  <Calendar className="w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                   {formatDate(cvEditData.birthDate || selectedCV.birthDate)}
                 </p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Tuổi</label>
-                <p className="text-sm text-gray-900">{cvEditData.age || selectedCV.ages || selectedCV.age || '—'}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Tuổi</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{cvEditData.age || selectedCV.ages || selectedCV.age || '—'}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Giới tính</label>
-                <p className="text-sm text-gray-900">{formatGender(cvEditData.gender || selectedCV.gender)}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Giới tính</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{formatGender(cvEditData.gender || selectedCV.gender)}</p>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Địa chỉ</label>
-                <p className="text-sm text-gray-900">{cvEditData.addressCurrent || selectedCV.addressCurrent || selectedCV.address || '—'}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Địa chỉ</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{cvEditData.addressCurrent || selectedCV.addressCurrent || selectedCV.address || '—'}</p>
               </div>
               {cvEditData.currentIncome || selectedCV.currentIncome ? (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Lương hiện tại</label>
-                  <p className="text-sm text-gray-900">{cvEditData.currentIncome || selectedCV.currentIncome}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Lương hiện tại</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{cvEditData.currentIncome || selectedCV.currentIncome}</p>
                 </div>
               ) : null}
               {cvEditData.desiredIncome || selectedCV.desiredIncome ? (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Lương mong muốn</label>
-                  <p className="text-sm text-gray-900">{cvEditData.desiredIncome || selectedCV.desiredIncome}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Lương mong muốn</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{cvEditData.desiredIncome || selectedCV.desiredIncome}</p>
                 </div>
               ) : null}
               {cvEditData.desiredWorkLocation || selectedCV.desiredWorkLocation ? (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Địa điểm mong muốn</label>
-                  <p className="text-sm text-gray-900">{cvEditData.desiredWorkLocation || selectedCV.desiredWorkLocation}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Địa điểm mong muốn</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{cvEditData.desiredWorkLocation || selectedCV.desiredWorkLocation}</p>
                 </div>
               ) : null}
               {cvEditData.nyushaTime || selectedCV.nyushaTime ? (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Thời gian nhập công ty</label>
-                  <p className="text-sm text-gray-900">{cvEditData.nyushaTime || selectedCV.nyushaTime}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Thời gian nhập công ty</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>{cvEditData.nyushaTime || selectedCV.nyushaTime}</p>
                 </div>
               ) : null}
               {cvEditData.strengths || selectedCV.strengths ? (
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Điểm mạnh</label>
-                  <p className="text-sm text-gray-900 whitespace-pre-wrap">{cvEditData.strengths || selectedCV.strengths}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Điểm mạnh</label>
+                  <p className="text-sm whitespace-pre-wrap" style={{ color: '#111827' }}>{cvEditData.strengths || selectedCV.strengths}</p>
                 </div>
               ) : null}
               {cvEditData.motivation || selectedCV.motivation ? (
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Động lực</label>
-                  <p className="text-sm text-gray-900 whitespace-pre-wrap">{cvEditData.motivation || selectedCV.motivation}</p>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Động lực</label>
+                  <p className="text-sm whitespace-pre-wrap" style={{ color: '#111827' }}>{cvEditData.motivation || selectedCV.motivation}</p>
                 </div>
               ) : null}
             </div>
@@ -754,7 +875,7 @@ const NominationPage = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="bg-white rounded-2xl p-4 border border-gray-200 flex items-center justify-end gap-3">
+        <div className="rounded-2xl p-4 border flex items-center justify-end gap-3" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
           <button
             onClick={() => {
               setStep('select');
@@ -762,14 +883,27 @@ const NominationPage = () => {
               setSelectedCV(null);
               setEditingCV(false);
             }}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+            onMouseEnter={() => setHoveredBackToListButton(true)}
+            onMouseLeave={() => setHoveredBackToListButton(false)}
+            className="px-4 py-2 border rounded-lg font-medium transition-colors"
+            style={{
+              borderColor: '#d1d5db',
+              color: '#374151',
+              backgroundColor: hoveredBackToListButton ? '#f3f4f6' : 'transparent'
+            }}
           >
             Quay lại
           </button>
           <button
             onClick={handleSubmitNomination}
             disabled={submitting || editingCV}
-            className="px-6 py-2 bg-yellow-400 text-blue-700 rounded-lg font-semibold hover:bg-yellow-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            onMouseEnter={() => !submitting && !editingCV && setHoveredSubmitButton(true)}
+            onMouseLeave={() => setHoveredSubmitButton(false)}
+            className="px-6 py-2 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            style={{
+              backgroundColor: hoveredSubmitButton ? '#facc15' : '#fbbf24',
+              color: '#1e40af'
+            }}
           >
             {submitting ? 'Đang xử lý...' : 'Xác nhận tiến cử'}
             <ChevronRight className="w-4 h-4" />
@@ -783,48 +917,53 @@ const NominationPage = () => {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="bg-white rounded-2xl p-4 border border-gray-200 flex items-center justify-between">
+      <div className="rounded-2xl p-4 border flex items-center justify-between" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate(`/agent/jobs/${jobId}`)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            onMouseEnter={() => setHoveredBackButton(true)}
+            onMouseLeave={() => setHoveredBackButton(false)}
+            className="p-2 rounded-lg transition-colors"
+            style={{
+              backgroundColor: hoveredBackButton ? '#f3f4f6' : 'transparent'
+            }}
           >
-            <ArrowLeft className="w-5 h-5 text-gray-700" />
+            <ArrowLeft className="w-5 h-5" style={{ color: '#374151' }} />
           </button>
         </div>
       </div>
 
       {/* Job Summary Section */}
       {job && (
-        <div className="bg-white rounded-2xl p-6 border border-gray-200">
+        <div className="rounded-2xl p-6 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
           <div className="flex items-start gap-4">
-            <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Briefcase className="w-8 h-8 text-blue-600" />
+            <div className="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#dbeafe' }}>
+              <Briefcase className="w-8 h-8" style={{ color: '#2563eb' }} />
             </div>
             <div className="flex-1">
-              <h2 className="text-lg font-bold text-gray-900 mb-2">{job.title}</h2>
+              <h2 className="text-lg font-bold mb-2" style={{ color: '#111827' }}>{job.title}</h2>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 {job.company && (
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="flex items-center gap-2" style={{ color: '#4b5563' }}>
                     <Building2 className="w-4 h-4" />
                     <span>{job.company.name}</span>
                   </div>
                 )}
                 {job.workLocation && (
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="flex items-center gap-2" style={{ color: '#4b5563' }}>
                     <MapPin className="w-4 h-4" />
                     <span>{job.workLocation}</span>
                   </div>
                 )}
                 {job.estimatedSalary && (
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="flex items-center gap-2" style={{ color: '#4b5563' }}>
                     <DollarSign className="w-4 h-4" />
                     <span>{job.estimatedSalary}</span>
                   </div>
                 )}
                 {job.category && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">{job.category.name}</span>
+                  <div className="flex items-center gap-2" style={{ color: '#4b5563' }}>
+                    <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: '#f3f4f6' }}>{job.category.name}</span>
                   </div>
                 )}
               </div>
@@ -834,25 +973,31 @@ const NominationPage = () => {
       )}
 
       {/* Tabs */}
-      <div className="bg-white rounded-xl border border-gray-200">
-        <div className="flex border-b border-gray-200 overflow-x-auto">
+      <div className="rounded-xl border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+        <div className="flex border-b overflow-x-auto" style={{ borderColor: '#e5e7eb' }}>
           <button
             onClick={() => setActiveTab('existing')}
-            className={`px-4 py-3 text-xs font-medium transition-colors whitespace-nowrap border-b-2 ${
-              activeTab === 'existing'
-                ? 'bg-blue-50 text-blue-700 border-blue-700'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent'
-            }`}
+            onMouseEnter={() => activeTab !== 'existing' && setHoveredPaginationButton('existing-tab')}
+            onMouseLeave={() => setHoveredPaginationButton(null)}
+            className="px-4 py-3 text-xs font-medium transition-colors whitespace-nowrap border-b-2"
+            style={{
+              backgroundColor: activeTab === 'existing' ? '#eff6ff' : hoveredPaginationButton === 'existing-tab' ? '#f9fafb' : 'transparent',
+              color: activeTab === 'existing' ? '#1d4ed8' : hoveredPaginationButton === 'existing-tab' ? '#111827' : '#4b5563',
+              borderColor: activeTab === 'existing' ? '#1d4ed8' : 'transparent'
+            }}
           >
             {t.selectExistingCV || 'Chọn ứng viên có sẵn'}
           </button>
           <button
             onClick={() => setActiveTab('recent')}
-            className={`px-4 py-3 text-xs font-medium transition-colors whitespace-nowrap border-b-2 ${
-              activeTab === 'recent'
-                ? 'bg-blue-50 text-blue-700 border-blue-700'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent'
-            }`}
+            onMouseEnter={() => activeTab !== 'recent' && setHoveredPaginationButton('recent-tab')}
+            onMouseLeave={() => setHoveredPaginationButton(null)}
+            className="px-4 py-3 text-xs font-medium transition-colors whitespace-nowrap border-b-2"
+            style={{
+              backgroundColor: activeTab === 'recent' ? '#eff6ff' : hoveredPaginationButton === 'recent-tab' ? '#f9fafb' : 'transparent',
+              color: activeTab === 'recent' ? '#1d4ed8' : hoveredPaginationButton === 'recent-tab' ? '#111827' : '#4b5563',
+              borderColor: activeTab === 'recent' ? '#1d4ed8' : 'transparent'
+            }}
           >
             <div className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5" />
@@ -861,11 +1006,14 @@ const NominationPage = () => {
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`px-4 py-3 text-xs font-medium transition-colors whitespace-nowrap border-b-2 ${
-              activeTab === 'history'
-                ? 'bg-blue-50 text-blue-700 border-blue-700'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent'
-            }`}
+            onMouseEnter={() => activeTab !== 'history' && setHoveredPaginationButton('history-tab')}
+            onMouseLeave={() => setHoveredPaginationButton(null)}
+            className="px-4 py-3 text-xs font-medium transition-colors whitespace-nowrap border-b-2"
+            style={{
+              backgroundColor: activeTab === 'history' ? '#eff6ff' : hoveredPaginationButton === 'history-tab' ? '#f9fafb' : 'transparent',
+              color: activeTab === 'history' ? '#1d4ed8' : hoveredPaginationButton === 'history-tab' ? '#111827' : '#4b5563',
+              borderColor: activeTab === 'history' ? '#1d4ed8' : 'transparent'
+            }}
           >
             <div className="flex items-center gap-1.5">
               <History className="w-3.5 h-3.5" />
@@ -874,11 +1022,14 @@ const NominationPage = () => {
           </button>
           <button
             onClick={() => setActiveTab('new')}
-            className={`px-4 py-3 text-xs font-medium transition-colors whitespace-nowrap border-b-2 ${
-              activeTab === 'new'
-                ? 'bg-blue-50 text-blue-700 border-blue-700'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent'
-            }`}
+            onMouseEnter={() => activeTab !== 'new' && setHoveredPaginationButton('new-tab')}
+            onMouseLeave={() => setHoveredPaginationButton(null)}
+            className="px-4 py-3 text-xs font-medium transition-colors whitespace-nowrap border-b-2"
+            style={{
+              backgroundColor: activeTab === 'new' ? '#eff6ff' : hoveredPaginationButton === 'new-tab' ? '#f9fafb' : 'transparent',
+              color: activeTab === 'new' ? '#1d4ed8' : hoveredPaginationButton === 'new-tab' ? '#111827' : '#4b5563',
+              borderColor: activeTab === 'new' ? '#1d4ed8' : 'transparent'
+            }}
           >
             {t.createNewCV || 'Tạo hồ sơ mới'}
           </button>
@@ -890,7 +1041,7 @@ const NominationPage = () => {
             <div className="space-y-4">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#9ca3af' }} />
                 <input
                   type="text"
                   placeholder={t.searchCV || 'Tìm kiếm ứng viên...'}
@@ -899,17 +1050,23 @@ const NominationPage = () => {
                     setSearchTerm(e.target.value);
                     setCurrentPage(1); // Reset to first page when searching
                   }}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onFocus={() => setFocusedInput('search')}
+                  onBlur={() => setFocusedInput(null)}
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none"
+                  style={{
+                    borderColor: focusedInput === 'search' ? '#2563eb' : '#d1d5db',
+                    boxShadow: focusedInput === 'search' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                  }}
                 />
               </div>
 
               {/* CV List */}
               {loadingCVs ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8" style={{ color: '#6b7280' }}>
                   {t.loading || 'Đang tải...'}
                 </div>
               ) : filteredCVStorages.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8" style={{ color: '#6b7280' }}>
                   {t.noCVFound || 'Không tìm thấy ứng viên nào'}
                 </div>
               ) : (
@@ -917,33 +1074,46 @@ const NominationPage = () => {
                   <div className="space-y-3 max-h-200 overflow-y-auto">
                     {filteredCVStorages.map((cv) => {
                       const canSelect = !cv.isDuplicate;
+                      const isHovered = hoveredCVItem === cv.id;
                       
                       return (
                         <div
                           key={cv.id}
                           onClick={() => canSelect && handleSelectCV(cv.id)}
-                          className={`p-4 border-2 rounded-lg transition-all ${
-                            !canSelect
-                              ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                          onMouseEnter={() => canSelect && setHoveredCVItem(cv.id)}
+                          onMouseLeave={() => setHoveredCVItem(null)}
+                          className="p-4 border-2 rounded-lg transition-all"
+                          style={{
+                            borderColor: !canSelect 
+                              ? '#e5e7eb' 
                               : selectedCvId === cv.id
-                              ? 'border-blue-500 bg-blue-50 cursor-pointer'
-                              : 'border-gray-200 hover:border-gray-300 cursor-pointer'
-                          }`}
+                              ? '#2563eb'
+                              : isHovered
+                              ? '#9ca3af'
+                              : '#e5e7eb',
+                            backgroundColor: !canSelect 
+                              ? '#f9fafb' 
+                              : selectedCvId === cv.id
+                              ? '#eff6ff'
+                              : 'white',
+                            opacity: !canSelect ? 0.6 : 1,
+                            cursor: !canSelect ? 'not-allowed' : 'pointer'
+                          }}
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
+                              <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold" style={{ backgroundColor: '#2563eb' }}>
                                 {cv.name ? cv.name.charAt(0) : '?'}
                               </div>
                               <div>
-                                <p className="font-semibold text-gray-900">{cv.name || 'N/A'}</p>
-                                <p className="text-sm text-gray-600">{cv.email || 'N/A'}</p>
+                                <p className="font-semibold" style={{ color: '#111827' }}>{cv.name || 'N/A'}</p>
+                                <p className="text-sm" style={{ color: '#4b5563' }}>{cv.email || 'N/A'}</p>
                                 <div className="flex items-center gap-2 mt-1">
-                                  <p className="text-xs text-gray-500">{cv.code}</p>
+                                  <p className="text-xs" style={{ color: '#6b7280' }}>{cv.code}</p>
                                   {cv.status !== undefined && (
                                     <>
-                                      <span className="text-xs text-gray-400">•</span>
-                                      <span className="text-xs text-gray-500">
+                                      <span className="text-xs" style={{ color: '#9ca3af' }}>•</span>
+                                      <span className="text-xs" style={{ color: '#6b7280' }}>
                                         Loại hồ sơ: {
                                           cv.status === 0 ? 'Draft' :
                                           cv.status === 1 ? 'Active' :
@@ -956,11 +1126,11 @@ const NominationPage = () => {
                               </div>
                             </div>
                             {selectedCvId === cv.id && canSelect && (
-                              <CheckCircle className="w-6 h-6 text-blue-500" />
+                              <CheckCircle className="w-6 h-6" style={{ color: '#2563eb' }} />
                             )}
                           </div>
                           {cv.isDuplicate && (
-                            <div className="mt-2 flex items-center gap-2 text-xs text-red-600">
+                            <div className="mt-2 flex items-center gap-2 text-xs" style={{ color: '#dc2626' }}>
                               <AlertTriangle className="w-4 h-4" />
                               <span>{t.duplicateCVWarning || 'Hồ sơ trùng lặp'}</span>
                             </div>
@@ -972,19 +1142,33 @@ const NominationPage = () => {
 
                   {/* Pagination Controls */}
                   {totalPages > 1 && (
-                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t" style={{ borderColor: '#e5e7eb' }}>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setCurrentPage(1)}
                           disabled={currentPage === 1}
-                          className="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          onMouseEnter={() => currentPage !== 1 && setHoveredPaginationButton('first')}
+                          onMouseLeave={() => setHoveredPaginationButton(null)}
+                          className="px-2 py-1 border rounded text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                          style={{
+                            backgroundColor: hoveredPaginationButton === 'first' ? '#f9fafb' : 'white',
+                            borderColor: '#d1d5db',
+                            color: '#374151'
+                          }}
                         >
                           <ChevronsLeft className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setCurrentPage(currentPage - 1)}
                           disabled={currentPage === 1}
-                          className="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          onMouseEnter={() => currentPage !== 1 && setHoveredPaginationButton('prev')}
+                          onMouseLeave={() => setHoveredPaginationButton(null)}
+                          className="px-2 py-1 border rounded text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                          style={{
+                            backgroundColor: hoveredPaginationButton === 'prev' ? '#f9fafb' : 'white',
+                            borderColor: '#d1d5db',
+                            color: '#374151'
+                          }}
                         >
                           <ChevronLeft className="w-4 h-4" />
                         </button>
@@ -1003,15 +1187,22 @@ const NominationPage = () => {
                           
                           if (pageNum < 1 || pageNum > totalPages) return null;
                           
+                          const isActive = currentPage === pageNum;
+                          const isHovered = hoveredPaginationButton === `page-${pageNum}`;
+                          
                           return (
                             <button
                               key={pageNum}
                               onClick={() => setCurrentPage(pageNum)}
-                              className={`px-3 py-1 rounded text-sm font-bold transition-colors ${
-                                currentPage === pageNum
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                              }`}
+                              onMouseEnter={() => !isActive && setHoveredPaginationButton(`page-${pageNum}`)}
+                              onMouseLeave={() => setHoveredPaginationButton(null)}
+                              className="px-3 py-1 rounded text-sm font-bold transition-colors"
+                              style={{
+                                backgroundColor: isActive ? '#2563eb' : isHovered ? '#f9fafb' : 'white',
+                                color: isActive ? 'white' : '#374151',
+                                border: isActive ? 'none' : '1px solid #d1d5db',
+                                borderColor: isActive ? 'transparent' : '#d1d5db'
+                              }}
                             >
                               {pageNum}
                             </button>
@@ -1020,20 +1211,34 @@ const NominationPage = () => {
                         <button
                           onClick={() => setCurrentPage(currentPage + 1)}
                           disabled={currentPage === totalPages}
-                          className="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          onMouseEnter={() => currentPage !== totalPages && setHoveredPaginationButton('next')}
+                          onMouseLeave={() => setHoveredPaginationButton(null)}
+                          className="px-2 py-1 border rounded text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                          style={{
+                            backgroundColor: hoveredPaginationButton === 'next' ? '#f9fafb' : 'white',
+                            borderColor: '#d1d5db',
+                            color: '#374151'
+                          }}
                         >
                           <ChevronRight className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setCurrentPage(totalPages)}
                           disabled={currentPage === totalPages}
-                          className="px-2 py-1 bg-white border border-gray-300 rounded text-sm font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          onMouseEnter={() => currentPage !== totalPages && setHoveredPaginationButton('last')}
+                          onMouseLeave={() => setHoveredPaginationButton(null)}
+                          className="px-2 py-1 border rounded text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                          style={{
+                            backgroundColor: hoveredPaginationButton === 'last' ? '#f9fafb' : 'white',
+                            borderColor: '#d1d5db',
+                            color: '#374151'
+                          }}
                         >
                           <ChevronsRight className="w-4 h-4" />
                         </button>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm" style={{ color: '#4b5563' }}>
                           {t.page || 'Trang'} {currentPage} / {totalPages} ({totalItems} {t.results || 'kết quả'})
                         </span>
                         <select
@@ -1042,7 +1247,13 @@ const NominationPage = () => {
                             setItemsPerPage(Number(e.target.value));
                             setCurrentPage(1);
                           }}
-                          className="px-2 py-1 border border-gray-300 rounded text-sm"
+                          onFocus={() => setFocusedSelect('itemsPerPage')}
+                          onBlur={() => setFocusedSelect(null)}
+                          className="px-2 py-1 border rounded text-sm"
+                          style={{
+                            borderColor: focusedSelect === 'itemsPerPage' ? '#2563eb' : '#d1d5db',
+                            boxShadow: focusedSelect === 'itemsPerPage' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                          }}
                         >
                           <option value="10">10 / {t.page || 'trang'}</option>
                           <option value="20">20 / {t.page || 'trang'}</option>
@@ -1059,7 +1270,7 @@ const NominationPage = () => {
             <div className="space-y-4">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: '#9ca3af' }} />
                 <input
                   type="text"
                   placeholder="Tìm kiếm CV được cập nhật gần nhất..."
@@ -1068,17 +1279,23 @@ const NominationPage = () => {
                     setSearchTerm(e.target.value);
                     setRecentPage(1);
                   }}
-                  className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onFocus={() => setFocusedInput('recent-search')}
+                  onBlur={() => setFocusedInput(null)}
+                  className="w-full pl-9 pr-4 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: focusedInput === 'recent-search' ? '#2563eb' : '#d1d5db',
+                    boxShadow: focusedInput === 'recent-search' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                  }}
                 />
               </div>
 
               {/* Recent CVs List */}
               {loadingRecentCVs ? (
-                <div className="text-center py-8 text-gray-500 text-sm">
+                <div className="text-center py-8 text-sm" style={{ color: '#6b7280' }}>
                   Đang tải...
                 </div>
               ) : recentCVs.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 text-sm">
+                <div className="text-center py-8 text-sm" style={{ color: '#6b7280' }}>
                   Không có CV nào được cập nhật gần đây
                 </div>
               ) : (
@@ -1086,33 +1303,46 @@ const NominationPage = () => {
                   <div className="space-y-2 max-h-96 overflow-y-auto">
                     {recentCVs.map((cv) => {
                       const canSelect = !cv.isDuplicate;
+                      const isHovered = hoveredCVItem === `recent-${cv.id}`;
                       
                       return (
                         <div
                           key={cv.id}
                           onClick={() => canSelect && handleSelectCV(cv.id)}
-                          className={`p-3 border rounded-lg transition-all ${
-                            !canSelect
-                              ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                          onMouseEnter={() => canSelect && setHoveredCVItem(`recent-${cv.id}`)}
+                          onMouseLeave={() => setHoveredCVItem(null)}
+                          className="p-3 border rounded-lg transition-all"
+                          style={{
+                            borderColor: !canSelect 
+                              ? '#e5e7eb' 
                               : selectedCvId === cv.id
-                              ? 'border-blue-500 bg-blue-50 cursor-pointer'
-                              : 'border-gray-200 hover:border-gray-300 cursor-pointer'
-                          }`}
+                              ? '#2563eb'
+                              : isHovered
+                              ? '#9ca3af'
+                              : '#e5e7eb',
+                            backgroundColor: !canSelect 
+                              ? '#f9fafb' 
+                              : selectedCvId === cv.id
+                              ? '#eff6ff'
+                              : 'white',
+                            opacity: !canSelect ? 0.6 : 1,
+                            cursor: !canSelect ? 'not-allowed' : 'pointer'
+                          }}
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                              <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0" style={{ backgroundColor: '#2563eb' }}>
                                 {cv.name ? cv.name.charAt(0) : '?'}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-gray-900 text-sm truncate">{cv.name || 'N/A'}</p>
-                                <p className="text-xs text-gray-600 truncate">{cv.email || 'N/A'}</p>
+                                <p className="font-semibold text-sm truncate" style={{ color: '#111827' }}>{cv.name || 'N/A'}</p>
+                                <p className="text-xs truncate" style={{ color: '#4b5563' }}>{cv.email || 'N/A'}</p>
                                 <div className="flex items-center gap-2 mt-0.5">
-                                  <p className="text-xs text-gray-500">{cv.code}</p>
+                                  <p className="text-xs" style={{ color: '#6b7280' }}>{cv.code}</p>
                                   {cv.updatedAt && (
                                     <>
-                                      <span className="text-xs text-gray-400">•</span>
-                                      <span className="text-xs text-gray-500">
+                                      <span className="text-xs" style={{ color: '#9ca3af' }}>•</span>
+                                      <span className="text-xs" style={{ color: '#6b7280' }}>
                                         Cập nhật: {formatDate(cv.updatedAt)}
                                       </span>
                                     </>
@@ -1121,10 +1351,10 @@ const NominationPage = () => {
                               </div>
                             </div>
                             {selectedCvId === cv.id && canSelect && (
-                              <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                              <CheckCircle className="w-5 h-5 flex-shrink-0" style={{ color: '#2563eb' }} />
                             )}
                             {!canSelect && (
-                              <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                              <AlertTriangle className="w-5 h-5 flex-shrink-0" style={{ color: '#f97316' }} />
                             )}
                           </div>
                         </div>
@@ -1134,41 +1364,69 @@ const NominationPage = () => {
 
                   {/* Pagination */}
                   {recentTotalPages > 1 && (
-                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t" style={{ borderColor: '#e5e7eb' }}>
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => setRecentPage(1)}
                           disabled={recentPage === 1}
-                          className="px-2 py-1 bg-white border border-gray-300 rounded text-xs font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                          onMouseEnter={() => recentPage !== 1 && setHoveredRecentPaginationButton('first')}
+                          onMouseLeave={() => setHoveredRecentPaginationButton(null)}
+                          className="px-2 py-1 border rounded text-xs font-bold disabled:opacity-50"
+                          style={{
+                            backgroundColor: hoveredRecentPaginationButton === 'first' ? '#f9fafb' : 'white',
+                            borderColor: '#d1d5db',
+                            color: '#374151'
+                          }}
                         >
                           <ChevronsLeft className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => setRecentPage(recentPage - 1)}
                           disabled={recentPage === 1}
-                          className="px-2 py-1 bg-white border border-gray-300 rounded text-xs font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                          onMouseEnter={() => recentPage !== 1 && setHoveredRecentPaginationButton('prev')}
+                          onMouseLeave={() => setHoveredRecentPaginationButton(null)}
+                          className="px-2 py-1 border rounded text-xs font-bold disabled:opacity-50"
+                          style={{
+                            backgroundColor: hoveredRecentPaginationButton === 'prev' ? '#f9fafb' : 'white',
+                            borderColor: '#d1d5db',
+                            color: '#374151'
+                          }}
                         >
                           <ChevronLeft className="w-3.5 h-3.5" />
                         </button>
-                        <span className="text-xs text-gray-600 px-2">
+                        <span className="text-xs px-2" style={{ color: '#4b5563' }}>
                           Trang {recentPage} / {recentTotalPages}
                         </span>
                         <button
                           onClick={() => setRecentPage(recentPage + 1)}
                           disabled={recentPage === recentTotalPages}
-                          className="px-2 py-1 bg-white border border-gray-300 rounded text-xs font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                          onMouseEnter={() => recentPage !== recentTotalPages && setHoveredRecentPaginationButton('next')}
+                          onMouseLeave={() => setHoveredRecentPaginationButton(null)}
+                          className="px-2 py-1 border rounded text-xs font-bold disabled:opacity-50"
+                          style={{
+                            backgroundColor: hoveredRecentPaginationButton === 'next' ? '#f9fafb' : 'white',
+                            borderColor: '#d1d5db',
+                            color: '#374151'
+                          }}
                         >
                           <ChevronRight className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => setRecentPage(recentTotalPages)}
                           disabled={recentPage === recentTotalPages}
-                          className="px-2 py-1 bg-white border border-gray-300 rounded text-xs font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                          onMouseEnter={() => recentPage !== recentTotalPages && setHoveredRecentPaginationButton('last')}
+                          onMouseLeave={() => setHoveredRecentPaginationButton(null)}
+                          className="px-2 py-1 border rounded text-xs font-bold disabled:opacity-50"
+                          style={{
+                            backgroundColor: hoveredRecentPaginationButton === 'last' ? '#f9fafb' : 'white',
+                            borderColor: '#d1d5db',
+                            color: '#374151'
+                          }}
                         >
                           <ChevronsRight className="w-3.5 h-3.5" />
                         </button>
                       </div>
-                      <span className="text-xs text-gray-600">
+                      <span className="text-xs" style={{ color: '#4b5563' }}>
                         {recentTotalItems} kết quả
                       </span>
                     </div>
@@ -1180,23 +1438,29 @@ const NominationPage = () => {
             <div className="space-y-4">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: '#9ca3af' }} />
                 <input
                   type="text"
                   placeholder="Tìm kiếm theo tên ứng viên, công ty..."
                   value={historySearchTerm}
                   onChange={(e) => setHistorySearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onFocus={() => setFocusedInput('history-search')}
+                  onBlur={() => setFocusedInput(null)}
+                  className="w-full pl-9 pr-4 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{
+                    borderColor: focusedInput === 'history-search' ? '#2563eb' : '#d1d5db',
+                    boxShadow: focusedInput === 'history-search' ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none'
+                  }}
                 />
               </div>
 
               {/* History List */}
               {loadingHistory ? (
-                <div className="text-center py-8 text-gray-500 text-sm">
+                <div className="text-center py-8 text-sm" style={{ color: '#6b7280' }}>
                   Đang tải lịch sử...
                 </div>
               ) : nominationHistory.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 text-sm">
+                <div className="text-center py-8 text-sm" style={{ color: '#6b7280' }}>
                   Chưa có lịch sử tiến cử
                 </div>
               ) : (
@@ -1204,41 +1468,48 @@ const NominationPage = () => {
                   {nominationHistory.map((item, index) => (
                     <div
                       key={index}
-                      className="p-3 border border-gray-200 rounded-lg bg-white"
+                      className="p-3 border rounded-lg"
+                      style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}
                     >
-                      <p className="font-semibold text-gray-900 text-sm mb-2">
+                      <p className="font-semibold text-sm mb-2" style={{ color: '#111827' }}>
                         Cty {index + 1}: {item.company}
                       </p>
-                      <div className="space-y-1.5 pl-2 border-l-2 border-gray-200">
-                        {item.applications.map((app) => (
-                          <div key={app.id} className="text-xs text-gray-600">
-                            <span className="font-medium">{app.cv?.name || app.name || 'N/A'}</span>
-                            {app.job?.title && (
-                              <span className="text-gray-500"> - {app.job.title}</span>
-                            )}
-                            {app.status && (
-                              <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${
-                                app.status >= 2 && app.status <= 11
-                                  ? 'bg-green-100 text-green-800'
-                                  : app.status === 12 || app.status === 15 || app.status === 16 || app.status === 17
-                                  ? 'bg-red-100 text-red-800'
-                                  : 'bg-gray-100 text-gray-800'
-                              }`}>
-                                {app.status === 1 ? 'Đang xử lý' :
-                                 app.status === 2 ? 'Đang tiến cử' :
-                                 app.status === 8 ? 'Đã nhận việc' :
-                                 app.status === 11 ? 'Đã thanh toán' :
-                                 app.status === 15 ? 'Trượt' :
-                                 app.status === 16 ? 'Hủy' :
-                                 app.status === 17 ? 'Không shodaku' :
-                                 `Status ${app.status}`}
+                      <div className="space-y-1.5 pl-2 border-l-2" style={{ borderColor: '#e5e7eb' }}>
+                        {item.applications.map((app) => {
+                          const getStatusStyle = () => {
+                            if (app.status >= 2 && app.status <= 11) {
+                              return { backgroundColor: '#dcfce7', color: '#166534' };
+                            } else if (app.status === 12 || app.status === 15 || app.status === 16 || app.status === 17) {
+                              return { backgroundColor: '#fee2e2', color: '#991b1b' };
+                            } else {
+                              return { backgroundColor: '#f3f4f6', color: '#1f2937' };
+                            }
+                          };
+                          
+                          return (
+                            <div key={app.id} className="text-xs" style={{ color: '#4b5563' }}>
+                              <span className="font-medium">{app.cv?.name || app.name || 'N/A'}</span>
+                              {app.job?.title && (
+                                <span style={{ color: '#6b7280' }}> - {app.job.title}</span>
+                              )}
+                              {app.status && (
+                                <span className="ml-2 px-1.5 py-0.5 rounded text-xs" style={getStatusStyle()}>
+                                  {app.status === 1 ? 'Đang xử lý' :
+                                   app.status === 2 ? 'Đang tiến cử' :
+                                   app.status === 8 ? 'Đã nhận việc' :
+                                   app.status === 11 ? 'Đã thanh toán' :
+                                   app.status === 15 ? 'Trượt' :
+                                   app.status === 16 ? 'Hủy' :
+                                   app.status === 17 ? 'Không shodaku' :
+                                   `Status ${app.status}`}
+                                </span>
+                              )}
+                              <span className="ml-2" style={{ color: '#9ca3af' }}>
+                                ({formatDate(app.createdAt)})
                               </span>
-                            )}
-                            <span className="text-gray-400 ml-2">
-                              ({formatDate(app.createdAt)})
-                            </span>
-                          </div>
-                        ))}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   ))}

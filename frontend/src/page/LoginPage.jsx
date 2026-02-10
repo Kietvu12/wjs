@@ -24,6 +24,11 @@ const LoginPage = ({ defaultUserType = 'ctv' }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const languageMenuRef = useRef(null);
+  const [isLanguageButtonHovered, setIsLanguageButtonHovered] = useState(false);
+  const [hoveredLanguageItem, setHoveredLanguageItem] = useState(null);
+  const [isSubmitButtonHovered, setIsSubmitButtonHovered] = useState(false);
+  const [isChatButtonHovered, setIsChatButtonHovered] = useState(false);
+  const [isEyeButtonHovered, setIsEyeButtonHovered] = useState(false);
 
   const languages = [
     { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' },
@@ -144,11 +149,17 @@ const LoginPage = ({ defaultUserType = 'ctv' }) => {
         <div className="relative" ref={languageMenuRef}>
           <button
             onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-            className="bg-white border-2 border-red-600 rounded-lg px-4 py-2 flex items-center gap-2 shadow-md hover:bg-red-600 transition-colors group"
-            style={{ fontFamily: '"Myriad Pro", sans-serif' }}
+            onMouseEnter={() => setIsLanguageButtonHovered(true)}
+            onMouseLeave={() => setIsLanguageButtonHovered(false)}
+            className="border-2 rounded-lg px-4 py-2 flex items-center gap-2 shadow-md transition-colors"
+            style={{ 
+              fontFamily: '"Myriad Pro", sans-serif',
+              backgroundColor: isLanguageButtonHovered ? '#dc2626' : 'white',
+              borderColor: '#dc2626'
+            }}
           >
-            <Globe className="text-gray-800 group-hover:text-white text-xl transition-colors" />
-            <span className="text-sm font-medium text-gray-800 group-hover:text-white transition-colors">
+            <Globe className="text-xl transition-colors" style={{ color: isLanguageButtonHovered ? 'white' : '#1f2937' }} />
+            <span className="text-sm font-medium transition-colors" style={{ color: isLanguageButtonHovered ? 'white' : '#1f2937' }}>
               {languages.find(lang => lang.code === language)?.flag} {languages.find(lang => lang.code === language)?.name}
             </span>
           </button>
@@ -161,14 +172,18 @@ const LoginPage = ({ defaultUserType = 'ctv' }) => {
                     changeLanguage(lang.code);
                     setShowLanguageMenu(false);
                   }}
-                  className={`w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-gray-50 transition-colors ${
-                    language === lang.code ? 'bg-red-50 text-red-600' : 'text-gray-700'
-                  }`}
+                  onMouseEnter={() => setHoveredLanguageItem(lang.code)}
+                  onMouseLeave={() => setHoveredLanguageItem(null)}
+                  className="w-full flex items-center gap-2 px-4 py-2 text-left transition-colors"
+                  style={{
+                    backgroundColor: hoveredLanguageItem === lang.code ? '#f9fafb' : (language === lang.code ? '#fef2f2' : 'transparent'),
+                    color: language === lang.code ? '#dc2626' : '#374151'
+                  }}
                 >
                   <span>{lang.flag}</span>
                   <span className="text-sm font-medium">{lang.name}</span>
                   {language === lang.code && (
-                    <span className="ml-auto text-red-600">✓</span>
+                    <span className="ml-auto" style={{ color: '#dc2626' }}>✓</span>
                   )}
                 </button>
               ))}
@@ -289,7 +304,12 @@ const LoginPage = ({ defaultUserType = 'ctv' }) => {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-red-700 transition-colors"
+                      onMouseEnter={() => setIsEyeButtonHovered(true)}
+                      onMouseLeave={() => setIsEyeButtonHovered(false)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 transition-colors"
+                      style={{
+                        color: isEyeButtonHovered ? '#b91c1c' : '#6b7280'
+                      }}
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -312,10 +332,18 @@ const LoginPage = ({ defaultUserType = 'ctv' }) => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full bg-red-600 text-white py-3.5 rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 ${
+                  onMouseEnter={() => setIsSubmitButtonHovered(true)}
+                  onMouseLeave={() => setIsSubmitButtonHovered(false)}
+                  className={`w-full py-3.5 rounded-lg transition-colors font-semibold shadow-md transition-all duration-200 ${
                     loading ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
-                  style={{ fontFamily: '"Myriad Pro", sans-serif' }}
+                  style={{ 
+                    fontFamily: '"Myriad Pro", sans-serif',
+                    backgroundColor: isSubmitButtonHovered ? '#b91c1c' : '#dc2626',
+                    color: 'white',
+                    boxShadow: isSubmitButtonHovered ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    transform: isSubmitButtonHovered ? 'translateY(-2px)' : 'translateY(0)'
+                  }}
                 >
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
@@ -335,8 +363,15 @@ const LoginPage = ({ defaultUserType = 'ctv' }) => {
       {/* Chat Button - Bottom Right */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
         <div className="relative">
-          <button className="bg-red-600 w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:bg-red-700 transition-colors">
-            <MessageCircle className="text-white text-xl" />
+          <button 
+            onMouseEnter={() => setIsChatButtonHovered(true)}
+            onMouseLeave={() => setIsChatButtonHovered(false)}
+            className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors"
+            style={{
+              backgroundColor: isChatButtonHovered ? '#b91c1c' : '#dc2626'
+            }}
+          >
+            <MessageCircle className="text-xl" style={{ color: 'white' }} />
           </button>
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
             1

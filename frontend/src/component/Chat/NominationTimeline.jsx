@@ -115,11 +115,22 @@ const NominationTimeline = ({ nomination, messages = [] }) => {
     return colors[color] || colors.blue;
   };
 
+  const getColorInlineStyle = (color) => {
+    const colorMap = {
+      blue: { backgroundColor: '#dbeafe', color: '#1d4ed8', borderColor: '#93c5fd' },
+      yellow: { backgroundColor: '#fef9c3', color: '#854d0e', borderColor: '#fde047' },
+      orange: { backgroundColor: '#fed7aa', color: '#9a3412', borderColor: '#fdba74' },
+      green: { backgroundColor: '#dcfce7', color: '#166534', borderColor: '#86efac' },
+      red: { backgroundColor: '#fee2e2', color: '#991b1b', borderColor: '#fca5a5' },
+    };
+    return colorMap[color] || colorMap.blue;
+  };
+
   return (
-    <div className="h-full bg-white rounded-lg border border-gray-200 flex flex-col">
+    <div className="h-full rounded-lg border flex flex-col" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 bg-gray-50">
-        <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+      <div className="p-4 border-b" style={{ borderColor: '#e5e7eb', backgroundColor: '#f9fafb' }}>
+        <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: '#111827' }}>
           <Clock className="w-4 h-4" />
           Timeline
         </h3>
@@ -128,31 +139,43 @@ const NominationTimeline = ({ nomination, messages = [] }) => {
       {/* Timeline Content */}
       <div className="flex-1 overflow-y-auto p-4">
         {timelineEvents.length === 0 ? (
-          <div className="text-center text-sm text-gray-500 py-8">
+          <div className="text-center text-sm py-8" style={{ color: '#6b7280' }}>
             Chưa có sự kiện nào
           </div>
         ) : (
           <div className="relative">
             {/* Timeline line */}
-            <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+            <div className="absolute left-4 top-0 bottom-0 w-0.5" style={{ backgroundColor: '#e5e7eb' }}></div>
             
             <div className="space-y-4">
               {timelineEvents.map((event, index) => {
                 const Icon = event.icon;
                 const isLast = index === timelineEvents.length - 1;
+                const colorStyle = getColorInlineStyle(event.color);
                 
                 return (
                   <div key={event.id} className="relative flex items-start gap-3">
                     {/* Icon */}
-                    <div className={`relative z-10 flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center ${getColorClasses(event.color)}`}>
+                    <div 
+                      className="relative z-10 flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center"
+                      style={colorStyle}
+                    >
                       <Icon className="w-4 h-4" />
                     </div>
                     
                     {/* Content */}
                     <div className="flex-1 min-w-0 pb-4">
-                      <div className={`p-3 rounded-lg border ${getColorClasses(event.color)} ${event.isCurrent ? 'ring-2 ring-offset-2 ring-blue-400' : ''}`}>
-                        <h4 className="text-xs font-semibold text-gray-900 mb-1">{event.title}</h4>
-                        <p className="text-xs text-gray-600">{formatDate(event.date)}</p>
+                      <div 
+                        className="p-3 rounded-lg border"
+                        style={{
+                          ...colorStyle,
+                          ...(event.isCurrent ? {
+                            boxShadow: '0 0 0 2px rgba(96, 165, 250, 0.5), 0 0 0 4px rgba(96, 165, 250, 0.2)'
+                          } : {})
+                        }}
+                      >
+                        <h4 className="text-xs font-semibold mb-1" style={{ color: '#111827' }}>{event.title}</h4>
+                        <p className="text-xs" style={{ color: '#4b5563' }}>{formatDate(event.date)}</p>
                       </div>
                     </div>
                   </div>

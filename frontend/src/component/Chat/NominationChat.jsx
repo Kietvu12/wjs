@@ -13,6 +13,15 @@ const NominationChat = ({ jobApplicationId, userType = 'admin', onScheduleInterv
   const [interviewTime, setInterviewTime] = useState('');
   const [nyushaDate, setNyushaDate] = useState('');
   const messagesEndRef = useRef(null);
+  
+  // Hover states
+  const [hoveredInterviewButton, setHoveredInterviewButton] = useState(false);
+  const [hoveredNyushaButton, setHoveredNyushaButton] = useState(false);
+  const [hoveredSendButton, setHoveredSendButton] = useState(false);
+  const [hoveredInterviewModalCancel, setHoveredInterviewModalCancel] = useState(false);
+  const [hoveredInterviewModalConfirm, setHoveredInterviewModalConfirm] = useState(false);
+  const [hoveredNyushaModalCancel, setHoveredNyushaModalCancel] = useState(false);
+  const [hoveredNyushaModalConfirm, setHoveredNyushaModalConfirm] = useState(false);
 
   useEffect(() => {
     loadMessages();
@@ -295,25 +304,37 @@ const NominationChat = ({ jobApplicationId, userType = 'admin', onScheduleInterv
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-lg border border-gray-200">
+    <div className="flex flex-col h-full rounded-lg border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 bg-gray-50">
+      <div className="p-4 border-b" style={{ borderColor: '#e5e7eb', backgroundColor: '#f9fafb' }}>
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+          <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: '#111827' }}>
             <MessageCircle className="w-4 h-4" />
             Chat
           </h3>
           <div className="flex gap-2">
             <button
               onClick={() => setShowInterviewModal(true)}
-              className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-1"
+              onMouseEnter={() => setHoveredInterviewButton(true)}
+              onMouseLeave={() => setHoveredInterviewButton(false)}
+              className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1"
+              style={{
+                color: '#2563eb',
+                backgroundColor: hoveredInterviewButton ? '#dbeafe' : '#eff6ff'
+              }}
             >
               <Calendar className="w-3.5 h-3.5" />
               Đặt lịch PV
             </button>
             <button
               onClick={() => setShowNyushaModal(true)}
-              className="px-3 py-1.5 text-xs font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors flex items-center gap-1"
+              onMouseEnter={() => setHoveredNyushaButton(true)}
+              onMouseLeave={() => setHoveredNyushaButton(false)}
+              className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1"
+              style={{
+                color: '#16a34a',
+                backgroundColor: hoveredNyushaButton ? '#bbf7d0' : '#f0fdf4'
+              }}
             >
               <Clock className="w-3.5 h-3.5" />
               Đặt Nyusha
@@ -326,10 +347,10 @@ const NominationChat = ({ jobApplicationId, userType = 'admin', onScheduleInterv
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {loading ? (
           <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2" style={{ borderColor: '#2563eb' }}></div>
           </div>
         ) : messages.length === 0 ? (
-          <div className="text-center text-sm text-gray-500 py-8">
+          <div className="text-center text-sm py-8" style={{ color: '#6b7280' }}>
             Chưa có tin nhắn nào
           </div>
         ) : (
@@ -339,22 +360,26 @@ const NominationChat = ({ jobApplicationId, userType = 'admin', onScheduleInterv
               ? message.senderType === 1 
               : message.senderType === 2;
             
+            let messageStyle = {};
+            if (isSender) {
+              messageStyle = { backgroundColor: '#2563eb', color: 'white' };
+            } else if (message.senderType === 3 || message.type === 'system') {
+              messageStyle = { backgroundColor: '#fef9c3', color: '#854d0e', borderColor: '#fde047', borderWidth: '1px', borderStyle: 'solid' };
+            } else {
+              messageStyle = { backgroundColor: '#f3f4f6', color: '#111827' };
+            }
+            
             return (
               <div
                 key={message.id}
                 className={`flex ${isSender ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[70%] rounded-lg px-3 py-2 ${
-                    isSender
-                      ? 'bg-blue-600 text-white'
-                      : message.senderType === 3 || message.type === 'system'
-                      ? 'bg-yellow-50 text-yellow-800 border border-yellow-200'
-                      : 'bg-gray-100 text-gray-900'
-                  }`}
+                  className="max-w-[70%] rounded-lg px-3 py-2"
+                  style={messageStyle}
                 >
                   <p className="text-xs whitespace-pre-wrap">{message.content}</p>
-                  <p className="text-xs mt-1 opacity-70">
+                  <p className="text-xs mt-1" style={{ opacity: 0.7 }}>
                     {formatDate(message.createdAt)}
                   </p>
                 </div>
@@ -366,20 +391,29 @@ const NominationChat = ({ jobApplicationId, userType = 'admin', onScheduleInterv
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200">
+      <form onSubmit={handleSendMessage} className="p-4 border-t" style={{ borderColor: '#e5e7eb' }}>
         <div className="flex gap-2">
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Nhập tin nhắn..."
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none"
+            style={{ borderColor: '#d1d5db' }}
             disabled={sending}
           />
           <button
             type="submit"
             disabled={!newMessage.trim() || sending}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+            onMouseEnter={() => setHoveredSendButton(true)}
+            onMouseLeave={() => setHoveredSendButton(false)}
+            className="px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+            style={{
+              backgroundColor: hoveredSendButton ? '#2563eb' : '#2563eb',
+              color: 'white',
+              opacity: (!newMessage.trim() || sending) ? 0.5 : 1,
+              cursor: (!newMessage.trim() || sending) ? 'not-allowed' : 'pointer'
+            }}
           >
             <Send className="w-4 h-4" />
           </button>
@@ -388,26 +422,28 @@ const NominationChat = ({ jobApplicationId, userType = 'admin', onScheduleInterv
 
       {/* Interview Modal */}
       {showInterviewModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Đặt lịch phỏng vấn</h3>
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+          <div className="rounded-lg p-6 w-96" style={{ backgroundColor: 'white' }}>
+            <h3 className="text-lg font-bold mb-4" style={{ color: '#111827' }}>Đặt lịch phỏng vấn</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ngày</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: '#374151' }}>Ngày</label>
                 <input
                   type="date"
                   value={interviewDate}
                   onChange={(e) => setInterviewDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{ borderColor: '#d1d5db' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Giờ</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: '#374151' }}>Giờ</label>
                 <input
                   type="time"
                   value={interviewTime}
                   onChange={(e) => setInterviewTime(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{ borderColor: '#d1d5db' }}
                 />
               </div>
             </div>
@@ -419,14 +455,27 @@ const NominationChat = ({ jobApplicationId, userType = 'admin', onScheduleInterv
                   setInterviewDate('');
                   setInterviewTime('');
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                onMouseEnter={() => setHoveredInterviewModalCancel(true)}
+                onMouseLeave={() => setHoveredInterviewModalCancel(false)}
+                className="flex-1 px-4 py-2 border rounded-lg text-sm font-medium transition-colors"
+                style={{
+                  borderColor: '#d1d5db',
+                  color: '#374151',
+                  backgroundColor: hoveredInterviewModalCancel ? '#f9fafb' : 'transparent'
+                }}
               >
                 Hủy
               </button>
               <button
                 type="button"
                 onClick={handleScheduleInterview}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                onMouseEnter={() => setHoveredInterviewModalConfirm(true)}
+                onMouseLeave={() => setHoveredInterviewModalConfirm(false)}
+                className="flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{
+                  backgroundColor: hoveredInterviewModalConfirm ? '#2563eb' : '#2563eb',
+                  color: 'white'
+                }}
               >
                 Xác nhận
               </button>
@@ -437,17 +486,18 @@ const NominationChat = ({ jobApplicationId, userType = 'admin', onScheduleInterv
 
       {/* Nyusha Modal */}
       {showNyushaModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Đặt ngày nhập công ty</h3>
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+          <div className="rounded-lg p-6 w-96" style={{ backgroundColor: 'white' }}>
+            <h3 className="text-lg font-bold mb-4" style={{ color: '#111827' }}>Đặt ngày nhập công ty</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ngày nhập công ty</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: '#374151' }}>Ngày nhập công ty</label>
                 <input
                   type="date"
                   value={nyushaDate}
                   onChange={(e) => setNyushaDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{ borderColor: '#d1d5db' }}
                 />
               </div>
             </div>
@@ -458,14 +508,27 @@ const NominationChat = ({ jobApplicationId, userType = 'admin', onScheduleInterv
                   setShowNyushaModal(false);
                   setNyushaDate('');
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                onMouseEnter={() => setHoveredNyushaModalCancel(true)}
+                onMouseLeave={() => setHoveredNyushaModalCancel(false)}
+                className="flex-1 px-4 py-2 border rounded-lg text-sm font-medium transition-colors"
+                style={{
+                  borderColor: '#d1d5db',
+                  color: '#374151',
+                  backgroundColor: hoveredNyushaModalCancel ? '#f9fafb' : 'transparent'
+                }}
               >
                 Hủy
               </button>
               <button
                 type="button"
                 onClick={handleScheduleNyusha}
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                onMouseEnter={() => setHoveredNyushaModalConfirm(true)}
+                onMouseLeave={() => setHoveredNyushaModalConfirm(false)}
+                className="flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{
+                  backgroundColor: hoveredNyushaModalConfirm ? '#16a34a' : '#16a34a',
+                  color: 'white'
+                }}
               >
                 Xác nhận
               </button>

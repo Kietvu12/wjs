@@ -4,11 +4,11 @@ const SettingsPage = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Cài đặt</h2>
-        <p className="text-gray-600">Cài đặt hệ thống</p>
+        <h2 className="text-2xl font-bold mb-2" style={{ color: '#111827' }}>Cài đặt</h2>
+        <p style={{ color: '#4b5563' }}>Cài đặt hệ thống</p>
       </div>
-      <div className="bg-white rounded-lg shadow p-6">
-        <p className="text-gray-700">Nội dung trang cài đặt sẽ được thêm vào đây.</p>
+      <div className="rounded-lg p-6" style={{ backgroundColor: 'white', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' }}>
+        <p style={{ color: '#374151' }}>Nội dung trang cài đặt sẽ được thêm vào đây.</p>
       </div>
     </div>
   );

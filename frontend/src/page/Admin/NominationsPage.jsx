@@ -45,6 +45,21 @@ const AdminNominationsPage = () => {
     limit: 20,
     totalPages: 0
   });
+  
+  // Hover states
+  const [hoveredSearchButton, setHoveredSearchButton] = useState(false);
+  const [hoveredResetButton, setHoveredResetButton] = useState(false);
+  const [hoveredAddNominationButton, setHoveredAddNominationButton] = useState(false);
+  const [hoveredPaginationNavButton, setHoveredPaginationNavButton] = useState(null);
+  const [hoveredPaginationButtonIndex, setHoveredPaginationButtonIndex] = useState(null);
+  const [hoveredRowIndex, setHoveredRowIndex] = useState(null);
+  const [hoveredIdLinkIndex, setHoveredIdLinkIndex] = useState(null);
+  const [hoveredCandidateLinkIndex, setHoveredCandidateLinkIndex] = useState(null);
+  const [hoveredJobLinkIndex, setHoveredJobLinkIndex] = useState(null);
+  const [hoveredCollaboratorLinkIndex, setHoveredCollaboratorLinkIndex] = useState(null);
+  const [hoveredViewButtonIndex, setHoveredViewButtonIndex] = useState(null);
+  const [hoveredEditButtonIndex, setHoveredEditButtonIndex] = useState(null);
+  const [hoveredDeleteButtonIndex, setHoveredDeleteButtonIndex] = useState(null);
 
   useEffect(() => {
     loadNominations();
@@ -242,18 +257,18 @@ const AdminNominationsPage = () => {
   const totalItems = pagination.total || 0;
   const totalPages = pagination.totalPages || 0;
 
-  const getStatusColor = (status) => {
+  const getStatusColorStyle = (status) => {
     switch (status) {
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return { backgroundColor: '#fef9c3', color: '#854d0e' };
       case 'interviewed':
-        return 'bg-blue-100 text-blue-800';
+        return { backgroundColor: '#dbeafe', color: '#1e40af' };
       case 'accepted':
-        return 'bg-green-100 text-green-800';
+        return { backgroundColor: '#dcfce7', color: '#166534' };
       case 'rejected':
-        return 'bg-red-100 text-red-800';
+        return { backgroundColor: '#fee2e2', color: '#991b1b' };
       default:
-        return 'bg-gray-100 text-gray-800';
+        return { backgroundColor: '#f3f4f6', color: '#1f2937' };
     }
   };
 
@@ -324,37 +339,67 @@ const AdminNominationsPage = () => {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Filter Section */}
-      <div className="bg-white rounded-lg p-3 border border-gray-200 mb-3 flex-shrink-0">
+      <div className="rounded-lg p-3 border mb-3 flex-shrink-0" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         {/* Search Bar */}
         <div className="flex items-center gap-2 flex-wrap mb-3">
           <div className="flex-1 min-w-[250px]">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
               <input
                 type="text"
                 placeholder="Tìm kiếm theo tên ứng viên, job title, công ty, ID, CTV..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-xs"
+                className="w-full pl-10 pr-3 py-1.5 border rounded-lg text-xs"
+                style={{
+                  borderColor: '#d1d5db',
+                  outline: 'none'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#2563eb';
+                  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
             </div>
           </div>
           <button
             onClick={handleSearch}
-            className="px-4 py-1.5 bg-blue-600 text-white rounded-lg font-semibold text-xs hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+            onMouseEnter={() => setHoveredSearchButton(true)}
+            onMouseLeave={() => setHoveredSearchButton(false)}
+            className="px-4 py-1.5 rounded-lg font-semibold text-xs transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredSearchButton ? '#1d4ed8' : '#2563eb',
+              color: 'white'
+            }}
           >
             <Search className="w-3.5 h-3.5" />
             Tìm kiếm
           </button>
           <button
             onClick={handleReset}
-            className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg font-semibold text-xs hover:bg-gray-200 transition-colors"
+            onMouseEnter={() => setHoveredResetButton(true)}
+            onMouseLeave={() => setHoveredResetButton(false)}
+            className="px-3 py-1.5 rounded-lg font-semibold text-xs transition-colors"
+            style={{
+              backgroundColor: hoveredResetButton ? '#e5e7eb' : '#f3f4f6',
+              color: '#374151'
+            }}
           >
             Reset
           </button>
           <button
             onClick={() => navigate('/admin/nominations/create')}
-            className="px-3 py-1.5 bg-yellow-400 text-gray-900 rounded-lg font-semibold text-xs hover:bg-yellow-500 transition-colors flex items-center gap-1.5"
+            onMouseEnter={() => setHoveredAddNominationButton(true)}
+            onMouseLeave={() => setHoveredAddNominationButton(false)}
+            className="px-3 py-1.5 rounded-lg font-semibold text-xs transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredAddNominationButton ? '#eab308' : '#facc15',
+              color: '#111827'
+            }}
           >
             <Plus className="w-3.5 h-3.5" />
             + Thêm đơn tiến cử
@@ -364,12 +409,24 @@ const AdminNominationsPage = () => {
         {/* Additional Filters */}
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <Filter className="w-3.5 h-3.5 text-gray-500" />
-            <label className="text-xs font-semibold text-gray-900">Trạng thái:</label>
+            <Filter className="w-3.5 h-3.5" style={{ color: '#6b7280' }} />
+            <label className="text-xs font-semibold" style={{ color: '#111827' }}>Trạng thái:</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="px-2 py-1 border rounded text-xs"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             >
               <option value="">Tất cả</option>
               <option value="pending">Đang chờ</option>
@@ -379,21 +436,45 @@ const AdminNominationsPage = () => {
             </select>
           </div>
           <div className="flex items-center gap-1.5">
-            <label className="text-xs font-semibold text-gray-900">Từ ngày:</label>
+            <label className="text-xs font-semibold" style={{ color: '#111827' }}>Từ ngày:</label>
             <input
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="px-2 py-1 border rounded text-xs"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
           <div className="flex items-center gap-1.5">
-            <label className="text-xs font-semibold text-gray-900">Đến ngày:</label>
+            <label className="text-xs font-semibold" style={{ color: '#111827' }}>Đến ngày:</label>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="px-2 py-1 border rounded text-xs"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
         </div>
@@ -405,14 +486,32 @@ const AdminNominationsPage = () => {
           <button
             onClick={() => setCurrentPage(1)}
             disabled={currentPage === 1}
-            className="px-1.5 py-1 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage !== 1 && setHoveredPaginationNavButton('first')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-1.5 py-1 border rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'first' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: currentPage === 1 ? 0.5 : 1,
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronsLeft className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setCurrentPage(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-1.5 py-1 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage !== 1 && setHoveredPaginationNavButton('prev')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-1.5 py-1 border rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'prev' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: currentPage === 1 ? 0.5 : 1,
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
@@ -431,11 +530,16 @@ const AdminNominationsPage = () => {
               <button
                 key={pageNum}
                 onClick={() => setCurrentPage(pageNum)}
-                className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors ${
-                  currentPage === pageNum
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
+                onMouseEnter={() => currentPage !== pageNum && setHoveredPaginationButtonIndex(pageNum)}
+                onMouseLeave={() => setHoveredPaginationButtonIndex(null)}
+                className="px-2.5 py-1 rounded text-xs font-semibold transition-colors"
+                style={{
+                  backgroundColor: currentPage === pageNum
+                    ? '#2563eb'
+                    : (hoveredPaginationButtonIndex === pageNum ? '#f9fafb' : 'white'),
+                  border: currentPage === pageNum ? 'none' : '1px solid #d1d5db',
+                  color: currentPage === pageNum ? 'white' : '#374151'
+                }}
               >
                 {pageNum}
               </button>
@@ -444,14 +548,32 @@ const AdminNominationsPage = () => {
           <button
             onClick={() => setCurrentPage(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-1.5 py-1 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage < totalPages && setHoveredPaginationNavButton('next')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-1.5 py-1 border rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'next' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: currentPage === totalPages ? 0.5 : 1,
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setCurrentPage(totalPages)}
             disabled={currentPage === totalPages}
-            className="px-1.5 py-1 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => currentPage < totalPages && setHoveredPaginationNavButton('last')}
+            onMouseLeave={() => setHoveredPaginationNavButton(null)}
+            className="px-1.5 py-1 border rounded text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: hoveredPaginationNavButton === 'last' ? '#f9fafb' : 'white',
+              borderColor: '#d1d5db',
+              color: '#374151',
+              opacity: currentPage === totalPages ? 0.5 : 1,
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+            }}
           >
             <ChevronsRight className="w-3.5 h-3.5" />
           </button>
@@ -463,55 +585,72 @@ const AdminNominationsPage = () => {
               setItemsPerPage(Number(e.target.value));
               setCurrentPage(1);
             }}
-            className="px-2.5 py-1 border border-gray-300 rounded text-xs font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="px-2.5 py-1 border rounded text-xs font-semibold"
+            style={{
+              borderColor: '#d1d5db',
+              color: '#374151',
+              outline: 'none'
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#2563eb';
+              e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#d1d5db';
+              e.target.style.boxShadow = 'none';
+            }}
           >
             <option value="20">20</option>
             <option value="50">50</option>
             <option value="100">100</option>
           </select>
-          <span className="text-xs text-gray-700 font-semibold">{totalItems} items</span>
+          <span className="text-xs font-semibold" style={{ color: '#374151' }}>{totalItems} items</span>
         </div>
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-y-auto bg-white rounded-lg border border-gray-200 min-h-0 relative">
+      <div className="flex-1 overflow-y-auto rounded-lg border min-h-0 relative" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div className="overflow-x-auto h-full">
           <table className="w-full">
-            <thead className="bg-gray-50 sticky top-0 z-10">
+            <thead className="sticky top-0 z-10" style={{ backgroundColor: '#f9fafb' }}>
               <tr>
-                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-900 border-b border-gray-200 w-10">
+                <th className="px-3 py-2 text-center text-xs font-semibold border-b w-10" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
                   <input
                     type="checkbox"
                     checked={selectedRows.size === nominations.length && nominations.length > 0}
                     onChange={handleSelectAll}
-                    className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+                    className="w-3.5 h-3.5 rounded"
+                    style={{
+                      accentColor: '#2563eb',
+                      borderColor: '#d1d5db'
+                    }}
                   />
                 </th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">ID</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Ứng viên</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Job</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Công ty</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">CTV</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Admin</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Admin phụ trách</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Trạng thái</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Ngày tiến cử</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Ngày PV</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Phí giới thiệu</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b border-gray-200">Lương</th>
-                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-900 border-b border-gray-200">Thao tác</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>ID</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Ứng viên</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Job</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Công ty</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>CTV</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Admin</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Admin phụ trách</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Trạng thái</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Ngày tiến cử</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Ngày PV</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Phí giới thiệu</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Lương</th>
+                <th className="px-3 py-2 text-center text-xs font-semibold border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y" style={{ borderColor: '#e5e7eb' }}>
               {loading ? (
                 <tr>
-                  <td colSpan="14" className="px-3 py-8 text-center text-xs text-gray-500">
+                  <td colSpan="14" className="px-3 py-8 text-center text-xs" style={{ color: '#6b7280' }}>
                     Đang tải dữ liệu...
                   </td>
                 </tr>
               ) : nominations.length === 0 ? (
                 <tr>
-                  <td colSpan="14" className="px-3 py-8 text-center text-xs text-gray-500">
+                  <td colSpan="14" className="px-3 py-8 text-center text-xs" style={{ color: '#6b7280' }}>
                     Không có dữ liệu
                   </td>
                 </tr>
@@ -535,23 +674,38 @@ const AdminNominationsPage = () => {
                     salaryDisplay = nomination.job.estimatedSalary;
                   }
 
+                  const statusStyle = getStatusColorStyle(statusInfo.value);
                   return (
                     <tr
                       key={nomination.id}
-                      className="hover:bg-gray-50 transition-colors"
+                      className="transition-colors"
+                      style={{
+                        backgroundColor: hoveredRowIndex === index ? '#f9fafb' : 'transparent'
+                      }}
+                      onMouseEnter={() => setHoveredRowIndex(index)}
+                      onMouseLeave={() => setHoveredRowIndex(null)}
                     >
                       <td className="px-3 py-2 text-center">
                         <input
                           type="checkbox"
                           checked={selectedRows.has(index)}
                           onChange={() => handleSelectRow(index)}
-                          className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+                          className="w-3.5 h-3.5 rounded"
+                          style={{
+                            accentColor: '#2563eb',
+                            borderColor: '#d1d5db'
+                          }}
                         />
                       </td>
                       <td className="px-3 py-2">
                         <button
                           onClick={() => navigate(`/admin/nominations/${nomination.id}`)}
-                          className="text-blue-600 hover:text-blue-800 font-medium text-xs flex items-center gap-1"
+                          onMouseEnter={() => setHoveredIdLinkIndex(index)}
+                          onMouseLeave={() => setHoveredIdLinkIndex(null)}
+                          className="font-medium text-xs flex items-center gap-1"
+                          style={{
+                            color: hoveredIdLinkIndex === index ? '#1e40af' : '#2563eb'
+                          }}
                         >
                           {nomination.id}
                           <ExternalLink className="w-3 h-3" />
@@ -559,24 +713,29 @@ const AdminNominationsPage = () => {
                       </td>
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-1.5">
-                          <div className="w-7 h-7 bg-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-[10px]">
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white font-semibold text-[10px]" style={{ backgroundColor: '#a855f7' }}>
                             {(nomination.cv?.name || nomination.name || '?').charAt(0).toUpperCase()}
                           </div>
                           <div>
                             {nomination.cvId ? (
                               <button
                                 onClick={() => navigate(`/admin/candidates/${nomination.cvId}`)}
-                                className="text-xs font-semibold text-gray-900 hover:text-blue-600"
+                                onMouseEnter={() => setHoveredCandidateLinkIndex(index)}
+                                onMouseLeave={() => setHoveredCandidateLinkIndex(null)}
+                                className="text-xs font-semibold"
+                                style={{
+                                  color: hoveredCandidateLinkIndex === index ? '#2563eb' : '#111827'
+                                }}
                               >
                                 {nomination.cv?.name || nomination.name || '-'}
                               </button>
                             ) : (
-                              <span className="text-xs font-semibold text-gray-900">
+                              <span className="text-xs font-semibold" style={{ color: '#111827' }}>
                                 {nomination.cv?.name || nomination.name || '-'}
                               </span>
                             )}
                             {nomination.cv?.code && (
-                              <p className="text-[10px] text-gray-500">{nomination.cv.code}</p>
+                              <p className="text-[10px]" style={{ color: '#6b7280' }}>{nomination.cv.code}</p>
                             )}
                           </div>
                         </div>
@@ -585,18 +744,23 @@ const AdminNominationsPage = () => {
                         {nomination.jobId ? (
                           <button
                             onClick={() => navigate(`/admin/jobs/${nomination.jobId}`)}
-                            className="text-xs font-medium text-gray-900 hover:text-blue-600 flex items-center gap-1"
+                            onMouseEnter={() => setHoveredJobLinkIndex(index)}
+                            onMouseLeave={() => setHoveredJobLinkIndex(null)}
+                            className="text-xs font-medium flex items-center gap-1"
+                            style={{
+                              color: hoveredJobLinkIndex === index ? '#2563eb' : '#111827'
+                            }}
                           >
                             <Briefcase className="w-3 h-3" />
                             {nomination.job?.title || nomination.job?.jobCode || '-'}
                           </button>
                         ) : (
-                          <span className="text-xs text-gray-700">—</span>
+                          <span className="text-xs" style={{ color: '#374151' }}>—</span>
                         )}
                       </td>
                       <td className="px-3 py-2">
-                        <div className="flex items-center gap-1 text-xs text-gray-700">
-                          <Building2 className="w-3 h-3 text-gray-400" />
+                        <div className="flex items-center gap-1 text-xs" style={{ color: '#374151' }}>
+                          <Building2 className="w-3 h-3" style={{ color: '#9ca3af' }} />
                           {nomination.job?.company?.name || nomination.companyName || '—'}
                         </div>
                       </td>
@@ -604,86 +768,109 @@ const AdminNominationsPage = () => {
                         {nomination.collaboratorId ? (
                           <button
                             onClick={() => navigate(`/admin/collaborators/${nomination.collaboratorId}`)}
-                            className="text-xs font-medium text-blue-600 hover:text-blue-800"
+                            onMouseEnter={() => setHoveredCollaboratorLinkIndex(index)}
+                            onMouseLeave={() => setHoveredCollaboratorLinkIndex(null)}
+                            className="text-xs font-medium"
+                            style={{
+                              color: hoveredCollaboratorLinkIndex === index ? '#1e40af' : '#2563eb'
+                            }}
                           >
                             {nomination.collaborator?.name || nomination.collaborator?.code || '-'}
                           </button>
                         ) : (
-                          <span className="text-xs text-gray-500">—</span>
+                          <span className="text-xs" style={{ color: '#6b7280' }}>—</span>
                         )}
                       </td>
                       <td className="px-3 py-2">
                         {nomination.adminId ? (
                           <div className="flex items-center gap-1.5">
-                            <User className="w-3 h-3 text-gray-400" />
-                            <span className="text-xs font-medium text-gray-900">
+                            <User className="w-3 h-3" style={{ color: '#9ca3af' }} />
+                            <span className="text-xs font-medium" style={{ color: '#111827' }}>
                               {nomination.admin?.name || nomination.admin?.email || '-'}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-500">—</span>
+                          <span className="text-xs" style={{ color: '#6b7280' }}>—</span>
                         )}
                       </td>
                       <td className="px-3 py-2">
                         {nomination.adminResponsibleId ? (
                           <div className="flex items-center gap-1.5">
-                            <User className="w-3 h-3 text-blue-400" />
-                            <span className="text-xs font-medium text-blue-900">
+                            <User className="w-3 h-3" style={{ color: '#60a5fa' }} />
+                            <span className="text-xs font-medium" style={{ color: '#1e3a8a' }}>
                               {nomination.adminResponsible?.name || nomination.adminResponsible?.email || '-'}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-500">—</span>
+                          <span className="text-xs" style={{ color: '#6b7280' }}>—</span>
                         )}
                       </td>
                       <td className="px-3 py-2">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${getStatusColor(statusInfo.value)}`}>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={statusStyle}>
                           {getStatusIcon(statusInfo.value)}
                           {statusInfo.label}
                         </span>
                       </td>
-                      <td className="px-3 py-2 text-xs text-gray-700">
+                      <td className="px-3 py-2 text-xs" style={{ color: '#374151' }}>
                         <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-gray-400" />
+                          <Calendar className="w-3 h-3" style={{ color: '#9ca3af' }} />
                           {appliedDate}
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-xs text-gray-700">
+                      <td className="px-3 py-2 text-xs" style={{ color: '#374151' }}>
                         {nomination.interviewDate ? (
                           <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3 text-gray-400" />
+                            <Calendar className="w-3 h-3" style={{ color: '#9ca3af' }} />
                             {interviewDate}
                           </div>
                         ) : (
-                          <span className="text-gray-400">—</span>
+                          <span style={{ color: '#9ca3af' }}>—</span>
                         )}
                       </td>
                       <td className="px-3 py-2">
-                        <div className="flex items-center gap-1 text-xs font-semibold text-gray-900">
-                          <DollarSign className="w-3 h-3 text-green-600" />
+                        <div className="flex items-center gap-1 text-xs font-semibold" style={{ color: '#111827' }}>
+                          <DollarSign className="w-3 h-3" style={{ color: '#16a34a' }} />
                           {nomination.referralFee ? `${nomination.referralFee.toLocaleString('vi-VN')}đ` : '—'}
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-xs text-gray-700">{salaryDisplay}</td>
+                      <td className="px-3 py-2 text-xs" style={{ color: '#374151' }}>{salaryDisplay}</td>
                       <td className="px-3 py-2">
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             onClick={() => navigate(`/admin/nominations/${nomination.id}`)}
-                            className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors"
+                            onMouseEnter={() => setHoveredViewButtonIndex(index)}
+                            onMouseLeave={() => setHoveredViewButtonIndex(null)}
+                            className="p-1 rounded transition-colors"
+                            style={{
+                              color: hoveredViewButtonIndex === index ? '#1e40af' : '#2563eb',
+                              backgroundColor: hoveredViewButtonIndex === index ? '#eff6ff' : 'transparent'
+                            }}
                             title="Xem chi tiết"
                           >
                             <Eye className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => navigate(`/admin/nominations/${nomination.id}/edit`)}
-                            className="text-gray-600 hover:text-gray-800 p-1 rounded hover:bg-gray-100 transition-colors"
+                            onMouseEnter={() => setHoveredEditButtonIndex(index)}
+                            onMouseLeave={() => setHoveredEditButtonIndex(null)}
+                            className="p-1 rounded transition-colors"
+                            style={{
+                              color: hoveredEditButtonIndex === index ? '#1f2937' : '#4b5563',
+                              backgroundColor: hoveredEditButtonIndex === index ? '#f3f4f6' : 'transparent'
+                            }}
                             title="Chỉnh sửa"
                           >
                             <Edit className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDelete(nomination.id)}
-                            className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
+                            onMouseEnter={() => setHoveredDeleteButtonIndex(index)}
+                            onMouseLeave={() => setHoveredDeleteButtonIndex(null)}
+                            className="p-1 rounded transition-colors"
+                            style={{
+                              color: hoveredDeleteButtonIndex === index ? '#991b1b' : '#dc2626',
+                              backgroundColor: hoveredDeleteButtonIndex === index ? '#fef2f2' : 'transparent'
+                            }}
                             title="Xóa"
                           >
                             <Trash2 className="w-3.5 h-3.5" />

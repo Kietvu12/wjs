@@ -16,6 +16,12 @@ const SendMessageModal = ({
   const [showAdminDropdown, setShowAdminDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  
+  // Hover states
+  const [hoveredCloseButton, setHoveredCloseButton] = useState(false);
+  const [hoveredAdminDropdownItemIndex, setHoveredAdminDropdownItemIndex] = useState(null);
+  const [hoveredCancelButton, setHoveredCancelButton] = useState(false);
+  const [hoveredSubmitButton, setHoveredSubmitButton] = useState(false);
 
   useEffect(() => {
     // Set default message with @{jobApplicationId}
@@ -134,19 +140,24 @@ const SendMessageModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }} onClick={onClose}>
+      <div className="rounded-lg shadow-xl max-w-2xl w-full" style={{ backgroundColor: 'white', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <Send className="w-5 h-5 text-blue-600" />
+        <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: '#e5e7eb' }}>
+          <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: '#111827' }}>
+            <Send className="w-5 h-5" style={{ color: '#2563eb' }} />
             Gửi tin nhắn
           </h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded transition-colors"
+            onMouseEnter={() => setHoveredCloseButton(true)}
+            onMouseLeave={() => setHoveredCloseButton(false)}
+            className="p-1 rounded transition-colors"
+            style={{
+              backgroundColor: hoveredCloseButton ? '#f3f4f6' : 'transparent'
+            }}
           >
-            <X className="w-5 h-5 text-gray-600" />
+            <X className="w-5 h-5" style={{ color: '#4b5563' }} />
           </button>
         </div>
 
@@ -155,11 +166,11 @@ const SendMessageModal = ({
           {/* Admin Selection (only for CTV) */}
           {userType === 'ctv' && (
             <div>
-              <label className="block text-xs font-semibold text-gray-900 mb-2">
-                Gửi đến Admin <span className="text-red-500">*</span>
+              <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+                Gửi đến Admin <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: '#9ca3af' }} />
                 <input
                   type="text"
                   placeholder="Tìm kiếm admin..."
@@ -169,20 +180,26 @@ const SendMessageModal = ({
                     setShowAdminDropdown(true);
                   }}
                   onFocus={() => setShowAdminDropdown(true)}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full pl-10 pr-3 py-2 border rounded-lg text-sm focus:outline-none"
+                  style={{ borderColor: '#d1d5db' }}
                 />
                 {showAdminDropdown && filteredAdmins.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <div className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg max-h-60 overflow-y-auto" style={{ backgroundColor: 'white', borderColor: '#d1d5db', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }}>
                     {filteredAdmins.map((admin) => (
                       <button
                         key={admin.id}
                         type="button"
                         onClick={() => handleSelectAdmin(admin)}
-                        className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between"
+                        onMouseEnter={() => setHoveredAdminDropdownItemIndex(admin.id)}
+                        onMouseLeave={() => setHoveredAdminDropdownItemIndex(null)}
+                        className="w-full px-3 py-2 text-left text-sm flex items-center justify-between"
+                        style={{
+                          backgroundColor: hoveredAdminDropdownItemIndex === admin.id ? '#f3f4f6' : 'transparent'
+                        }}
                       >
                         <div>
-                          <div className="font-medium text-gray-900">{admin.name}</div>
-                          <div className="text-xs text-gray-500">
+                          <div className="font-medium" style={{ color: '#111827' }}>{admin.name}</div>
+                          <div className="text-xs" style={{ color: '#6b7280' }}>
                             {admin.email} • {admin.role === 1 ? 'Super Admin' : 'Backoffice'}
                           </div>
                         </div>
@@ -192,23 +209,23 @@ const SendMessageModal = ({
                 )}
               </div>
               {selectedAdminId && (
-                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="text-xs font-medium text-blue-900">
+                <div className="mt-2 p-2 border rounded-lg" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
+                  <div className="text-xs font-medium" style={{ color: '#1e3a8a' }}>
                     Đã chọn: {admins.find(a => a.id === parseInt(selectedAdminId))?.name || 'Admin'}
                   </div>
                 </div>
               )}
               {loading && (
-                <p className="text-xs text-gray-500 mt-1">Đang tải danh sách admin...</p>
+                <p className="text-xs mt-1" style={{ color: '#6b7280' }}>Đang tải danh sách admin...</p>
               )}
             </div>
           )}
 
           {/* Collaborator Info (only for Admin) */}
           {userType === 'admin' && collaboratorId && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <div className="text-xs font-semibold text-blue-900 mb-1">Gửi đến CTV</div>
-              <div className="text-sm text-blue-800">
+            <div className="border rounded-lg p-3" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
+              <div className="text-xs font-semibold mb-1" style={{ color: '#1e3a8a' }}>Gửi đến CTV</div>
+              <div className="text-sm" style={{ color: '#1e40af' }}>
                 Tin nhắn sẽ được gửi đến CTV tạo đơn tiến cử này
               </div>
             </div>
@@ -216,35 +233,50 @@ const SendMessageModal = ({
 
           {/* Message Input */}
           <div>
-            <label className="block text-xs font-semibold text-gray-900 mb-2">
-              Nội dung tin nhắn <span className="text-red-500">*</span>
+            <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+              Nội dung tin nhắn <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Nhập tin nhắn..."
               rows="6"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none resize-none"
+              style={{ borderColor: '#d1d5db' }}
               required
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs mt-1" style={{ color: '#6b7280' }}>
               Gợi ý: Sử dụng "@{jobApplicationId} đặt lịch hẹn phỏng vấn/nyusha vào ngày DD/MM/YYYY HH:mm nhé" để đặt lịch
             </p>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t" style={{ borderColor: '#e5e7eb' }}>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors"
+              onMouseEnter={() => setHoveredCancelButton(true)}
+              onMouseLeave={() => setHoveredCancelButton(false)}
+              className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+              style={{
+                backgroundColor: hoveredCancelButton ? '#e5e7eb' : '#f3f4f6',
+                color: '#374151'
+              }}
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={sending || (userType === 'ctv' && !selectedAdminId)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              onMouseEnter={() => setHoveredSubmitButton(true)}
+              onMouseLeave={() => setHoveredSubmitButton(false)}
+              className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
+              style={{
+                backgroundColor: hoveredSubmitButton ? '#2563eb' : '#2563eb',
+                color: 'white',
+                opacity: (sending || (userType === 'ctv' && !selectedAdminId)) ? 0.5 : 1,
+                cursor: (sending || (userType === 'ctv' && !selectedAdminId)) ? 'not-allowed' : 'pointer'
+              }}
             >
               <Send className="w-4 h-4" />
               {sending ? 'Đang gửi...' : 'Gửi tin nhắn'}

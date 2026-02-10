@@ -33,6 +33,15 @@ const AdminCandidateDetailPage = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('personal');
   const [deleting, setDeleting] = useState(false);
+  
+  // Hover states
+  const [hoveredBackButton, setHoveredBackButton] = useState(false);
+  const [hoveredEditButton, setHoveredEditButton] = useState(false);
+  const [hoveredDeleteButton, setHoveredDeleteButton] = useState(false);
+  const [hoveredBackToListButton, setHoveredBackToListButton] = useState(false);
+  const [hoveredTabIndex, setHoveredTabIndex] = useState(null);
+  const [hoveredDownloadCVButton, setHoveredDownloadCVButton] = useState(false);
+  const [hoveredDownloadOtherButton, setHoveredDownloadOtherButton] = useState(false);
 
   useEffect(() => {
     loadCandidateDetail();
@@ -104,9 +113,9 @@ const AdminCandidateDetailPage = () => {
   };
 
   const getStatusColor = (status) => {
-    if (status === 1) return 'bg-green-100 text-green-800 border-green-300';
-    if (status === 0) return 'bg-gray-100 text-gray-800 border-gray-300';
-    return 'bg-red-100 text-red-800 border-red-300';
+    if (status === 1) return { backgroundColor: '#dcfce7', color: '#166534', borderColor: '#86efac' };
+    if (status === 0) return { backgroundColor: '#f3f4f6', color: '#1f2937', borderColor: '#d1d5db' };
+    return { backgroundColor: '#fee2e2', color: '#991b1b', borderColor: '#fca5a5' };
   };
 
   const downloadCV = async (cvPath) => {
@@ -155,18 +164,24 @@ const AdminCandidateDetailPage = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#2563eb' }}></div>
       </div>
     );
   }
 
   if (error || !candidate) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-        <p className="text-sm text-red-600">{error || 'Không tìm thấy thông tin ứng viên'}</p>
+      <div className="rounded-lg border p-8 text-center" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+        <p className="text-sm" style={{ color: '#dc2626' }}>{error || 'Không tìm thấy thông tin ứng viên'}</p>
         <button
           onClick={() => navigate('/admin/candidates')}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700"
+          onMouseEnter={() => setHoveredBackToListButton(true)}
+          onMouseLeave={() => setHoveredBackToListButton(false)}
+          className="mt-4 px-4 py-2 rounded-lg text-xs font-semibold"
+          style={{
+            backgroundColor: hoveredBackToListButton ? '#1d4ed8' : '#2563eb',
+            color: 'white'
+          }}
         >
           Quay lại danh sách
         </button>
@@ -198,34 +213,45 @@ const AdminCandidateDetailPage = () => {
   return (
     <div className="space-y-3">
       {/* Header */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center justify-between">
+      <div className="rounded-lg p-4 border flex items-center justify-between" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/admin/candidates')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            onMouseEnter={() => setHoveredBackButton(true)}
+            onMouseLeave={() => setHoveredBackButton(false)}
+            className="p-2 rounded-lg transition-colors"
+            style={{
+              backgroundColor: hoveredBackButton ? '#f3f4f6' : 'transparent'
+            }}
           >
-            <ArrowLeft className="w-4 h-4 text-gray-600" />
+            <ArrowLeft className="w-4 h-4" style={{ color: '#4b5563' }} />
           </button>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">Chi tiết ứng viên</h1>
-            <p className="text-xs text-gray-500 mt-1">
+            <h1 className="text-lg font-bold" style={{ color: '#111827' }}>Chi tiết ứng viên</h1>
+            <p className="text-xs mt-1" style={{ color: '#6b7280' }}>
               {candidate.code || candidateId} - {candidate.name || 'N/A'}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(candidate.status)}`}>
+          <span className="px-3 py-1 rounded-full text-xs font-medium border" style={getStatusColor(candidate.status)}>
             {formatStatus(candidate.status)}
           </span>
           {candidate.isDuplicate && (
-            <div className="flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium border border-yellow-300">
+            <div className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border" style={{ backgroundColor: '#fefce8', color: '#854d0e', borderColor: '#fde047' }}>
               <AlertTriangle className="w-3.5 h-3.5" />
               Trùng lặp
             </div>
           )}
           <button
             onClick={() => navigate(`/admin/candidates/${candidateId}/edit`)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+            onMouseEnter={() => setHoveredEditButton(true)}
+            onMouseLeave={() => setHoveredEditButton(false)}
+            className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredEditButton ? '#1d4ed8' : '#2563eb',
+              color: 'white'
+            }}
           >
             <Edit className="w-3.5 h-3.5" />
             Chỉnh sửa
@@ -233,7 +259,17 @@ const AdminCandidateDetailPage = () => {
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+            onMouseEnter={() => !deleting && setHoveredDeleteButton(true)}
+            onMouseLeave={() => setHoveredDeleteButton(false)}
+            className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: deleting
+                ? '#fca5a5'
+                : (hoveredDeleteButton ? '#b91c1c' : '#dc2626'),
+              color: 'white',
+              opacity: deleting ? 0.5 : 1,
+              cursor: deleting ? 'not-allowed' : 'pointer'
+            }}
           >
             <Trash2 className="w-3.5 h-3.5" />
             Xóa
@@ -242,19 +278,27 @@ const AdminCandidateDetailPage = () => {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="flex border-b border-gray-200 overflow-x-auto">
-          {tabs.map((tab) => {
+      <div className="rounded-lg border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+        <div className="flex border-b overflow-x-auto" style={{ borderColor: '#e5e7eb' }}>
+          {tabs.map((tab, index) => {
             const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'border-blue-600 text-blue-600 bg-blue-50'
-                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
+                onMouseEnter={() => !isActive && setHoveredTabIndex(index)}
+                onMouseLeave={() => setHoveredTabIndex(null)}
+                className="flex items-center gap-2 px-4 py-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap"
+                style={{
+                  borderColor: isActive ? '#2563eb' : 'transparent',
+                  color: isActive 
+                    ? '#2563eb' 
+                    : (hoveredTabIndex === index ? '#111827' : '#4b5563'),
+                  backgroundColor: isActive 
+                    ? '#eff6ff' 
+                    : (hoveredTabIndex === index ? '#f9fafb' : 'transparent')
+                }}
               >
                 <Icon className="w-4 h-4" />
                 {tab.label}
@@ -268,65 +312,65 @@ const AdminCandidateDetailPage = () => {
           {activeTab === 'personal' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Mã CV</label>
-                <p className="text-sm text-gray-900 font-medium">{candidate.code || '—'}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Mã CV</label>
+                <p className="text-sm font-medium" style={{ color: '#111827' }}>{candidate.code || '—'}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Họ tên (Kanji)</label>
-                <p className="text-sm text-gray-900">{candidate.name || '—'}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Họ tên (Kanji)</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{candidate.name || '—'}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Họ tên (Kana)</label>
-                <p className="text-sm text-gray-900">{candidate.furigana || '—'}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Họ tên (Kana)</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{candidate.furigana || '—'}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Ngày sinh</label>
-                <p className="text-sm text-gray-900">{formatDate(candidate.birthDate)}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Ngày sinh</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{formatDate(candidate.birthDate)}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Tuổi</label>
-                <p className="text-sm text-gray-900">{candidate.age || '—'}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Tuổi</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{candidate.age || '—'}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Giới tính</label>
-                <p className="text-sm text-gray-900">{formatGender(candidate.gender)}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Giới tính</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{formatGender(candidate.gender)}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Email</label>
-                <p className="text-sm text-gray-900 flex items-center gap-1">
-                  <Mail className="w-3.5 h-3.5 text-gray-400" />
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Email</label>
+                <p className="text-sm flex items-center gap-1" style={{ color: '#111827' }}>
+                  <Mail className="w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                   {candidate.email || '—'}
                 </p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Số điện thoại</label>
-                <p className="text-sm text-gray-900 flex items-center gap-1">
-                  <Phone className="w-3.5 h-3.5 text-gray-400" />
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Số điện thoại</label>
+                <p className="text-sm flex items-center gap-1" style={{ color: '#111827' }}>
+                  <Phone className="w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                   {candidate.phone || '—'}
                 </p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Mã bưu điện</label>
-                <p className="text-sm text-gray-900">{candidate.postalCode || '—'}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Mã bưu điện</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{candidate.postalCode || '—'}</p>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Địa chỉ</label>
-                <p className="text-sm text-gray-900 flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Địa chỉ</label>
+                <p className="text-sm flex items-center gap-1" style={{ color: '#111827' }}>
+                  <MapPin className="w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                   {candidate.addressCurrent || candidate.address || '—'}
                 </p>
               </div>
               {candidate.collaborator && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">CTV</label>
-                  <p className="text-sm text-gray-900">
+                  <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>CTV</label>
+                  <p className="text-sm" style={{ color: '#111827' }}>
                     {candidate.collaborator.code || candidate.collaborator.name || '—'}
                   </p>
                 </div>
               )}
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Ngày nhận</label>
-                <p className="text-sm text-gray-900">{formatDate(candidate.receiveDate || candidate.createdAt)}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Ngày nhận</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{formatDate(candidate.receiveDate || candidate.createdAt)}</p>
               </div>
             </div>
           )}
@@ -334,26 +378,26 @@ const AdminCandidateDetailPage = () => {
           {activeTab === 'education' && (
             <div className="space-y-4">
               {educations.length === 0 ? (
-                <p className="text-sm text-gray-500">Chưa có thông tin học vấn</p>
+                <p className="text-sm" style={{ color: '#6b7280' }}>Chưa có thông tin học vấn</p>
               ) : (
                 educations.map((edu, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4">
+                  <div key={index} className="border rounded-lg p-4" style={{ borderColor: '#e5e7eb' }}>
                     <div className="flex items-center gap-2 mb-2">
-                      <GraduationCap className="w-4 h-4 text-blue-600" />
-                      <span className="text-xs font-semibold text-gray-500">#{index + 1}</span>
+                      <GraduationCap className="w-4 h-4" style={{ color: '#2563eb' }} />
+                      <span className="text-xs font-semibold" style={{ color: '#6b7280' }}>#{index + 1}</span>
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-gray-500 mb-1">Năm</label>
-                        <p className="text-sm text-gray-900">{edu.year || '—'}</p>
+                        <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Năm</label>
+                        <p className="text-sm" style={{ color: '#111827' }}>{edu.year || '—'}</p>
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-500 mb-1">Tháng</label>
-                        <p className="text-sm text-gray-900">{edu.month || '—'}</p>
+                        <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Tháng</label>
+                        <p className="text-sm" style={{ color: '#111827' }}>{edu.month || '—'}</p>
                       </div>
                       <div className="col-span-1">
-                        <label className="block text-xs font-semibold text-gray-500 mb-1">Nội dung</label>
-                        <p className="text-sm text-gray-900">{edu.content || '—'}</p>
+                        <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Nội dung</label>
+                        <p className="text-sm" style={{ color: '#111827' }}>{edu.content || '—'}</p>
                       </div>
                     </div>
                   </div>
@@ -365,38 +409,38 @@ const AdminCandidateDetailPage = () => {
           {activeTab === 'work' && (
             <div className="space-y-4">
               {workExperiences.length === 0 ? (
-                <p className="text-sm text-gray-500">Chưa có thông tin kinh nghiệm làm việc</p>
+                <p className="text-sm" style={{ color: '#6b7280' }}>Chưa có thông tin kinh nghiệm làm việc</p>
               ) : (
                 workExperiences.map((work, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4">
+                  <div key={index} className="border rounded-lg p-4" style={{ borderColor: '#e5e7eb' }}>
                     <div className="flex items-center gap-2 mb-3">
-                      <Briefcase className="w-4 h-4 text-blue-600" />
-                      <span className="text-xs font-semibold text-gray-500">#{index + 1}</span>
+                      <Briefcase className="w-4 h-4" style={{ color: '#2563eb' }} />
+                      <span className="text-xs font-semibold" style={{ color: '#6b7280' }}>#{index + 1}</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-gray-500 mb-1">Thời gian</label>
-                        <p className="text-sm text-gray-900">{work.period || '—'}</p>
+                        <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Thời gian</label>
+                        <p className="text-sm" style={{ color: '#111827' }}>{work.period || '—'}</p>
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-500 mb-1">Tên công ty</label>
-                        <p className="text-sm text-gray-900">{work.company_name || '—'}</p>
+                        <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Tên công ty</label>
+                        <p className="text-sm" style={{ color: '#111827' }}>{work.company_name || '—'}</p>
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-500 mb-1">Lĩnh vực kinh doanh</label>
-                        <p className="text-sm text-gray-900">{work.business_purpose || '—'}</p>
+                        <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Lĩnh vực kinh doanh</label>
+                        <p className="text-sm" style={{ color: '#111827' }}>{work.business_purpose || '—'}</p>
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-500 mb-1">Quy mô / Vai trò</label>
-                        <p className="text-sm text-gray-900">{work.scale_role || '—'}</p>
+                        <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Quy mô / Vai trò</label>
+                        <p className="text-sm" style={{ color: '#111827' }}>{work.scale_role || '—'}</p>
                       </div>
                       <div className="md:col-span-2">
-                        <label className="block text-xs font-semibold text-gray-500 mb-1">Mô tả công việc</label>
-                        <p className="text-sm text-gray-900">{work.description || '—'}</p>
+                        <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Mô tả công việc</label>
+                        <p className="text-sm" style={{ color: '#111827' }}>{work.description || '—'}</p>
                       </div>
                       <div className="md:col-span-2">
-                        <label className="block text-xs font-semibold text-gray-500 mb-1">Công cụ, công nghệ</label>
-                        <p className="text-sm text-gray-900">{work.tools_tech || '—'}</p>
+                        <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Công cụ, công nghệ</label>
+                        <p className="text-sm" style={{ color: '#111827' }}>{work.tools_tech || '—'}</p>
                       </div>
                     </div>
                   </div>
@@ -408,30 +452,30 @@ const AdminCandidateDetailPage = () => {
           {activeTab === 'skills' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-2">Kỹ năng kỹ thuật</label>
-                <p className="text-sm text-gray-900 whitespace-pre-wrap">{candidate.technicalSkills || '—'}</p>
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#6b7280' }}>Kỹ năng kỹ thuật</label>
+                <p className="text-sm whitespace-pre-wrap" style={{ color: '#111827' }}>{candidate.technicalSkills || '—'}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-2">Chứng chỉ</label>
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#6b7280' }}>Chứng chỉ</label>
                 {certificates.length === 0 ? (
-                  <p className="text-sm text-gray-500">Chưa có chứng chỉ</p>
+                  <p className="text-sm" style={{ color: '#6b7280' }}>Chưa có chứng chỉ</p>
                 ) : (
                   <div className="space-y-2">
                     {certificates.map((cert, index) => (
-                      <div key={index} className="flex items-center gap-3 border border-gray-200 rounded-lg p-3">
-                        <Award className="w-4 h-4 text-blue-600" />
+                      <div key={index} className="flex items-center gap-3 border rounded-lg p-3" style={{ borderColor: '#e5e7eb' }}>
+                        <Award className="w-4 h-4" style={{ color: '#2563eb' }} />
                         <div className="flex-1 grid grid-cols-3 gap-3">
                           <div>
-                            <span className="text-xs text-gray-500">Năm: </span>
-                            <span className="text-sm text-gray-900">{cert.year || '—'}</span>
+                            <span className="text-xs" style={{ color: '#6b7280' }}>Năm: </span>
+                            <span className="text-sm" style={{ color: '#111827' }}>{cert.year || '—'}</span>
                           </div>
                           <div>
-                            <span className="text-xs text-gray-500">Tháng: </span>
-                            <span className="text-sm text-gray-900">{cert.month || '—'}</span>
+                            <span className="text-xs" style={{ color: '#6b7280' }}>Tháng: </span>
+                            <span className="text-sm" style={{ color: '#111827' }}>{cert.month || '—'}</span>
                           </div>
                           <div>
-                            <span className="text-xs text-gray-500">Tên: </span>
-                            <span className="text-sm text-gray-900">{cert.name || '—'}</span>
+                            <span className="text-xs" style={{ color: '#6b7280' }}>Tên: </span>
+                            <span className="text-sm" style={{ color: '#111827' }}>{cert.name || '—'}</span>
                           </div>
                         </div>
                       </div>
@@ -445,16 +489,16 @@ const AdminCandidateDetailPage = () => {
           {activeTab === 'introduction' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-2">Tóm tắt nghề nghiệp</label>
-                <p className="text-sm text-gray-900 whitespace-pre-wrap">{candidate.careerSummary || '—'}</p>
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#6b7280' }}>Tóm tắt nghề nghiệp</label>
+                <p className="text-sm whitespace-pre-wrap" style={{ color: '#111827' }}>{candidate.careerSummary || '—'}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-2">Điểm mạnh</label>
-                <p className="text-sm text-gray-900 whitespace-pre-wrap">{candidate.strengths || '—'}</p>
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#6b7280' }}>Điểm mạnh</label>
+                <p className="text-sm whitespace-pre-wrap" style={{ color: '#111827' }}>{candidate.strengths || '—'}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-2">Động lực ứng tuyển</label>
-                <p className="text-sm text-gray-900 whitespace-pre-wrap">{candidate.motivation || '—'}</p>
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#6b7280' }}>Động lực ứng tuyển</label>
+                <p className="text-sm whitespace-pre-wrap" style={{ color: '#111827' }}>{candidate.motivation || '—'}</p>
               </div>
             </div>
           )}
@@ -462,24 +506,24 @@ const AdminCandidateDetailPage = () => {
           {activeTab === 'preferences' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Lương hiện tại</label>
-                <p className="text-sm text-gray-900">{candidate.currentSalary || '—'}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Lương hiện tại</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{candidate.currentSalary || '—'}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Lương mong muốn</label>
-                <p className="text-sm text-gray-900">{candidate.desiredSalary || '—'}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Lương mong muốn</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{candidate.desiredSalary || '—'}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Vị trí mong muốn</label>
-                <p className="text-sm text-gray-900">{candidate.desiredPosition || '—'}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Vị trí mong muốn</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{candidate.desiredPosition || '—'}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Địa điểm mong muốn</label>
-                <p className="text-sm text-gray-900">{candidate.desiredLocation || '—'}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Địa điểm mong muốn</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{candidate.desiredLocation || '—'}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">Ngày bắt đầu mong muốn</label>
-                <p className="text-sm text-gray-900">{candidate.desiredStartDate || '—'}</p>
+                <label className="block text-xs font-semibold mb-1" style={{ color: '#6b7280' }}>Ngày bắt đầu mong muốn</label>
+                <p className="text-sm" style={{ color: '#111827' }}>{candidate.desiredStartDate || '—'}</p>
               </div>
             </div>
           )}
@@ -487,18 +531,24 @@ const AdminCandidateDetailPage = () => {
           {activeTab === 'cv' && (
             <div className="space-y-4">
               {candidate.curriculumVitae ? (
-                <div className="border border-gray-200 rounded-lg p-4">
+                <div className="border rounded-lg p-4" style={{ borderColor: '#e5e7eb' }}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <FileText className="w-8 h-8 text-blue-600" />
+                      <FileText className="w-8 h-8" style={{ color: '#2563eb' }} />
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">File CV</p>
-                        <p className="text-xs text-gray-500">{candidate.curriculumVitae}</p>
+                        <p className="text-sm font-semibold" style={{ color: '#111827' }}>File CV</p>
+                        <p className="text-xs" style={{ color: '#6b7280' }}>{candidate.curriculumVitae}</p>
                       </div>
                     </div>
                     <button
                       onClick={() => downloadCV(candidate.curriculumVitae)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+                      onMouseEnter={() => setHoveredDownloadCVButton(true)}
+                      onMouseLeave={() => setHoveredDownloadCVButton(false)}
+                      className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+                      style={{
+                        backgroundColor: hoveredDownloadCVButton ? '#1d4ed8' : '#2563eb',
+                        color: 'white'
+                      }}
                     >
                       <Download className="w-3.5 h-3.5" />
                       Tải xuống
@@ -506,21 +556,27 @@ const AdminCandidateDetailPage = () => {
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">Chưa có file CV</p>
+                <p className="text-sm" style={{ color: '#6b7280' }}>Chưa có file CV</p>
               )}
               {candidate.otherDocuments && (
-                <div className="border border-gray-200 rounded-lg p-4">
+                <div className="border rounded-lg p-4" style={{ borderColor: '#e5e7eb' }}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <FileText className="w-8 h-8 text-gray-600" />
+                      <FileText className="w-8 h-8" style={{ color: '#4b5563' }} />
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">Tài liệu khác</p>
-                        <p className="text-xs text-gray-500">{candidate.otherDocuments}</p>
+                        <p className="text-sm font-semibold" style={{ color: '#111827' }}>Tài liệu khác</p>
+                        <p className="text-xs" style={{ color: '#6b7280' }}>{candidate.otherDocuments}</p>
                       </div>
                     </div>
                     <button
                       onClick={() => downloadCV(candidate.otherDocuments)}
-                      className="px-4 py-2 bg-gray-600 text-white rounded-lg text-xs font-semibold hover:bg-gray-700 transition-colors flex items-center gap-1.5"
+                      onMouseEnter={() => setHoveredDownloadOtherButton(true)}
+                      onMouseLeave={() => setHoveredDownloadOtherButton(false)}
+                      className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+                      style={{
+                        backgroundColor: hoveredDownloadOtherButton ? '#4b5563' : '#6b7280',
+                        color: 'white'
+                      }}
                     >
                       <Download className="w-3.5 h-3.5" />
                       Tải xuống

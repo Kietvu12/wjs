@@ -40,6 +40,13 @@ const AddCampaignPage = () => {
   const [showJobDropdown, setShowJobDropdown] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  
+  // Hover states
+  const [hoveredBackButton, setHoveredBackButton] = useState(false);
+  const [hoveredCancelButton, setHoveredCancelButton] = useState(false);
+  const [hoveredSaveButton, setHoveredSaveButton] = useState(false);
+  const [hoveredJobItemIndex, setHoveredJobItemIndex] = useState(null);
+  const [hoveredRemoveJobButtonIndex, setHoveredRemoveJobButtonIndex] = useState(null);
 
   useEffect(() => {
     loadJobs(''); // Load all jobs initially
@@ -239,23 +246,34 @@ const AddCampaignPage = () => {
   return (
     <div className="space-y-3">
       {/* Header */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center justify-between">
+      <div className="rounded-lg p-4 border flex items-center justify-between" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(campaignId ? `/admin/campaigns/${campaignId}` : '/admin/campaigns')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            onMouseEnter={() => setHoveredBackButton(true)}
+            onMouseLeave={() => setHoveredBackButton(false)}
+            className="p-2 rounded-lg transition-colors"
+            style={{
+              backgroundColor: hoveredBackButton ? '#f3f4f6' : 'transparent'
+            }}
           >
-            <ArrowLeft className="w-4 h-4 text-gray-600" />
+            <ArrowLeft className="w-4 h-4" style={{ color: '#4b5563' }} />
           </button>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">{campaignId ? 'Chỉnh sửa chiến dịch' : 'Tạo chiến dịch'}</h1>
-            <p className="text-xs text-gray-500 mt-1">{campaignId ? 'Cập nhật thông tin chiến dịch' : 'Thêm thông tin chiến dịch tuyển dụng mới vào hệ thống'}</p>
+            <h1 className="text-lg font-bold" style={{ color: '#111827' }}>{campaignId ? 'Chỉnh sửa chiến dịch' : 'Tạo chiến dịch'}</h1>
+            <p className="text-xs mt-1" style={{ color: '#6b7280' }}>{campaignId ? 'Cập nhật thông tin chiến dịch' : 'Thêm thông tin chiến dịch tuyển dụng mới vào hệ thống'}</p>
           </div>
         </div>
         <div className="flex gap-2">
           <button
             onClick={handleCancel}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center gap-1.5"
+            onMouseEnter={() => setHoveredCancelButton(true)}
+            onMouseLeave={() => setHoveredCancelButton(false)}
+            className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredCancelButton ? '#e5e7eb' : '#f3f4f6',
+              color: '#374151'
+            }}
           >
             <X className="w-3.5 h-3.5" />
             Hủy
@@ -263,7 +281,17 @@ const AddCampaignPage = () => {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => !loading && setHoveredSaveButton(true)}
+            onMouseLeave={() => setHoveredSaveButton(false)}
+            className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: loading 
+                ? '#93c5fd' 
+                : (hoveredSaveButton ? '#1d4ed8' : '#2563eb'),
+              color: 'white',
+              opacity: loading ? 0.5 : 1,
+              cursor: loading ? 'not-allowed' : 'pointer'
+            }}
           >
             <Save className="w-3.5 h-3.5" />
             {loading ? (campaignId ? 'Đang cập nhật...' : 'Đang lưu...') : (campaignId ? 'Cập nhật chiến dịch' : 'Lưu chiến dịch')}
@@ -276,22 +304,34 @@ const AddCampaignPage = () => {
         {/* Left Column */}
         <div className="space-y-3">
           {/* Basic Information */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <Target className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <Target className="w-4 h-4" style={{ color: '#2563eb' }} />
               Thông tin cơ bản
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
-                  Trạng thái <span className="text-red-500">*</span>
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+                  Trạng thái <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <select
                   name="status"
                   value={formData.status}
                   onChange={(e) => setFormData(prev => ({ ...prev, status: parseInt(e.target.value) }))}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full px-3 py-2 border rounded-lg text-xs"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 >
                   <option value="0">Ngừng hoạt động</option>
                   <option value="1">Đang hoạt động</option>
@@ -299,8 +339,8 @@ const AddCampaignPage = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
-                  Tên chiến dịch <span className="text-red-500">*</span>
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+                  Tên chiến dịch <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                   <input
                     type="text"
@@ -309,14 +349,24 @@ const AddCampaignPage = () => {
                     onChange={handleInputChange}
                     placeholder="VD: Chiến dịch Tuyển dụng Mùa Xuân 2025"
                     required
-                    className={`w-full px-3 py-2 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-                      errors.name ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: errors.name ? '#ef4444' : '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = errors.name ? '#ef4444' : '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
-                  {errors.name && <p className="text-[10px] text-red-500 mt-1">{errors.name}</p>}
+                  {errors.name && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.name}</p>}
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Mô tả chiến dịch
                 </label>
                 <textarea
@@ -325,48 +375,68 @@ const AddCampaignPage = () => {
                   onChange={handleInputChange}
                   placeholder="Mô tả chi tiết về chiến dịch tuyển dụng, mục tiêu, đối tượng tuyển dụng..."
                   rows="5"
-                  className={`w-full px-3 py-2 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none ${
-                    errors.description ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className="w-full px-3 py-2 border rounded-lg text-xs resize-none"
+                  style={{
+                    borderColor: errors.description ? '#ef4444' : '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = errors.description ? '#ef4444' : '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
-                {errors.description && <p className="text-[10px] text-red-500 mt-1">{errors.description}</p>}
+                {errors.description && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.description}</p>}
               </div>
             </div>
           </div>
 
           {/* Time Period */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <Calendar className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <Calendar className="w-4 h-4" style={{ color: '#2563eb' }} />
               Thời gian chiến dịch
             </h2>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
-                    Ngày bắt đầu <span className="text-red-500">*</span>
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+                    Ngày bắt đầu <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                     <input
                       type="date"
                       name="startDate"
                       value={formData.startDate}
                       onChange={handleInputChange}
                       required
-                      className={`w-full pl-10 pr-3 py-2 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-                        errors.startDate ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className="w-full pl-10 pr-3 py-2 border rounded-lg text-xs"
+                      style={{
+                        borderColor: errors.startDate ? '#ef4444' : '#d1d5db',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#2563eb';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = errors.startDate ? '#ef4444' : '#d1d5db';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
-                    {errors.startDate && <p className="text-[10px] text-red-500 mt-1">{errors.startDate}</p>}
+                    {errors.startDate && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.startDate}</p>}
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
-                    Ngày kết thúc <span className="text-red-500">*</span>
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+                    Ngày kết thúc <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                     <input
                       type="date"
                       name="endDate"
@@ -374,11 +444,21 @@ const AddCampaignPage = () => {
                       onChange={handleInputChange}
                       required
                       min={formData.startDate}
-                      className={`w-full pl-10 pr-3 py-2 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-                        errors.endDate ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className="w-full pl-10 pr-3 py-2 border rounded-lg text-xs"
+                      style={{
+                        borderColor: errors.endDate ? '#ef4444' : '#d1d5db',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#2563eb';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = errors.endDate ? '#ef4444' : '#d1d5db';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
-                    {errors.endDate && <p className="text-[10px] text-red-500 mt-1">{errors.endDate}</p>}
+                    {errors.endDate && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.endDate}</p>}
                   </div>
                 </div>
               </div>
@@ -389,9 +469,13 @@ const AddCampaignPage = () => {
                     name="autoStart"
                     checked={formData.autoStart}
                     onChange={handleInputChange}
-                    className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+                    className="w-3.5 h-3.5 rounded"
+                    style={{
+                      accentColor: '#2563eb',
+                      borderColor: '#d1d5db'
+                    }}
                   />
-                  <label className="text-xs font-semibold text-gray-900">
+                  <label className="text-xs font-semibold" style={{ color: '#111827' }}>
                     Tự động kích hoạt khi đến ngày bắt đầu
                   </label>
                 </div>
@@ -401,9 +485,13 @@ const AddCampaignPage = () => {
                     name="autoEnd"
                     checked={formData.autoEnd}
                     onChange={handleInputChange}
-                    className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+                    className="w-3.5 h-3.5 rounded"
+                    style={{
+                      accentColor: '#2563eb',
+                      borderColor: '#d1d5db'
+                    }}
                   />
-                  <label className="text-xs font-semibold text-gray-900">
+                  <label className="text-xs font-semibold" style={{ color: '#111827' }}>
                     Tự động kết thúc khi đến ngày kết thúc
                   </label>
                 </div>
@@ -412,15 +500,15 @@ const AddCampaignPage = () => {
           </div>
 
           {/* Campaign Settings */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <Target className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <Target className="w-4 h-4" style={{ color: '#2563eb' }} />
               Cài đặt chiến dịch
             </h2>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Số CV tối đa
                   </label>
                   <input
@@ -430,11 +518,23 @@ const AddCampaignPage = () => {
                     onChange={handleInputChange}
                     placeholder="VD: 100"
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Phần trăm (%)
                   </label>
                   <input
@@ -445,7 +545,19 @@ const AddCampaignPage = () => {
                     placeholder="VD: 10"
                     min="0"
                     max="100"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
               </div>
@@ -456,67 +568,79 @@ const AddCampaignPage = () => {
         {/* Right Column */}
         <div className="space-y-3">
           {/* Campaign Statistics Preview */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <TrendingUp className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <TrendingUp className="w-4 h-4" style={{ color: '#2563eb' }} />
               Thống kê (Dự kiến)
             </h2>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="rounded-lg p-3 border" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
                   <div className="flex items-center gap-2 mb-1">
-                    <Briefcase className="w-3.5 h-3.5 text-blue-600" />
-                    <span className="text-[10px] font-medium text-blue-800">Số job</span>
+                    <Briefcase className="w-3.5 h-3.5" style={{ color: '#2563eb' }} />
+                    <span className="text-[10px] font-medium" style={{ color: '#1e40af' }}>Số job</span>
                   </div>
-                  <div className="text-lg font-bold text-blue-900">{selectedJobIds.length}</div>
-                  <p className="text-[10px] text-blue-700 mt-1">Công việc đã chọn</p>
+                  <div className="text-lg font-bold" style={{ color: '#1e3a8a' }}>{selectedJobIds.length}</div>
+                  <p className="text-[10px] mt-1" style={{ color: '#1d4ed8' }}>Công việc đã chọn</p>
                 </div>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <div className="rounded-lg p-3 border" style={{ backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' }}>
                   <div className="flex items-center gap-2 mb-1">
-                    <Users className="w-3.5 h-3.5 text-green-600" />
-                    <span className="text-[10px] font-medium text-green-800">Ứng tuyển</span>
+                    <Users className="w-3.5 h-3.5" style={{ color: '#16a34a' }} />
+                    <span className="text-[10px] font-medium" style={{ color: '#166534' }}>Ứng tuyển</span>
                   </div>
-                  <div className="text-lg font-bold text-green-900">0</div>
-                  <p className="text-[10px] text-green-700 mt-1">Sẽ được cập nhật sau</p>
+                  <div className="text-lg font-bold" style={{ color: '#14532d' }}>0</div>
+                  <p className="text-[10px] mt-1" style={{ color: '#15803d' }}>Sẽ được cập nhật sau</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                <div className="rounded-lg p-3 border" style={{ backgroundColor: '#faf5ff', borderColor: '#e9d5ff' }}>
                   <div className="flex items-center gap-2 mb-1">
-                    <TrendingUp className="w-3.5 h-3.5 text-purple-600" />
-                    <span className="text-[10px] font-medium text-purple-800">Tiến cử</span>
+                    <TrendingUp className="w-3.5 h-3.5" style={{ color: '#9333ea' }} />
+                    <span className="text-[10px] font-medium" style={{ color: '#6b21a8' }}>Tiến cử</span>
                   </div>
-                  <div className="text-lg font-bold text-purple-900">0</div>
-                  <p className="text-[10px] text-purple-700 mt-1">Sẽ được cập nhật sau</p>
+                  <div className="text-lg font-bold" style={{ color: '#581c87' }}>0</div>
+                  <p className="text-[10px] mt-1" style={{ color: '#7e22ce' }}>Sẽ được cập nhật sau</p>
                 </div>
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                <div className="rounded-lg p-3 border" style={{ backgroundColor: '#fff7ed', borderColor: '#fed7aa' }}>
                   <div className="flex items-center gap-2 mb-1">
-                    <Clock className="w-3.5 h-3.5 text-orange-600" />
-                    <span className="text-[10px] font-medium text-orange-800">Lượt xem</span>
+                    <Clock className="w-3.5 h-3.5" style={{ color: '#ea580c' }} />
+                    <span className="text-[10px] font-medium" style={{ color: '#9a3412' }}>Lượt xem</span>
                   </div>
-                  <div className="text-lg font-bold text-orange-900">0</div>
-                  <p className="text-[10px] text-orange-700 mt-1">Sẽ được cập nhật sau</p>
+                  <div className="text-lg font-bold" style={{ color: '#7c2d12' }}>0</div>
+                  <p className="text-[10px] mt-1" style={{ color: '#c2410c' }}>Sẽ được cập nhật sau</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Additional Information */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <FileText className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <FileText className="w-4 h-4" style={{ color: '#2563eb' }} />
               Thông tin bổ sung
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Ghi chú nội bộ
                 </label>
                 <textarea
                   name="notes"
                   placeholder="Ghi chú nội bộ về chiến dịch (chỉ admin mới thấy)..."
                   rows="4"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                  className="w-full px-3 py-2 border rounded-lg text-xs resize-none"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -525,9 +649,13 @@ const AddCampaignPage = () => {
                   name="isActive"
                   checked={formData.isActive}
                   onChange={handleInputChange}
-                  className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
+                  className="w-3.5 h-3.5 rounded"
+                  style={{
+                    accentColor: '#2563eb',
+                    borderColor: '#d1d5db'
+                  }}
                 />
-                <label className="text-xs font-semibold text-gray-900">
+                <label className="text-xs font-semibold" style={{ color: '#111827' }}>
                   Kích hoạt chiến dịch ngay sau khi tạo
                 </label>
               </div>
@@ -535,14 +663,14 @@ const AddCampaignPage = () => {
           </div>
 
           {/* Jobs Selection */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <Briefcase className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <Briefcase className="w-4 h-4" style={{ color: '#2563eb' }} />
               Công việc trong chiến dịch
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Tìm kiếm và chọn công việc
                 </label>
                 <div className="relative job-search-container">
@@ -550,38 +678,56 @@ const AddCampaignPage = () => {
                     type="text"
                     value={jobSearchQuery}
                     onChange={handleJobSearch}
-                    onFocus={() => setShowJobDropdown(true)}
                     placeholder="Nhập mã hoặc tên công việc để tìm kiếm..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                      setShowJobDropdown(true);
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                   {showJobDropdown && filteredJobs.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg max-h-60 overflow-y-auto" style={{ backgroundColor: 'white', borderColor: '#d1d5db', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }}>
                       {filteredJobs
                         .filter(job => !selectedJobIds.includes(job.id.toString()))
-                        .map((job) => (
+                        .map((job, index) => (
                           <div
                             key={job.id}
                             onClick={() => handleSelectJob(job)}
-                            className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                            onMouseEnter={() => setHoveredJobItemIndex(index)}
+                            onMouseLeave={() => setHoveredJobItemIndex(null)}
+                            className="px-3 py-2 cursor-pointer border-b last:border-b-0"
+                            style={{
+                              backgroundColor: hoveredJobItemIndex === index ? '#eff6ff' : 'transparent',
+                              borderColor: '#f3f4f6'
+                            }}
                           >
                             <div className="flex items-center justify-between">
                               <div>
-                                <p className="text-xs font-semibold text-gray-900">
+                                <p className="text-xs font-semibold" style={{ color: '#111827' }}>
                                   [{job.jobCode}] {job.title}
                                 </p>
                                 {job.company && (
-                                  <p className="text-[10px] text-gray-500 mt-0.5">
+                                  <p className="text-[10px] mt-0.5" style={{ color: '#6b7280' }}>
                                     {job.company.name}
                                   </p>
                                 )}
                               </div>
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${
+                              <span className="px-2 py-0.5 rounded text-[10px] font-medium" style={
                                 job.status === 1 
-                                  ? 'bg-green-100 text-green-700' 
+                                  ? { backgroundColor: '#dcfce7', color: '#166534' }
                                   : job.status === 0 
-                                  ? 'bg-gray-100 text-gray-700' 
-                                  : 'bg-red-100 text-red-700'
-                              }`}>
+                                  ? { backgroundColor: '#f3f4f6', color: '#374151' }
+                                  : { backgroundColor: '#fee2e2', color: '#991b1b' }
+                              }>
                                 {job.status === 1 ? 'Published' : job.status === 0 ? 'Draft' : 'Closed'}
                               </span>
                             </div>
@@ -590,27 +736,34 @@ const AddCampaignPage = () => {
                     </div>
                   )}
                 </div>
-                <p className="text-[10px] text-gray-500 mt-1">
+                <p className="text-[10px] mt-1" style={{ color: '#6b7280' }}>
                   Nhập mã hoặc tên công việc để tìm kiếm và chọn
                 </p>
                 {selectedJobIds.length > 0 && (
                   <div className="mt-3 space-y-2">
-                    <p className="text-xs font-semibold text-gray-900">
+                    <p className="text-xs font-semibold" style={{ color: '#111827' }}>
                       Đã chọn ({selectedJobIds.length}):
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {selectedJobIds.map(jobId => {
+                      {selectedJobIds.map((jobId, index) => {
                         const job = jobs.find(j => j.id === parseInt(jobId));
                         return job ? (
                           <span
                             key={jobId}
-                            className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium border border-blue-200"
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium border"
+                            style={{ backgroundColor: '#eff6ff', color: '#1d4ed8', borderColor: '#bfdbfe' }}
                           >
                             [{job.jobCode}] {job.title}
                             <button
                               type="button"
                               onClick={() => handleRemoveJob(jobId)}
-                              className="hover:text-blue-900 hover:bg-blue-100 rounded p-0.5 transition-colors"
+                              onMouseEnter={() => setHoveredRemoveJobButtonIndex(index)}
+                              onMouseLeave={() => setHoveredRemoveJobButtonIndex(null)}
+                              className="rounded p-0.5 transition-colors"
+                              style={{
+                                color: hoveredRemoveJobButtonIndex === index ? '#1e40af' : '#1d4ed8',
+                                backgroundColor: hoveredRemoveJobButtonIndex === index ? '#dbeafe' : 'transparent'
+                              }}
                             >
                               <X className="w-3 h-3" />
                             </button>
@@ -625,14 +778,14 @@ const AddCampaignPage = () => {
           </div>
 
           {/* Campaign Settings */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 pb-3 border-b border-gray-200">
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
               Cài đặt chiến dịch
             </h2>
             <div className="space-y-3">
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-xs font-semibold text-gray-900 mb-2">Lưu ý:</p>
-                <ul className="text-[10px] text-gray-700 space-y-1 list-disc list-inside">
+              <div className="p-3 rounded-lg border" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
+                <p className="text-xs font-semibold mb-2" style={{ color: '#111827' }}>Lưu ý:</p>
+                <ul className="text-[10px] space-y-1 list-disc list-inside" style={{ color: '#374151' }}>
                   <li>Chiến dịch sẽ được hiển thị trên trang công khai sau khi được kích hoạt</li>
                   <li>Bạn có thể chọn công việc để thêm vào chiến dịch ngay khi tạo</li>
                   <li>Thống kê sẽ được cập nhật tự động khi có hoạt động</li>
@@ -645,11 +798,17 @@ const AddCampaignPage = () => {
       </form>
 
       {/* Action Buttons */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-end gap-3">
+      <div className="rounded-lg border p-4 flex items-center justify-end gap-3" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <button
           type="button"
           onClick={handleCancel}
-          className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center gap-2"
+          onMouseEnter={() => setHoveredCancelButton(true)}
+          onMouseLeave={() => setHoveredCancelButton(false)}
+          className="px-5 py-2.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2"
+          style={{
+            backgroundColor: hoveredCancelButton ? '#e5e7eb' : '#f3f4f6',
+            color: '#374151'
+          }}
         >
           <X className="w-3.5 h-3.5" />
           Hủy
@@ -658,7 +817,17 @@ const AddCampaignPage = () => {
           type="submit"
           onClick={handleSubmit}
           disabled={loading}
-          className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          onMouseEnter={() => !loading && setHoveredSaveButton(true)}
+          onMouseLeave={() => setHoveredSaveButton(false)}
+          className="px-5 py-2.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2"
+          style={{
+            backgroundColor: loading 
+              ? '#93c5fd' 
+              : (hoveredSaveButton ? '#1d4ed8' : '#2563eb'),
+            color: 'white',
+            opacity: loading ? 0.5 : 1,
+            cursor: loading ? 'not-allowed' : 'pointer'
+          }}
         >
           <Save className="w-3.5 h-3.5" />
           {loading ? (campaignId ? 'Đang cập nhật...' : 'Đang lưu...') : (campaignId ? 'Cập nhật chiến dịch' : 'Lưu chiến dịch')}

@@ -15,6 +15,16 @@ const AgentHomePageSession4 = () => {
   const [interviews, setInterviews] = useState([]);
   const [naitei, setNaitei] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hoveredViewModeButton, setHoveredViewModeButton] = useState(false);
+  const [hoveredSeeAllButton, setHoveredSeeAllButton] = useState(false);
+  const [hoveredPrevMonthButton, setHoveredPrevMonthButton] = useState(false);
+  const [hoveredNextMonthButton, setHoveredNextMonthButton] = useState(false);
+  const [hoveredDatePickerPrevButton, setHoveredDatePickerPrevButton] = useState(false);
+  const [hoveredDatePickerNextButton, setHoveredDatePickerNextButton] = useState(false);
+  const [hoveredEventCardIndex, setHoveredEventCardIndex] = useState(null);
+  const [hoveredMoreButtonIndex, setHoveredMoreButtonIndex] = useState(null);
+  const [hoveredGoToMeetingButtonIndex, setHoveredGoToMeetingButtonIndex] = useState(null);
+  const [hoveredCalendarDayIndex, setHoveredCalendarDayIndex] = useState(null);
 
   // Load schedule data
   useEffect(() => {
@@ -139,24 +149,36 @@ const AgentHomePageSession4 = () => {
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 h-full flex flex-col">
+    <div className="rounded-lg shadow-sm border h-full flex flex-col" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
       {/* Header */}
-      <div className="p-3 sm:p-4 border-b border-gray-100">
+      <div className="p-3 sm:p-4 border-b" style={{ borderColor: '#f3f4f6' }}>
         <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
-          <h3 className="text-base sm:text-lg font-bold text-gray-900">{t.schedule}</h3>
+          <h3 className="text-base sm:text-lg font-bold" style={{ color: '#111827' }}>{t.schedule}</h3>
           <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={() => setViewMode(viewMode === 'line' ? 'calendar' : 'line')}
-              className="p-1.5 sm:p-2 hover:bg-gray-100 rounded transition-colors"
+              onMouseEnter={() => setHoveredViewModeButton(true)}
+              onMouseLeave={() => setHoveredViewModeButton(false)}
+              className="p-1.5 sm:p-2 rounded transition-colors"
               title={viewMode === 'line' ? 'Switch to Calendar' : 'Switch to List'}
+              style={{
+                backgroundColor: hoveredViewModeButton ? '#f3f4f6' : 'transparent'
+              }}
             >
               {viewMode === 'line' ? (
-                <Grid3x3 className="w-4 h-4 text-gray-600" />
+                <Grid3x3 className="w-4 h-4" style={{ color: '#4b5563' }} />
               ) : (
-                <List className="w-4 h-4 text-gray-600" />
+                <List className="w-4 h-4" style={{ color: '#4b5563' }} />
               )}
             </button>
-            <button className="text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors hidden sm:block">
+            <button 
+              onMouseEnter={() => setHoveredSeeAllButton(true)}
+              onMouseLeave={() => setHoveredSeeAllButton(false)}
+              className="text-xs sm:text-sm font-medium transition-colors hidden sm:block"
+              style={{
+                color: hoveredSeeAllButton ? '#111827' : '#4b5563'
+              }}
+            >
               {t.seeAll}
             </button>
           </div>
@@ -166,73 +188,130 @@ const AgentHomePageSession4 = () => {
         <div className="flex items-center justify-between mb-3">
           <button 
             onClick={() => handleMonthChange(-1)}
-            className="p-1 hover:bg-gray-100 rounded transition-colors"
+            onMouseEnter={() => setHoveredPrevMonthButton(true)}
+            onMouseLeave={() => setHoveredPrevMonthButton(false)}
+            className="p-1 rounded transition-colors"
+            style={{
+              backgroundColor: hoveredPrevMonthButton ? '#f3f4f6' : 'transparent'
+            }}
           >
-            <ChevronLeft className="w-4 h-4 text-gray-600" />
+            <ChevronLeft className="w-4 h-4" style={{ color: '#4b5563' }} />
           </button>
-          <span className="text-sm font-semibold text-gray-900">
+          <span className="text-sm font-semibold" style={{ color: '#111827' }}>
             {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
           </span>
           <button 
             onClick={() => handleMonthChange(1)}
-            className="p-1 hover:bg-gray-100 rounded transition-colors"
+            onMouseEnter={() => setHoveredNextMonthButton(true)}
+            onMouseLeave={() => setHoveredNextMonthButton(false)}
+            className="p-1 rounded transition-colors"
+            style={{
+              backgroundColor: hoveredNextMonthButton ? '#f3f4f6' : 'transparent'
+            }}
           >
-            <ChevronRight className="w-4 h-4 text-gray-600" />
+            <ChevronRight className="w-4 h-4" style={{ color: '#4b5563' }} />
           </button>
         </div>
 
         {/* Date Picker - Only in line mode */}
         {viewMode === 'line' && (
           <div className="flex items-center justify-between mb-3 sm:mb-4 gap-1">
-            <button className="p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0">
-              <ChevronLeft className="w-4 h-4 text-gray-600" />
+            <button 
+              onMouseEnter={() => setHoveredDatePickerPrevButton(true)}
+              onMouseLeave={() => setHoveredDatePickerPrevButton(false)}
+              className="p-1 rounded transition-colors flex-shrink-0"
+              style={{
+                backgroundColor: hoveredDatePickerPrevButton ? '#f3f4f6' : 'transparent'
+              }}
+            >
+              <ChevronLeft className="w-4 h-4" style={{ color: '#4b5563' }} />
             </button>
             <div className="flex items-center gap-1 sm:gap-2 flex-1 justify-center overflow-x-auto scrollbar-hide">
-              {dates.map((item, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedDate(item.date)}
-                  className={`flex flex-col items-center px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-colors min-w-[50px] sm:min-w-[60px] flex-shrink-0 ${
-                    selectedDate === item.date
-                      ? 'bg-red-600 text-white'
-                      : 'text-gray-500 hover:bg-gray-50'
-                  }`}
-                >
-                  <span className="text-xs font-medium">{item.day}</span>
-                  <span className={`text-sm font-semibold ${selectedDate === item.date ? 'text-white' : 'text-gray-900'}`}>
-                    {item.date}
-                  </span>
-                </button>
-              ))}
+              {dates.map((item, index) => {
+                const isSelected = selectedDate === item.date;
+                return (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedDate(item.date)}
+                    className="flex flex-col items-center px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-colors min-w-[50px] sm:min-w-[60px] flex-shrink-0"
+                    style={{
+                      backgroundColor: isSelected ? '#dc2626' : 'transparent',
+                      color: isSelected ? 'white' : '#6b7280'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isSelected) {
+                        e.currentTarget.style.backgroundColor = '#f9fafb';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isSelected) {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }
+                    }}
+                  >
+                    <span className="text-xs font-medium">{item.day}</span>
+                    <span className="text-sm font-semibold" style={{ color: isSelected ? 'white' : '#111827' }}>
+                      {item.date}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-            <button className="p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0">
-              <ChevronRight className="w-4 h-4 text-gray-600" />
+            <button 
+              onMouseEnter={() => setHoveredDatePickerNextButton(true)}
+              onMouseLeave={() => setHoveredDatePickerNextButton(false)}
+              className="p-1 rounded transition-colors flex-shrink-0"
+              style={{
+                backgroundColor: hoveredDatePickerNextButton ? '#f3f4f6' : 'transparent'
+              }}
+            >
+              <ChevronRight className="w-4 h-4" style={{ color: '#4b5563' }} />
             </button>
           </div>
         )}
 
         {/* Tabs */}
-        <div className="flex items-center gap-4 border-b border-gray-200">
+        <div className="flex items-center gap-4 border-b" style={{ borderColor: '#e5e7eb' }}>
           <button
             onClick={() => setActiveTab('interview')}
-            className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
-              activeTab === 'interview'
-                ? 'border-red-600 text-red-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
+            className="flex items-center gap-2 px-4 py-2 border-b-2 transition-colors"
+            style={{
+              borderColor: activeTab === 'interview' ? '#dc2626' : 'transparent',
+              color: activeTab === 'interview' ? '#dc2626' : '#6b7280'
+            }}
+            onMouseEnter={(e) => {
+              if (activeTab !== 'interview') {
+                e.currentTarget.style.color = '#374151';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== 'interview') {
+                e.currentTarget.style.color = '#6b7280';
+              }
+            }}
           >
-            <MessageCircle className={`w-4 h-4 ${activeTab === 'interview' ? 'text-red-600' : 'text-gray-400'}`} />
+            <MessageCircle className="w-4 h-4" style={{ color: activeTab === 'interview' ? '#dc2626' : '#9ca3af' }} />
             <span className="text-sm font-medium">{t.interview} {interviews.length}</span>
           </button>
           <button
             onClick={() => setActiveTab('naitei')}
-            className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
-              activeTab === 'naitei'
-                ? 'border-red-600 text-red-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
+            className="flex items-center gap-2 px-4 py-2 border-b-2 transition-colors"
+            style={{
+              borderColor: activeTab === 'naitei' ? '#dc2626' : 'transparent',
+              color: activeTab === 'naitei' ? '#dc2626' : '#6b7280'
+            }}
+            onMouseEnter={(e) => {
+              if (activeTab !== 'naitei') {
+                e.currentTarget.style.color = '#374151';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== 'naitei') {
+                e.currentTarget.style.color = '#6b7280';
+              }
+            }}
           >
-            <Calendar className={`w-4 h-4 ${activeTab === 'naitei' ? 'text-red-600' : 'text-gray-400'}`} />
+            <Calendar className="w-4 h-4" style={{ color: activeTab === 'naitei' ? '#dc2626' : '#9ca3af' }} />
             <span className="text-sm font-medium">{t.naitei} {naitei.length}</span>
           </button>
         </div>
@@ -243,12 +322,12 @@ const AgentHomePageSession4 = () => {
         <div className="space-y-3 sm:space-y-4">
           {/* Calendar View - Only in calendar mode */}
           {viewMode === 'calendar' && (
-            <div className="mb-4 pb-4 border-b border-gray-200">
+            <div className="mb-4 pb-4 border-b" style={{ borderColor: '#e5e7eb' }}>
               {/* Calendar Grid */}
               <div className="grid grid-cols-7 gap-1 mb-2">
                 {/* Day headers */}
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                  <div key={day} className="text-center text-xs font-semibold text-gray-600 py-1">
+                  <div key={day} className="text-center text-xs font-semibold py-1" style={{ color: '#4b5563' }}>
                     {day}
                   </div>
                 ))}
@@ -264,19 +343,19 @@ const AgentHomePageSession4 = () => {
                     <button
                       key={day}
                       onClick={() => setSelectedDate(day)}
-                      className={`aspect-square flex flex-col items-center justify-center rounded-lg transition-colors relative ${
-                        isSelected
-                          ? 'bg-red-600 text-white'
-                          : 'hover:bg-gray-100 text-gray-900'
-                      }`}
+                      onMouseEnter={() => setHoveredCalendarDayIndex(day)}
+                      onMouseLeave={() => setHoveredCalendarDayIndex(null)}
+                      className="aspect-square flex flex-col items-center justify-center rounded-lg transition-colors relative"
+                      style={{
+                        backgroundColor: isSelected ? '#dc2626' : (hoveredCalendarDayIndex === day ? '#f3f4f6' : 'transparent'),
+                        color: isSelected ? 'white' : '#111827'
+                      }}
                     >
-                      <span className={`text-xs font-medium ${isSelected ? 'text-white' : 'text-gray-900'}`}>
+                      <span className="text-xs font-medium" style={{ color: isSelected ? 'white' : '#111827' }}>
                         {day}
                       </span>
                       {hasEvent && (
-                        <span className={`absolute bottom-1 w-1 h-1 rounded-full ${
-                          isSelected ? 'bg-white' : 'bg-red-600'
-                        }`}></span>
+                        <span className="absolute bottom-1 w-1 h-1 rounded-full" style={{ backgroundColor: isSelected ? 'white' : '#dc2626' }}></span>
                       )}
                     </button>
                   );
@@ -288,44 +367,69 @@ const AgentHomePageSession4 = () => {
           {/* Events List */}
           <div className="space-y-4">
             {loading ? (
-              <div className="text-center py-8 text-sm text-gray-500">
+              <div className="text-center py-8 text-sm" style={{ color: '#6b7280' }}>
                 {t.loading || 'Loading...'}
               </div>
             ) : events.length > 0 ? (
               events.map((event) => (
                 <div key={event.id} className="flex gap-3">
                   {/* Time */}
-                  <div className="text-xs font-medium text-gray-500 pt-1 min-w-[50px]">
+                  <div className="text-xs font-medium pt-1 min-w-[50px]" style={{ color: '#6b7280' }}>
                     {event.time}
                   </div>
 
                   {/* Event Card */}
-                  <div className="flex-1 bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow relative">
-                    <button className="absolute top-3 right-3 p-1 hover:bg-gray-100 rounded transition-colors">
-                      <MoreVertical className="w-4 h-4 text-gray-400" />
+                  <div 
+                    className="flex-1 border rounded-lg p-3 transition-shadow relative"
+                    onMouseEnter={() => setHoveredEventCardIndex(event.id)}
+                    onMouseLeave={() => setHoveredEventCardIndex(null)}
+                    style={{
+                      backgroundColor: 'white',
+                      borderColor: '#e5e7eb',
+                      boxShadow: hoveredEventCardIndex === event.id ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
+                    }}
+                  >
+                    <button 
+                      className="absolute top-3 right-3 p-1 rounded transition-colors"
+                      onMouseEnter={() => setHoveredMoreButtonIndex(event.id)}
+                      onMouseLeave={() => setHoveredMoreButtonIndex(null)}
+                      style={{
+                        backgroundColor: hoveredMoreButtonIndex === event.id ? '#f3f4f6' : 'transparent'
+                      }}
+                    >
+                      <MoreVertical className="w-4 h-4" style={{ color: '#9ca3af' }} />
                     </button>
 
                     <div className="flex items-start gap-3 pr-8">
                       {/* Avatar */}
-                      <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <User className="w-5 h-5 text-red-600" />
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#fee2e2' }}>
+                        <User className="w-5 h-5" style={{ color: '#dc2626' }} />
                       </div>
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <div className="mb-1">
-                          <h4 className="text-sm font-semibold text-gray-900">{event.name}</h4>
-                          <p className="text-xs text-gray-600">{event.role}</p>
+                          <h4 className="text-sm font-semibold" style={{ color: '#111827' }}>{event.name}</h4>
+                          <p className="text-xs" style={{ color: '#4b5563' }}>{event.role}</p>
                         </div>
-                        <p className="text-xs text-gray-500 mb-3 leading-relaxed line-clamp-2">
+                        <p className="text-xs mb-3 leading-relaxed line-clamp-2" style={{ color: '#6b7280' }}>
                           {event.description}
                         </p>
                         <button
-                          className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-                            event.isActive
-                              ? 'bg-red-600 text-white hover:bg-red-700'
-                              : 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                          }`}
+                          onMouseEnter={() => {
+                            if (event.isActive) {
+                              setHoveredGoToMeetingButtonIndex(event.id);
+                            }
+                          }}
+                          onMouseLeave={() => setHoveredGoToMeetingButtonIndex(null)}
+                          className="px-3 py-1.5 rounded text-xs font-medium transition-colors"
+                          style={{
+                            backgroundColor: event.isActive 
+                              ? (hoveredGoToMeetingButtonIndex === event.id ? '#b91c1c' : '#dc2626')
+                              : '#f3f4f6',
+                            color: event.isActive ? 'white' : '#6b7280',
+                            cursor: event.isActive ? 'pointer' : 'not-allowed'
+                          }}
                         >
                           {t.goToMeeting}
                         </button>
@@ -335,7 +439,7 @@ const AgentHomePageSession4 = () => {
                 </div>
               ))
             ) : (
-              <div className="text-center py-8 text-sm text-gray-500">
+              <div className="text-center py-8 text-sm" style={{ color: '#6b7280' }}>
                 {viewMode === 'calendar' ? t.noEventsForDate : t.noEvents}
               </div>
             )}

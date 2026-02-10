@@ -32,6 +32,13 @@ const ReportsPage = () => {
   // Regular Admin data
   const [myPerformanceData, setMyPerformanceData] = useState(null);
 
+  // Hover states
+  const [hoveredTabNomination, setHoveredTabNomination] = useState(false);
+  const [hoveredTabPlatform, setHoveredTabPlatform] = useState(false);
+  const [hoveredTabHr, setHoveredTabHr] = useState(false);
+  const [hoveredExportAllButton, setHoveredExportAllButton] = useState(false);
+  const [hoveredExportStatusButton, setHoveredExportStatusButton] = useState({});
+
   useEffect(() => {
     loadAdminProfile();
   }, []);
@@ -154,8 +161,8 @@ const ReportsPage = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Đang tải...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#2563eb' }}></div>
+          <p style={{ color: '#4b5563' }}>Đang tải...</p>
         </div>
       </div>
     );
@@ -168,41 +175,77 @@ const ReportsPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Báo cáo thống kê</h2>
-          <p className="text-gray-600">
+          <h2 className="text-2xl font-bold mb-2" style={{ color: '#111827' }}>Báo cáo thống kê</h2>
+          <p style={{ color: '#4b5563' }}>
             {isSuperAdmin ? 'Thống kê toàn bộ hệ thống' : 'Báo cáo thành tích xử lý đơn'}
           </p>
         </div>
       </div>
 
       {/* Date Range Filter */}
-      <div className="bg-white rounded-lg shadow p-4 flex items-center gap-4">
-        <Filter className="w-5 h-5 text-gray-500" />
+      <div className="rounded-lg shadow p-4 flex items-center gap-4" style={{ backgroundColor: 'white' }}>
+        <Filter className="w-5 h-5" style={{ color: '#6b7280' }} />
         <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-gray-700">Từ ngày:</label>
+          <label className="text-sm font-medium" style={{ color: '#374151' }}>Từ ngày:</label>
           <input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 border rounded-lg text-sm"
+            style={{
+              borderColor: '#d1d5db',
+              outline: 'none'
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#2563eb';
+              e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#d1d5db';
+              e.target.style.boxShadow = 'none';
+            }}
           />
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-gray-700">Đến ngày:</label>
+          <label className="text-sm font-medium" style={{ color: '#374151' }}>Đến ngày:</label>
           <input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 border rounded-lg text-sm"
+            style={{
+              borderColor: '#d1d5db',
+              outline: 'none'
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#2563eb';
+              e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#d1d5db';
+              e.target.style.boxShadow = 'none';
+            }}
           />
         </div>
         {!isSuperAdmin && (
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">Trạng thái:</label>
+            <label className="text-sm font-medium" style={{ color: '#374151' }}>Trạng thái:</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border rounded-lg text-sm"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             >
               <option value="">Tất cả</option>
               <option value="1">Admin đang xử lý</option>
@@ -219,35 +262,41 @@ const ReportsPage = () => {
         /* Super Admin Reports */
         <div className="space-y-6">
           {/* Tabs */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="flex border-b border-gray-200">
+          <div className="rounded-lg shadow" style={{ backgroundColor: 'white' }}>
+            <div className="flex border-b" style={{ borderColor: '#e5e7eb' }}>
               <button
                 onClick={() => setActiveTab('nomination')}
-                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'nomination'
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-600 hover:text-gray-900'
-                }`}
+                onMouseEnter={() => activeTab !== 'nomination' && setHoveredTabNomination(true)}
+                onMouseLeave={() => setHoveredTabNomination(false)}
+                className="px-6 py-3 text-sm font-medium border-b-2 transition-colors"
+                style={{
+                  borderColor: activeTab === 'nomination' ? '#2563eb' : 'transparent',
+                  color: activeTab === 'nomination' ? '#2563eb' : (hoveredTabNomination ? '#111827' : '#4b5563')
+                }}
               >
                 Hiệu quả tiến cử
               </button>
               <button
                 onClick={() => setActiveTab('platform')}
-                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'platform'
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-600 hover:text-gray-900'
-                }`}
+                onMouseEnter={() => activeTab !== 'platform' && setHoveredTabPlatform(true)}
+                onMouseLeave={() => setHoveredTabPlatform(false)}
+                className="px-6 py-3 text-sm font-medium border-b-2 transition-colors"
+                style={{
+                  borderColor: activeTab === 'platform' ? '#2563eb' : 'transparent',
+                  color: activeTab === 'platform' ? '#2563eb' : (hoveredTabPlatform ? '#111827' : '#4b5563')
+                }}
               >
                 Hiệu quả vận hành platform
               </button>
               <button
                 onClick={() => setActiveTab('hr')}
-                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'hr'
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-600 hover:text-gray-900'
-                }`}
+                onMouseEnter={() => activeTab !== 'hr' && setHoveredTabHr(true)}
+                onMouseLeave={() => setHoveredTabHr(false)}
+                className="px-6 py-3 text-sm font-medium border-b-2 transition-colors"
+                style={{
+                  borderColor: activeTab === 'hr' ? '#2563eb' : 'transparent',
+                  color: activeTab === 'hr' ? '#2563eb' : (hoveredTabHr ? '#111827' : '#4b5563')
+                }}
               >
                 Hiệu quả quản lý nhân sự
               </button>
@@ -259,49 +308,49 @@ const ReportsPage = () => {
                 <div className="space-y-6">
                   {/* Revenue Card */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4">
+                    <div className="rounded-lg p-4" style={{ background: 'linear-gradient(to bottom right, #f0fdf4, #dcfce7)' }}>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-gray-600">Tổng doanh thu</p>
-                          <p className="text-2xl font-bold text-gray-900 mt-1">
+                          <p className="text-sm" style={{ color: '#4b5563' }}>Tổng doanh thu</p>
+                          <p className="text-2xl font-bold mt-1" style={{ color: '#111827' }}>
                             {nominationData.totalRevenue?.toLocaleString('vi-VN')}đ
                           </p>
                         </div>
-                        <DollarSign className="w-10 h-10 text-green-600" />
+                        <DollarSign className="w-10 h-10" style={{ color: '#16a34a' }} />
                       </div>
                     </div>
-                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4">
+                    <div className="rounded-lg p-4" style={{ background: 'linear-gradient(to bottom right, #eff6ff, #dbeafe)' }}>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-gray-600">CV hiệu quả</p>
-                          <p className="text-2xl font-bold text-gray-900 mt-1">
+                          <p className="text-sm" style={{ color: '#4b5563' }}>CV hiệu quả</p>
+                          <p className="text-2xl font-bold mt-1" style={{ color: '#111827' }}>
                             {nominationData.effectiveCVs || 0}
                           </p>
                         </div>
-                        <FileText className="w-10 h-10 text-blue-600" />
+                        <FileText className="w-10 h-10" style={{ color: '#2563eb' }} />
                       </div>
                     </div>
-                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4">
+                    <div className="rounded-lg p-4" style={{ background: 'linear-gradient(to bottom right, #faf5ff, #f3e8ff)' }}>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-gray-600">Tổng đơn ứng tuyển</p>
-                          <p className="text-2xl font-bold text-gray-900 mt-1">
+                          <p className="text-sm" style={{ color: '#4b5563' }}>Tổng đơn ứng tuyển</p>
+                          <p className="text-2xl font-bold mt-1" style={{ color: '#111827' }}>
                             {Object.values(nominationData.applicationsByStatus || {}).reduce((a, b) => a + b, 0)}
                           </p>
                         </div>
-                        <Briefcase className="w-10 h-10 text-purple-600" />
+                        <Briefcase className="w-10 h-10" style={{ color: '#9333ea' }} />
                       </div>
                     </div>
                   </div>
 
                   {/* Applications by Status */}
-                  <div className="bg-white border border-gray-200 rounded-lg p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Đơn ứng tuyển theo trạng thái</h3>
+                  <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+                    <h3 className="text-lg font-semibold mb-4" style={{ color: '#111827' }}>Đơn ứng tuyển theo trạng thái</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {Object.entries(nominationData.applicationsByStatus || {}).map(([status, count]) => (
-                        <div key={status} className="border border-gray-200 rounded p-3">
-                          <p className="text-xs text-gray-600 mb-1">{getStatusLabel(parseInt(status))}</p>
-                          <p className="text-xl font-bold text-gray-900">{count}</p>
+                        <div key={status} className="border rounded p-3" style={{ borderColor: '#e5e7eb' }}>
+                          <p className="text-xs mb-1" style={{ color: '#4b5563' }}>{getStatusLabel(parseInt(status))}</p>
+                          <p className="text-xl font-bold" style={{ color: '#111827' }}>{count}</p>
                         </div>
                       ))}
                     </div>
@@ -309,27 +358,27 @@ const ReportsPage = () => {
 
                   {/* Top Jobs */}
                   {nominationData.jobEffectiveness && nominationData.jobEffectiveness.length > 0 && (
-                    <div className="bg-white border border-gray-200 rounded-lg p-4">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Top công việc hiệu quả</h3>
+                    <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+                      <h3 className="text-lg font-semibold mb-4" style={{ color: '#111827' }}>Top công việc hiệu quả</h3>
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                          <thead className="bg-gray-50">
+                          <thead style={{ backgroundColor: '#f9fafb' }}>
                             <tr>
-                              <th className="px-4 py-2 text-left">Job Code</th>
-                              <th className="px-4 py-2 text-left">Tiêu đề</th>
-                              <th className="px-4 py-2 text-right">Tổng đơn</th>
-                              <th className="px-4 py-2 text-right">Đã nyusha</th>
-                              <th className="px-4 py-2 text-right">Đã thanh toán</th>
+                              <th className="px-4 py-2 text-left" style={{ color: '#111827' }}>Job Code</th>
+                              <th className="px-4 py-2 text-left" style={{ color: '#111827' }}>Tiêu đề</th>
+                              <th className="px-4 py-2 text-right" style={{ color: '#111827' }}>Tổng đơn</th>
+                              <th className="px-4 py-2 text-right" style={{ color: '#111827' }}>Đã nyusha</th>
+                              <th className="px-4 py-2 text-right" style={{ color: '#111827' }}>Đã thanh toán</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-gray-200">
+                          <tbody className="divide-y" style={{ borderColor: '#e5e7eb' }}>
                             {nominationData.jobEffectiveness.slice(0, 10).map((job) => (
                               <tr key={job.id}>
-                                <td className="px-4 py-2">{job.jobCode}</td>
-                                <td className="px-4 py-2">{job.title}</td>
-                                <td className="px-4 py-2 text-right">{job.totalApplications}</td>
-                                <td className="px-4 py-2 text-right">{job.nyushaCount}</td>
-                                <td className="px-4 py-2 text-right">{job.paidCount}</td>
+                                <td className="px-4 py-2" style={{ color: '#111827' }}>{job.jobCode}</td>
+                                <td className="px-4 py-2" style={{ color: '#111827' }}>{job.title}</td>
+                                <td className="px-4 py-2 text-right" style={{ color: '#111827' }}>{job.totalApplications}</td>
+                                <td className="px-4 py-2 text-right" style={{ color: '#111827' }}>{job.nyushaCount}</td>
+                                <td className="px-4 py-2 text-right" style={{ color: '#111827' }}>{job.paidCount}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -340,13 +389,13 @@ const ReportsPage = () => {
 
                   {/* Category Distribution */}
                   {nominationData.categoryDistribution && nominationData.categoryDistribution.length > 0 && (
-                    <div className="bg-white border border-gray-200 rounded-lg p-4">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Phân bổ theo ngành</h3>
+                    <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+                      <h3 className="text-lg font-semibold mb-4" style={{ color: '#111827' }}>Phân bổ theo ngành</h3>
                       <div className="space-y-2">
                         {nominationData.categoryDistribution.map((cat) => (
                           <div key={cat.id} className="flex items-center justify-between">
-                            <span className="text-sm text-gray-700">{cat.name}</span>
-                            <span className="text-sm font-semibold text-gray-900">{cat.applicationCount} đơn</span>
+                            <span className="text-sm" style={{ color: '#374151' }}>{cat.name}</span>
+                            <span className="text-sm font-semibold" style={{ color: '#111827' }}>{cat.applicationCount} đơn</span>
                           </div>
                         ))}
                       </div>
@@ -358,19 +407,19 @@ const ReportsPage = () => {
               {activeTab === 'platform' && platformData && (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm text-gray-600">Tổng CTV</p>
-                        <Users className="w-5 h-5 text-gray-400" />
+                        <p className="text-sm" style={{ color: '#4b5563' }}>Tổng CTV</p>
+                        <Users className="w-5 h-5" style={{ color: '#9ca3af' }} />
                       </div>
-                      <p className="text-2xl font-bold text-gray-900">{platformData.totalCollaborators || 0}</p>
+                      <p className="text-2xl font-bold" style={{ color: '#111827' }}>{platformData.totalCollaborators || 0}</p>
                     </div>
-                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm text-gray-600">Job mới</p>
-                        <Briefcase className="w-5 h-5 text-gray-400" />
+                        <p className="text-sm" style={{ color: '#4b5563' }}>Job mới</p>
+                        <Briefcase className="w-5 h-5" style={{ color: '#9ca3af' }} />
                       </div>
-                      <p className="text-2xl font-bold text-gray-900">{platformData.newJobs || 0}</p>
+                      <p className="text-2xl font-bold" style={{ color: '#111827' }}>{platformData.newJobs || 0}</p>
                     </div>
                   </div>
                 </div>
@@ -380,25 +429,25 @@ const ReportsPage = () => {
                 <div className="space-y-6">
                   {/* Admin Performance Table */}
                   {hrData.adminPerformance && hrData.adminPerformance.length > 0 && (
-                    <div className="bg-white border border-gray-200 rounded-lg p-4">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Hiệu quả từng admin</h3>
+                    <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+                      <h3 className="text-lg font-semibold mb-4" style={{ color: '#111827' }}>Hiệu quả từng admin</h3>
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                          <thead className="bg-gray-50">
+                          <thead style={{ backgroundColor: '#f9fafb' }}>
                             <tr>
-                              <th className="px-4 py-2 text-left">Tên</th>
-                              <th className="px-4 py-2 text-left">Email</th>
-                              <th className="px-4 py-2 text-right">Tổng đơn được giao</th>
-                              <th className="px-4 py-2 text-right">Đơn thành công</th>
+                              <th className="px-4 py-2 text-left" style={{ color: '#111827' }}>Tên</th>
+                              <th className="px-4 py-2 text-left" style={{ color: '#111827' }}>Email</th>
+                              <th className="px-4 py-2 text-right" style={{ color: '#111827' }}>Tổng đơn được giao</th>
+                              <th className="px-4 py-2 text-right" style={{ color: '#111827' }}>Đơn thành công</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-gray-200">
+                          <tbody className="divide-y" style={{ borderColor: '#e5e7eb' }}>
                             {hrData.adminPerformance.map((admin) => (
                               <tr key={admin.id}>
-                                <td className="px-4 py-2">{admin.name}</td>
-                                <td className="px-4 py-2">{admin.email}</td>
-                                <td className="px-4 py-2 text-right">{admin.totalAssigned}</td>
-                                <td className="px-4 py-2 text-right">{admin.successfulApplications}</td>
+                                <td className="px-4 py-2" style={{ color: '#111827' }}>{admin.name}</td>
+                                <td className="px-4 py-2" style={{ color: '#111827' }}>{admin.email}</td>
+                                <td className="px-4 py-2 text-right" style={{ color: '#111827' }}>{admin.totalAssigned}</td>
+                                <td className="px-4 py-2 text-right" style={{ color: '#111827' }}>{admin.successfulApplications}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -409,13 +458,13 @@ const ReportsPage = () => {
 
                   {/* Average per day */}
                   {hrData.avgApplicationsPerDay && hrData.avgApplicationsPerDay.length > 0 && (
-                    <div className="bg-white border border-gray-200 rounded-lg p-4">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Trung bình đơn/ngày</h3>
+                    <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+                      <h3 className="text-lg font-semibold mb-4" style={{ color: '#111827' }}>Trung bình đơn/ngày</h3>
                       <div className="space-y-2">
                         {hrData.avgApplicationsPerDay.map((item) => (
                           <div key={item.adminId} className="flex items-center justify-between">
-                            <span className="text-sm text-gray-700">{item.adminName}</span>
-                            <span className="text-sm font-semibold text-gray-900">
+                            <span className="text-sm" style={{ color: '#374151' }}>{item.adminName}</span>
+                            <span className="text-sm font-semibold" style={{ color: '#111827' }}>
                               {item.avgPerDay} đơn/ngày ({item.totalAssigned} tổng)
                             </span>
                           </div>
@@ -434,48 +483,54 @@ const ReportsPage = () => {
           <div className="space-y-6">
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4">
+              <div className="rounded-lg p-4" style={{ background: 'linear-gradient(to bottom right, #f0fdf4, #dcfce7)' }}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Tổng doanh thu</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-sm" style={{ color: '#4b5563' }}>Tổng doanh thu</p>
+                    <p className="text-2xl font-bold mt-1" style={{ color: '#111827' }}>
                       {myPerformanceData.totalRevenue?.toLocaleString('vi-VN')}đ
                     </p>
                   </div>
-                  <DollarSign className="w-10 h-10 text-green-600" />
+                  <DollarSign className="w-10 h-10" style={{ color: '#16a34a' }} />
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4">
+              <div className="rounded-lg p-4" style={{ background: 'linear-gradient(to bottom right, #eff6ff, #dbeafe)' }}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Tổng đơn xử lý</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-sm" style={{ color: '#4b5563' }}>Tổng đơn xử lý</p>
+                    <p className="text-2xl font-bold mt-1" style={{ color: '#111827' }}>
                       {myPerformanceData.totalApplications || 0}
                     </p>
                   </div>
-                  <Briefcase className="w-10 h-10 text-blue-600" />
+                  <Briefcase className="w-10 h-10" style={{ color: '#2563eb' }} />
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4">
+              <div className="rounded-lg p-4" style={{ background: 'linear-gradient(to bottom right, #faf5ff, #f3e8ff)' }}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Tốc độ xử lý TB</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-sm" style={{ color: '#4b5563' }}>Tốc độ xử lý TB</p>
+                    <p className="text-2xl font-bold mt-1" style={{ color: '#111827' }}>
                       {myPerformanceData.avgProcessingHours || 0}h
                     </p>
                   </div>
-                  <Clock className="w-10 h-10 text-purple-600" />
+                  <Clock className="w-10 h-10" style={{ color: '#9333ea' }} />
                 </div>
               </div>
             </div>
 
             {/* Applications by Status */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="rounded-lg shadow p-6" style={{ backgroundColor: 'white' }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Đơn ứng tuyển theo trạng thái</h3>
+                <h3 className="text-lg font-semibold" style={{ color: '#111827' }}>Đơn ứng tuyển theo trạng thái</h3>
                 <button
                   onClick={() => exportData(myPerformanceData, `bao-cao-${new Date().toISOString().split('T')[0]}.csv`)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2"
+                  onMouseEnter={() => setHoveredExportAllButton(true)}
+                  onMouseLeave={() => setHoveredExportAllButton(false)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+                  style={{
+                    backgroundColor: hoveredExportAllButton ? '#1d4ed8' : '#2563eb',
+                    color: 'white'
+                  }}
                 >
                   <Download className="w-4 h-4" />
                   Xuất tất cả
@@ -483,15 +538,20 @@ const ReportsPage = () => {
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 {Object.entries(myPerformanceData.applicationsByStatus || {}).map(([status, count]) => (
-                  <div key={status} className="border border-gray-200 rounded-lg p-4">
-                    <p className="text-xs text-gray-600 mb-1">{getStatusLabel(parseInt(status))}</p>
-                    <p className="text-xl font-bold text-gray-900">{count}</p>
+                  <div key={status} className="rounded-lg p-4 border" style={{ borderColor: '#e5e7eb' }}>
+                    <p className="text-xs mb-1" style={{ color: '#4b5563' }}>{getStatusLabel(parseInt(status))}</p>
+                    <p className="text-xl font-bold" style={{ color: '#111827' }}>{count}</p>
                     <button
                       onClick={() => {
                         const filtered = myPerformanceData.applications.filter(app => app.status === parseInt(status));
                         exportData({ applications: filtered }, `bao-cao-status-${status}-${new Date().toISOString().split('T')[0]}.csv`);
                       }}
-                      className="mt-2 text-xs text-blue-600 hover:text-blue-800"
+                      onMouseEnter={() => setHoveredExportStatusButton(prev => ({ ...prev, [status]: true }))}
+                      onMouseLeave={() => setHoveredExportStatusButton(prev => ({ ...prev, [status]: false }))}
+                      className="mt-2 text-xs"
+                      style={{
+                        color: hoveredExportStatusButton[status] ? '#1e40af' : '#2563eb'
+                      }}
                     >
                       Xuất theo trạng thái
                     </button>
@@ -503,41 +563,41 @@ const ReportsPage = () => {
               {myPerformanceData.applications && myPerformanceData.applications.length > 0 && (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="bg-gray-50">
+                    <thead style={{ backgroundColor: '#f9fafb' }}>
                       <tr>
-                        <th className="px-4 py-2 text-left">ID</th>
-                        <th className="px-4 py-2 text-left">Job</th>
-                        <th className="px-4 py-2 text-left">Ứng viên</th>
-                        <th className="px-4 py-2 text-left">Trạng thái</th>
-                        <th className="px-4 py-2 text-left">Ngày tạo</th>
-                        <th className="px-4 py-2 text-left">Cập nhật</th>
+                        <th className="px-4 py-2 text-left" style={{ color: '#111827' }}>ID</th>
+                        <th className="px-4 py-2 text-left" style={{ color: '#111827' }}>Job</th>
+                        <th className="px-4 py-2 text-left" style={{ color: '#111827' }}>Ứng viên</th>
+                        <th className="px-4 py-2 text-left" style={{ color: '#111827' }}>Trạng thái</th>
+                        <th className="px-4 py-2 text-left" style={{ color: '#111827' }}>Ngày tạo</th>
+                        <th className="px-4 py-2 text-left" style={{ color: '#111827' }}>Cập nhật</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y" style={{ borderColor: '#e5e7eb' }}>
                       {myPerformanceData.applications.map((app) => (
                         <tr key={app.id}>
-                          <td className="px-4 py-2">{app.id}</td>
+                          <td className="px-4 py-2" style={{ color: '#111827' }}>{app.id}</td>
                           <td className="px-4 py-2">
                             <div>
-                              <p className="font-medium">{app.jobTitle}</p>
-                              <p className="text-xs text-gray-500">{app.jobCode}</p>
+                              <p className="font-medium" style={{ color: '#111827' }}>{app.jobTitle}</p>
+                              <p className="text-xs" style={{ color: '#6b7280' }}>{app.jobCode}</p>
                             </div>
                           </td>
                           <td className="px-4 py-2">
                             <div>
-                              <p className="font-medium">{app.candidateName}</p>
-                              <p className="text-xs text-gray-500">{app.candidateCode}</p>
+                              <p className="font-medium" style={{ color: '#111827' }}>{app.candidateName}</p>
+                              <p className="text-xs" style={{ color: '#6b7280' }}>{app.candidateCode}</p>
                             </div>
                           </td>
                           <td className="px-4 py-2">
-                            <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-800">
+                            <span className="px-2 py-1 rounded text-xs" style={{ backgroundColor: '#f3f4f6', color: '#1f2937' }}>
                               {getStatusLabel(app.status)}
                             </span>
                           </td>
-                          <td className="px-4 py-2 text-xs text-gray-600">
+                          <td className="px-4 py-2 text-xs" style={{ color: '#4b5563' }}>
                             {new Date(app.createdAt).toLocaleDateString('vi-VN')}
                           </td>
-                          <td className="px-4 py-2 text-xs text-gray-600">
+                          <td className="px-4 py-2 text-xs" style={{ color: '#4b5563' }}>
                             {new Date(app.updatedAt).toLocaleDateString('vi-VN')}
                           </td>
                         </tr>

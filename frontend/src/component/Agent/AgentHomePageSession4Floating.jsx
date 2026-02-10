@@ -22,6 +22,11 @@ const AgentHomePageSession4Floating = () => {
   const [buttonDragStart, setButtonDragStart] = useState({ x: 0, y: 0 });
   const buttonRef = useRef(null);
   const modalRef = useRef(null);
+  const [hoveredFloatingButton, setHoveredFloatingButton] = useState(false);
+  const [hoveredCloseButton, setHoveredCloseButton] = useState(false);
+  const [hoveredPrevMonthButton, setHoveredPrevMonthButton] = useState(false);
+  const [hoveredNextMonthButton, setHoveredNextMonthButton] = useState(false);
+  const [hoveredEventCardIndex, setHoveredEventCardIndex] = useState(null);
 
   // Update button position on window resize
   useEffect(() => {
@@ -249,14 +254,19 @@ const AgentHomePageSession4Floating = () => {
               setIsOpen(!isOpen);
             }
           }}
-          className="w-14 h-14 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 transition-all flex items-center justify-center relative group select-none touch-none"
+          onMouseEnter={() => setHoveredFloatingButton(true)}
+          onMouseLeave={() => setHoveredFloatingButton(false)}
+          className="w-14 h-14 rounded-full shadow-lg transition-all flex items-center justify-center relative group select-none touch-none"
           style={{
-            cursor: isDraggingButton ? 'grabbing' : 'grab'
+            cursor: isDraggingButton ? 'grabbing' : 'grab',
+            backgroundColor: hoveredFloatingButton ? '#b91c1c' : '#dc2626',
+            color: 'white',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
           }}
         >
           <Calendar className="w-6 h-6 pointer-events-none" />
           {totalEvents > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 text-red-600 rounded-full text-xs font-bold flex items-center justify-center pointer-events-none">
+            <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center pointer-events-none" style={{ backgroundColor: '#facc15', color: '#dc2626' }}>
               {totalEvents > 9 ? '9+' : totalEvents}
             </span>
           )}
@@ -279,7 +289,7 @@ const AgentHomePageSession4Floating = () => {
           {/* Modal - Always centered */}
           <div
             ref={modalRef}
-            className="lg:hidden fixed z-50 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col"
+            className="lg:hidden fixed z-50 rounded-lg shadow-2xl border flex flex-col"
             style={{
               left: '50%',
               top: '50%',
@@ -287,26 +297,38 @@ const AgentHomePageSession4Floating = () => {
               width: '90vw',
               maxWidth: '400px',
               maxHeight: '80vh',
+              backgroundColor: 'white',
+              borderColor: '#e5e7eb',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
             }}
           >
             {/* Header */}
             <div 
-              className="flex items-center justify-between p-3 border-b border-gray-200 bg-gradient-to-r from-red-50 to-white select-none"
+              className="flex items-center justify-between p-3 border-b select-none"
+              style={{
+                borderColor: '#e5e7eb',
+                background: 'linear-gradient(to right, #fef2f2, white)'
+              }}
             >
               <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-red-600" />
-                <h3 className="text-base font-bold text-gray-900">{t.schedule}</h3>
+                <Calendar className="w-5 h-5" style={{ color: '#dc2626' }} />
+                <h3 className="text-base font-bold" style={{ color: '#111827' }}>{t.schedule}</h3>
                 {totalEvents > 0 && (
-                  <span className="px-2 py-0.5 bg-red-600 text-white text-xs font-semibold rounded-full">
+                  <span className="px-2 py-0.5 text-white text-xs font-semibold rounded-full" style={{ backgroundColor: '#dc2626' }}>
                     {totalEvents}
                   </span>
                 )}
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-gray-200 rounded transition-colors"
+                onMouseEnter={() => setHoveredCloseButton(true)}
+                onMouseLeave={() => setHoveredCloseButton(false)}
+                className="p-1 rounded transition-colors"
+                style={{
+                  backgroundColor: hoveredCloseButton ? '#e5e7eb' : 'transparent'
+                }}
               >
-                <X className="w-4 h-4 text-gray-600" />
+                <X className="w-4 h-4" style={{ color: '#4b5563' }} />
               </button>
             </div>
 
@@ -316,43 +338,53 @@ const AgentHomePageSession4Floating = () => {
               <div className="flex items-center justify-between mb-3">
                 <button 
                   onClick={() => handleMonthChange(-1)}
-                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  onMouseEnter={() => setHoveredPrevMonthButton(true)}
+                  onMouseLeave={() => setHoveredPrevMonthButton(false)}
+                  className="p-1 rounded transition-colors"
+                  style={{
+                    backgroundColor: hoveredPrevMonthButton ? '#f3f4f6' : 'transparent'
+                  }}
                 >
-                  <ChevronLeft className="w-4 h-4 text-gray-600" />
+                  <ChevronLeft className="w-4 h-4" style={{ color: '#4b5563' }} />
                 </button>
-                <span className="text-sm font-semibold text-gray-900">
+                <span className="text-sm font-semibold" style={{ color: '#111827' }}>
                   {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
                 </span>
                 <button 
                   onClick={() => handleMonthChange(1)}
-                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  onMouseEnter={() => setHoveredNextMonthButton(true)}
+                  onMouseLeave={() => setHoveredNextMonthButton(false)}
+                  className="p-1 rounded transition-colors"
+                  style={{
+                    backgroundColor: hoveredNextMonthButton ? '#f3f4f6' : 'transparent'
+                  }}
                 >
-                  <ChevronRight className="w-4 h-4 text-gray-600" />
+                  <ChevronRight className="w-4 h-4" style={{ color: '#4b5563' }} />
                 </button>
               </div>
 
               {/* Tabs */}
-              <div className="flex items-center gap-2 border-b border-gray-200 mb-3">
+              <div className="flex items-center gap-2 border-b mb-3" style={{ borderColor: '#e5e7eb' }}>
                 <button
                   onClick={() => setActiveTab('interview')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 border-b-2 transition-colors text-xs ${
-                    activeTab === 'interview'
-                      ? 'border-red-600 text-red-600'
-                      : 'border-transparent text-gray-500'
-                  }`}
+                  className="flex items-center gap-1.5 px-3 py-1.5 border-b-2 transition-colors text-xs"
+                  style={{
+                    borderColor: activeTab === 'interview' ? '#dc2626' : 'transparent',
+                    color: activeTab === 'interview' ? '#dc2626' : '#6b7280'
+                  }}
                 >
-                  <MessageCircle className={`w-3.5 h-3.5 ${activeTab === 'interview' ? 'text-red-600' : 'text-gray-400'}`} />
+                  <MessageCircle className="w-3.5 h-3.5" style={{ color: activeTab === 'interview' ? '#dc2626' : '#9ca3af' }} />
                   <span>{t.interview} {interviews.length}</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('naitei')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 border-b-2 transition-colors text-xs ${
-                    activeTab === 'naitei'
-                      ? 'border-red-600 text-red-600'
-                      : 'border-transparent text-gray-500'
-                  }`}
+                  className="flex items-center gap-1.5 px-3 py-1.5 border-b-2 transition-colors text-xs"
+                  style={{
+                    borderColor: activeTab === 'naitei' ? '#dc2626' : 'transparent',
+                    color: activeTab === 'naitei' ? '#dc2626' : '#6b7280'
+                  }}
                 >
-                  <Calendar className={`w-3.5 h-3.5 ${activeTab === 'naitei' ? 'text-red-600' : 'text-gray-400'}`} />
+                  <Calendar className="w-3.5 h-3.5" style={{ color: activeTab === 'naitei' ? '#dc2626' : '#9ca3af' }} />
                   <span>{t.naitei} {naitei.length}</span>
                 </button>
               </div>
@@ -360,29 +392,33 @@ const AgentHomePageSession4Floating = () => {
               {/* Events List */}
               <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
                 {loading ? (
-                  <div className="text-center py-4 text-xs text-gray-500">
+                  <div className="text-center py-4 text-xs" style={{ color: '#6b7280' }}>
                     {t.loading || 'Loading...'}
                   </div>
                 ) : events.length > 0 ? (
                   events.map((event) => (
                     <div 
                       key={event.id} 
-                      className="flex gap-2 bg-gray-50 rounded-lg p-2 border border-gray-200 hover:border-gray-300 transition-colors"
+                      className="flex gap-2 rounded-lg p-2 border transition-colors"
+                      onMouseEnter={() => setHoveredEventCardIndex(event.id)}
+                      onMouseLeave={() => setHoveredEventCardIndex(null)}
                       style={{
+                        backgroundColor: '#f9fafb',
+                        borderColor: hoveredEventCardIndex === event.id ? '#d1d5db' : '#e5e7eb',
                         boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
                       }}
                     >
-                      <div className="text-xs font-medium text-gray-500 pt-0.5 min-w-[40px]">
+                      <div className="text-xs font-medium pt-0.5 min-w-[40px]" style={{ color: '#6b7280' }}>
                         {event.time}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-xs font-semibold text-gray-900 truncate">{event.name || event.role}</h4>
-                        <p className="text-xs text-gray-600 truncate">{event.description}</p>
+                        <h4 className="text-xs font-semibold truncate" style={{ color: '#111827' }}>{event.name || event.role}</h4>
+                        <p className="text-xs truncate" style={{ color: '#4b5563' }}>{event.description}</p>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-4 text-xs text-gray-500">
+                  <div className="text-center py-4 text-xs" style={{ color: '#6b7280' }}>
                     {t.noEvents || 'No events'}
                   </div>
                 )}

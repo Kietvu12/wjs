@@ -131,6 +131,11 @@ const AdminAddJobPage = () => {
     services: [],
     businessSectors: []
   });
+  
+  // Hover states
+  const [hoveredBackButton, setHoveredBackButton] = useState(false);
+  const [hoveredCancelButton, setHoveredCancelButton] = useState(false);
+  const [hoveredSaveButton, setHoveredSaveButton] = useState(false);
 
   useEffect(() => {
     loadCategories();
@@ -850,30 +855,47 @@ const AdminAddJobPage = () => {
   return (
     <div className="space-y-3">
       {/* Header */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center justify-between">
+      <div className="rounded-lg p-4 border flex items-center justify-between" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(jobId ? `/admin/jobs/${jobId}` : '/admin/jobs')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            onMouseEnter={() => setHoveredBackButton(true)}
+            onMouseLeave={() => setHoveredBackButton(false)}
+            className="p-2 rounded-lg transition-colors"
+            style={{
+              backgroundColor: hoveredBackButton ? '#f3f4f6' : 'transparent'
+            }}
           >
-            <ArrowLeft className="w-4 h-4 text-gray-600" />
+            <ArrowLeft className="w-4 h-4" style={{ color: '#4b5563' }} />
           </button>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">{jobId ? 'Chỉnh sửa công việc' : 'Tạo công việc'}</h1>
-            <p className="text-xs text-gray-500 mt-1">{jobId ? 'Cập nhật thông tin công việc' : 'Thêm thông tin công việc mới vào hệ thống'}</p>
+            <h1 className="text-lg font-bold" style={{ color: '#111827' }}>{jobId ? 'Chỉnh sửa công việc' : 'Tạo công việc'}</h1>
+            <p className="text-xs mt-1" style={{ color: '#6b7280' }}>{jobId ? 'Cập nhật thông tin công việc' : 'Thêm thông tin công việc mới vào hệ thống'}</p>
           </div>
         </div>
         <div className="flex gap-2">
           <button
             onClick={handleCancel}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center gap-1.5"
+            onMouseEnter={() => setHoveredCancelButton(true)}
+            onMouseLeave={() => setHoveredCancelButton(false)}
+            className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredCancelButton ? '#e5e7eb' : '#f3f4f6',
+              color: '#374151'
+            }}
           >
             <X className="w-3.5 h-3.5" />
             Hủy
           </button>
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+            onMouseEnter={() => setHoveredSaveButton(true)}
+            onMouseLeave={() => setHoveredSaveButton(false)}
+            className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredSaveButton ? '#1d4ed8' : '#2563eb',
+              color: 'white'
+            }}
           >
             <Save className="w-3.5 h-3.5" />
             {jobId ? 'Cập nhật công việc' : 'Lưu công việc'}
@@ -886,16 +908,16 @@ const AdminAddJobPage = () => {
         {/* Left Column */}
         <div className="space-y-3">
           {/* Basic Information */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <Briefcase className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <Briefcase className="w-4 h-4" style={{ color: '#2563eb' }} />
               Thông tin cơ bản
             </h2>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
-                    Mã việc làm <span className="text-red-500">*</span>
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+                    Mã việc làm <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <input
                     type="text"
@@ -904,19 +926,43 @@ const AdminAddJobPage = () => {
                     onChange={handleInputChange}
                     placeholder="VD: JOB-001"
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
-                    Trạng thái <span className="text-red-500">*</span>
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+                    Trạng thái <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <select
                     name="status"
                     value={formData.status}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   >
                     <option value="0">Draft</option>
                     <option value="1">Published</option>
@@ -926,8 +972,8 @@ const AdminAddJobPage = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
-                  Tiêu đề công việc <span className="text-red-500">*</span>
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+                  Tiêu đề công việc <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <input
                   type="text"
@@ -936,16 +982,26 @@ const AdminAddJobPage = () => {
                   onChange={handleInputChange}
                   placeholder="VD: Software Engineer - React/Node.js Developer"
                   required
-                  className={`w-full px-3 py-2 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-                    errors.title ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className="w-full px-3 py-2 border rounded-lg text-xs"
+                  style={{
+                    borderColor: errors.title ? '#ef4444' : '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = errors.title ? '#ef4444' : '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
-                {errors.title && <p className="text-[10px] text-red-500 mt-1">{errors.title}</p>}
+                {errors.title && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.title}</p>}
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
-                  Slug <span className="text-red-500">*</span>
-                  <span className="text-gray-500 text-[10px] ml-2">(Tự động tạo từ tiêu đề)</span>
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+                  Slug <span style={{ color: '#ef4444' }}>*</span>
+                  <span className="text-[10px] ml-2" style={{ color: '#6b7280' }}>(Tự động tạo từ tiêu đề)</span>
                 </label>
                 <input
                   type="text"
@@ -954,25 +1010,45 @@ const AdminAddJobPage = () => {
                   onChange={handleInputChange}
                   placeholder="VD: software-engineer-react-nodejs-developer"
                   required
-                  className={`w-full px-3 py-2 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-                    errors.slug ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className="w-full px-3 py-2 border rounded-lg text-xs"
+                  style={{
+                    borderColor: errors.slug ? '#ef4444' : '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = errors.slug ? '#ef4444' : '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
-                {errors.slug && <p className="text-[10px] text-red-500 mt-1">{errors.slug}</p>}
+                {errors.slug && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.slug}</p>}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
-                    Danh mục <span className="text-red-500">*</span>
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+                    Danh mục <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <select
                     name="categoryId"
                     value={formData.categoryId}
                     onChange={handleInputChange}
                     required
-                    className={`w-full px-3 py-2 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-                      errors.categoryId ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: errors.categoryId ? '#ef4444' : '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = errors.categoryId ? '#ef4444' : '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   >
                     <option value="">Chọn danh mục</option>
                     {categories.map((category) => (
@@ -981,17 +1057,29 @@ const AdminAddJobPage = () => {
                       </option>
                     ))}
                   </select>
-                  {errors.categoryId && <p className="text-[10px] text-red-500 mt-1">{errors.categoryId}</p>}
+                  {errors.categoryId && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.categoryId}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
-                    Công ty <span className="text-red-500">*</span>
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+                    Công ty <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <select
                     name="companyId"
                     value={formData.companyId}
                     onChange={handleCompanyChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   >
                     <option value="">Chọn công ty (tùy chọn)</option>
                     {companies.map((company) => (
@@ -1003,7 +1091,7 @@ const AdminAddJobPage = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Mô tả công việc
                 </label>
                 <textarea
@@ -1012,11 +1100,23 @@ const AdminAddJobPage = () => {
                   onChange={handleInputChange}
                   placeholder="Mô tả chi tiết về công việc..."
                   rows="4"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                  className="w-full px-3 py-2 border rounded-lg text-xs resize-none"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Hướng dẫn ứng tuyển
                 </label>
                 <textarea
@@ -1025,21 +1125,33 @@ const AdminAddJobPage = () => {
                   onChange={handleInputChange}
                   placeholder="Hướng dẫn cách ứng tuyển..."
                   rows="2"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                  className="w-full px-3 py-2 border rounded-lg text-xs resize-none"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
             </div>
           </div>
 
           {/* Recruiting Company Information */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
-              <Building2 className="w-4 h-4 text-blue-600" />
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
+              <Building2 className="w-4 h-4" style={{ color: '#2563eb' }} />
               Thông tin công ty tuyển dụng
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Tên công ty tuyển dụng
                 </label>
                 <input
@@ -1047,12 +1159,24 @@ const AdminAddJobPage = () => {
                   value={recruitingCompany.companyName}
                   onChange={(e) => setRecruitingCompany({ ...recruitingCompany, companyName: e.target.value })}
                   placeholder="VD: Công ty ABC"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full px-3 py-2 border rounded-lg text-xs"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Doanh thu
                   </label>
                   <input
@@ -1064,7 +1188,7 @@ const AdminAddJobPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Số nhân viên
                   </label>
                   <input
@@ -1078,7 +1202,7 @@ const AdminAddJobPage = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Trụ sở tại
                   </label>
                   <input
@@ -1090,7 +1214,7 @@ const AdminAddJobPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Thành lập
                   </label>
                   <input
@@ -1104,7 +1228,7 @@ const AdminAddJobPage = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Thông tin sàn chứng khoán
                   </label>
                   <input
@@ -1116,7 +1240,7 @@ const AdminAddJobPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Vốn đầu tư
                   </label>
                   <input
@@ -1234,8 +1358,8 @@ const AdminAddJobPage = () => {
           </div>
 
           {/* Location */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
               <MapPin className="w-4 h-4 text-blue-600" />
               Địa điểm làm việc
             </h2>
@@ -1485,8 +1609,8 @@ const AdminAddJobPage = () => {
           </div>
 
           {/* Salary & Commission */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
               <DollarSign className="w-4 h-4 text-blue-600" />
               Lương & Hoa hồng
             </h2>
@@ -1586,7 +1710,7 @@ const AdminAddJobPage = () => {
               
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Thưởng
                   </label>
                   <input
@@ -1599,7 +1723,7 @@ const AdminAddJobPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Đánh giá lương
                   </label>
                   <input
@@ -1637,15 +1761,15 @@ const AdminAddJobPage = () => {
           </div>
 
           {/* Benefits */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
               <Award className="w-4 h-4 text-blue-600" />
               Phúc lợi
             </h2>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Bảo hiểm xã hội
                   </label>
                   <input
@@ -1658,7 +1782,7 @@ const AdminAddJobPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Phụ cấp đi lại
                   </label>
                   <input
@@ -1675,8 +1799,8 @@ const AdminAddJobPage = () => {
           </div>
 
           {/* Working Time */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
               <Clock className="w-4 h-4 text-blue-600" />
               Thời gian làm việc
             </h2>
@@ -1761,7 +1885,7 @@ const AdminAddJobPage = () => {
               
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Thời gian nghỉ
                   </label>
                   <input
@@ -1774,7 +1898,7 @@ const AdminAddJobPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Làm thêm giờ
                   </label>
                   <input
@@ -1868,7 +1992,7 @@ const AdminAddJobPage = () => {
               
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Ngày nghỉ
                   </label>
                   <input
@@ -1881,7 +2005,7 @@ const AdminAddJobPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Hạn nộp hồ sơ
                   </label>
                   <div className="relative">
@@ -1903,8 +2027,8 @@ const AdminAddJobPage = () => {
         {/* Right Column */}
         <div className="space-y-3">
           {/* Recruitment Type */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
               <Users className="w-4 h-4 text-blue-600" />
               Loại tuyển dụng
             </h2>
@@ -1956,8 +2080,8 @@ const AdminAddJobPage = () => {
           </div>
 
           {/* Requirements */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
               <FileText className="w-4 h-4 text-blue-600" />
               Yêu cầu công việc
             </h2>
@@ -2038,8 +2162,8 @@ const AdminAddJobPage = () => {
           </div>
 
           {/* Smoking Policies */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
               <Tag className="w-4 h-4 text-blue-600" />
               Chính sách hút thuốc
             </h2>
@@ -2128,8 +2252,8 @@ const AdminAddJobPage = () => {
           </div>
 
           {/* Campaigns */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
               <Tag className="w-4 h-4 text-blue-600" />
               Chiến dịch
             </h2>
@@ -2184,8 +2308,8 @@ const AdminAddJobPage = () => {
           </div>
 
           {/* Upload Files */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
               <FileText className="w-4 h-4 text-blue-600" />
               Upload Files
             </h2>
@@ -2231,8 +2355,8 @@ const AdminAddJobPage = () => {
           </div>
 
           {/* Manage Types & Values */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
               <Tag className="w-4 h-4 text-blue-600" />
               Quản lý Type & Value
             </h2>
@@ -2373,8 +2497,8 @@ const AdminAddJobPage = () => {
           </div>
 
           {/* Job Values (Commission Details) */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 pb-3 border-b border-gray-200">
+          <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2 pb-3 border-b" style={{ color: '#111827', borderColor: '#e5e7eb' }}>
               <Money className="w-4 h-4 text-blue-600" />
               Chi tiết hoa hồng (Job Values)
             </h2>
@@ -2662,11 +2786,17 @@ const AdminAddJobPage = () => {
       </form>
 
       {/* Action Buttons */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-end gap-3">
+      <div className="rounded-lg border p-4 flex items-center justify-end gap-3" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <button
           type="button"
           onClick={handleCancel}
-          className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center gap-2"
+          onMouseEnter={() => setHoveredCancelButton(true)}
+          onMouseLeave={() => setHoveredCancelButton(false)}
+          className="px-5 py-2.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2"
+          style={{
+            backgroundColor: hoveredCancelButton ? '#e5e7eb' : '#f3f4f6',
+            color: '#374151'
+          }}
         >
           <X className="w-3.5 h-3.5" />
           Hủy
@@ -2675,7 +2805,17 @@ const AdminAddJobPage = () => {
           type="submit"
           onClick={handleSubmit}
           disabled={loading}
-          className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          onMouseEnter={() => !loading && setHoveredSaveButton(true)}
+          onMouseLeave={() => setHoveredSaveButton(false)}
+          className="px-5 py-2.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2"
+          style={{
+            backgroundColor: loading 
+              ? '#93c5fd' 
+              : (hoveredSaveButton ? '#1d4ed8' : '#2563eb'),
+            color: 'white',
+            opacity: loading ? 0.5 : 1,
+            cursor: loading ? 'not-allowed' : 'pointer'
+          }}
         >
           <Save className="w-3.5 h-3.5" />
           {loading ? (jobId ? 'Đang cập nhật...' : 'Đang lưu...') : (jobId ? 'Cập nhật công việc' : 'Lưu công việc')}
@@ -2877,7 +3017,7 @@ const AdminAddJobPage = () => {
               {useComparisonOperator && (
                 <div className="space-y-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-900 mb-2">
+                    <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                       Toán tử so sánh <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -2901,7 +3041,7 @@ const AdminAddJobPage = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-900 mb-2">
+                      <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                         Giá trị so sánh <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -2914,7 +3054,7 @@ const AdminAddJobPage = () => {
                     </div>
                     {comparisonOperator === 'between' && (
                       <div>
-                        <label className="block text-xs font-semibold text-gray-900 mb-2">
+                        <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                           Giá trị kết thúc <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -3065,7 +3205,7 @@ const AdminAddJobPage = () => {
               {useComparisonOperator && (
                 <div className="space-y-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-900 mb-2">
+                    <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                       Toán tử so sánh <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -3089,7 +3229,7 @@ const AdminAddJobPage = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-900 mb-2">
+                      <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                         Giá trị so sánh <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -3102,7 +3242,7 @@ const AdminAddJobPage = () => {
                     </div>
                     {comparisonOperator === 'between' && (
                       <div>
-                        <label className="block text-xs font-semibold text-gray-900 mb-2">
+                        <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                           Giá trị kết thúc <span className="text-red-500">*</span>
                         </label>
                         <input

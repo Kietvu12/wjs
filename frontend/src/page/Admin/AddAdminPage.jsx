@@ -32,6 +32,11 @@ const AddAdminPage = () => {
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
   const [groups, setGroups] = useState([]);
+  
+  // Hover states
+  const [hoveredBackButton, setHoveredBackButton] = useState(false);
+  const [hoveredCancelButton, setHoveredCancelButton] = useState(false);
+  const [hoveredSaveButton, setHoveredSaveButton] = useState(false);
 
   useEffect(() => {
     loadGroups();
@@ -181,7 +186,7 @@ const AddAdminPage = () => {
   if (loadingData) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#2563eb' }} />
       </div>
     );
   }
@@ -193,18 +198,30 @@ const AddAdminPage = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={handleCancel}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            onMouseEnter={() => setHoveredBackButton(true)}
+            onMouseLeave={() => setHoveredBackButton(false)}
+            className="p-2 rounded-lg transition-colors"
+            style={{
+              backgroundColor: hoveredBackButton ? '#f3f4f6' : 'transparent'
+            }}
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
+            <ArrowLeft className="w-5 h-5" style={{ color: '#4b5563' }} />
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold" style={{ color: '#111827' }}>
             {isEdit ? 'Chỉnh sửa tài khoản admin' : 'Tạo tài khoản admin mới'}
           </h1>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleCancel}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+            onMouseEnter={() => setHoveredCancelButton(true)}
+            onMouseLeave={() => setHoveredCancelButton(false)}
+            className="px-4 py-2 border rounded-lg transition-colors flex items-center gap-2"
+            style={{
+              borderColor: '#d1d5db',
+              color: '#374151',
+              backgroundColor: hoveredCancelButton ? '#f9fafb' : 'transparent'
+            }}
           >
             <X className="w-4 h-4" />
             <span>Hủy</span>
@@ -212,7 +229,17 @@ const AddAdminPage = () => {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+            onMouseEnter={() => !loading && setHoveredSaveButton(true)}
+            onMouseLeave={() => setHoveredSaveButton(false)}
+            className="px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+            style={{
+              backgroundColor: loading 
+                ? '#93c5fd' 
+                : (hoveredSaveButton ? '#1d4ed8' : '#2563eb'),
+              color: 'white',
+              opacity: loading ? 0.5 : 1,
+              cursor: loading ? 'not-allowed' : 'pointer'
+            }}
           >
             {loading ? (
               <>
@@ -230,83 +257,125 @@ const AddAdminPage = () => {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="rounded-lg shadow-sm border p-6 space-y-6" style={{ backgroundColor: 'white', borderColor: '#e5e7eb', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Tên */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tên <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium mb-2" style={{ color: '#374151' }}>
+              Tên <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#9ca3af' }} />
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.name ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className="w-full pl-10 pr-4 py-2 border rounded-lg"
+                style={{
+                  borderColor: errors.name ? '#fca5a5' : '#d1d5db',
+                  outline: 'none'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#3b82f6';
+                  e.target.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.5)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = errors.name ? '#fca5a5' : '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
                 placeholder="Nhập tên admin"
               />
             </div>
-            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+            {errors.name && <p className="mt-1 text-sm" style={{ color: '#dc2626' }}>{errors.name}</p>}
           </div>
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium mb-2" style={{ color: '#374151' }}>
+              Email <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#9ca3af' }} />
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.email ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className="w-full pl-10 pr-4 py-2 border rounded-lg"
+                style={{
+                  borderColor: errors.email ? '#fca5a5' : '#d1d5db',
+                  outline: 'none'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#3b82f6';
+                  e.target.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.5)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = errors.email ? '#fca5a5' : '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
                 placeholder="Nhập email"
               />
             </div>
-            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+            {errors.email && <p className="mt-1 text-sm" style={{ color: '#dc2626' }}>{errors.email}</p>}
           </div>
 
           {/* Số điện thoại */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Số điện thoại <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium mb-2" style={{ color: '#374151' }}>
+              Số điện thoại <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <div className="relative">
-              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#9ca3af' }} />
               <input
                 type="tel"
                 name="phone"
                 value={formData.phone}
                 onChange={handleInputChange}
-                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.phone ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className="w-full pl-10 pr-4 py-2 border rounded-lg"
+                style={{
+                  borderColor: errors.phone ? '#fca5a5' : '#d1d5db',
+                  outline: 'none'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#3b82f6';
+                  e.target.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.5)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = errors.phone ? '#fca5a5' : '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
                 placeholder="Nhập số điện thoại"
               />
             </div>
-            {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+            {errors.phone && <p className="mt-1 text-sm" style={{ color: '#dc2626' }}>{errors.phone}</p>}
           </div>
 
           {/* Vai trò */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Vai trò <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium mb-2" style={{ color: '#374151' }}>
+              Vai trò <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <div className="relative">
-              <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#9ca3af' }} />
               <select
                 name="role"
                 value={formData.role}
                 onChange={handleInputChange}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2 border rounded-lg"
+                style={{
+                  borderColor: '#d1d5db',
+                  outline: 'none'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#3b82f6';
+                  e.target.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.5)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
               >
                 <option value={1}>Super Admin</option>
                 <option value={2}>Admin Backoffice</option>
@@ -318,16 +387,26 @@ const AddAdminPage = () => {
           {/* Nhóm (chỉ hiển thị khi role = 3) */}
           {formData.role === 3 && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nhóm <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium mb-2" style={{ color: '#374151' }}>
+                Nhóm <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <select
                 name="groupId"
                 value={formData.groupId}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.groupId ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className="w-full px-4 py-2 border rounded-lg"
+                style={{
+                  borderColor: errors.groupId ? '#fca5a5' : '#d1d5db',
+                  outline: 'none'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#3b82f6';
+                  e.target.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.5)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = errors.groupId ? '#fca5a5' : '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
               >
                 <option value="">-- Chọn nhóm --</option>
                 {groups.map((group) => (
@@ -336,65 +415,97 @@ const AddAdminPage = () => {
                   </option>
                 ))}
               </select>
-              {errors.groupId && <p className="mt-1 text-sm text-red-600">{errors.groupId}</p>}
+              {errors.groupId && <p className="mt-1 text-sm" style={{ color: '#dc2626' }}>{errors.groupId}</p>}
             </div>
           )}
 
           {/* Mật khẩu */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Mật khẩu {!isEdit && <span className="text-red-500">*</span>}
-              {isEdit && <span className="text-gray-500 text-xs">(Để trống nếu không đổi)</span>}
+            <label className="block text-sm font-medium mb-2" style={{ color: '#374151' }}>
+              Mật khẩu {!isEdit && <span style={{ color: '#ef4444' }}>*</span>}
+              {isEdit && <span className="text-xs" style={{ color: '#6b7280' }}>(Để trống nếu không đổi)</span>}
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#9ca3af' }} />
               <input
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
-                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.password ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className="w-full pl-10 pr-4 py-2 border rounded-lg"
+                style={{
+                  borderColor: errors.password ? '#fca5a5' : '#d1d5db',
+                  outline: 'none'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#3b82f6';
+                  e.target.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.5)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = errors.password ? '#fca5a5' : '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
                 placeholder={isEdit ? "Nhập mật khẩu mới (nếu đổi)" : "Nhập mật khẩu"}
               />
             </div>
-            {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+            {errors.password && <p className="mt-1 text-sm" style={{ color: '#dc2626' }}>{errors.password}</p>}
           </div>
 
           {/* Xác nhận mật khẩu */}
           {formData.password && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Xác nhận mật khẩu <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium mb-2" style={{ color: '#374151' }}>
+                Xác nhận mật khẩu <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#9ca3af' }} />
                 <input
                   type="password"
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
-                  className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg"
+                  style={{
+                    borderColor: errors.confirmPassword ? '#fca5a5' : '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = errors.confirmPassword ? '#fca5a5' : '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                   placeholder="Nhập lại mật khẩu"
                 />
               </div>
-              {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>}
+              {errors.confirmPassword && <p className="mt-1 text-sm" style={{ color: '#dc2626' }}>{errors.confirmPassword}</p>}
             </div>
           )}
 
           {/* Trạng thái */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Trạng thái <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium mb-2" style={{ color: '#374151' }}>
+              Trạng thái <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <select
               name="status"
               value={formData.status}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-2 border rounded-lg"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#3b82f6';
+                e.target.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             >
               <option value={1}>Đang hoạt động</option>
               <option value={0}>Không hoạt động</option>
@@ -408,9 +519,13 @@ const AddAdminPage = () => {
               name="isActive"
               checked={formData.isActive}
               onChange={handleInputChange}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="w-4 h-4 rounded"
+              style={{
+                accentColor: '#2563eb',
+                borderColor: '#d1d5db'
+              }}
             />
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium" style={{ color: '#374151' }}>
               Tài khoản đang hoạt động
             </label>
           </div>

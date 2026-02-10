@@ -17,6 +17,13 @@ const AdminJobDetailPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [adminProfile, setAdminProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  
+  // Hover states
+  const [hoveredBackButton, setHoveredBackButton] = useState(false);
+  const [hoveredEditButton, setHoveredEditButton] = useState(false);
+  const [hoveredBackToListButton, setHoveredBackToListButton] = useState(false);
+  const [hoveredCandidateItemIndex, setHoveredCandidateItemIndex] = useState(null);
+  const [hoveredSubmitNominationButton, setHoveredSubmitNominationButton] = useState(false);
 
   useEffect(() => {
     // Save referrer to sessionStorage when entering this page
@@ -88,8 +95,8 @@ const AdminJobDetailPage = () => {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Đang tải thông tin việc làm...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#2563eb' }}></div>
+          <p style={{ color: '#4b5563' }}>Đang tải thông tin việc làm...</p>
         </div>
       </div>
     );
@@ -99,14 +106,20 @@ const AdminJobDetailPage = () => {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
+          <p className="mb-4" style={{ color: '#dc2626' }}>{error}</p>
           {!loadingProfile && isSuperAdminOrBackOffice() && (
             <button
               onClick={() => {
                 const backUrl = getBackUrl();
                 navigate(backUrl);
               }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              onMouseEnter={() => setHoveredBackToListButton(true)}
+              onMouseLeave={() => setHoveredBackToListButton(false)}
+              className="px-4 py-2 rounded-lg transition-colors"
+              style={{
+                backgroundColor: hoveredBackToListButton ? '#1d4ed8' : '#2563eb',
+                color: 'white'
+              }}
             >
               Quay lại danh sách việc làm
             </button>
@@ -251,7 +264,12 @@ const AdminJobDetailPage = () => {
                 });
                 navigate(backUrl);
               }}
-              className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+              onMouseEnter={() => setHoveredBackButton(true)}
+              onMouseLeave={() => setHoveredBackButton(false)}
+              className="mb-4 flex items-center gap-2 transition-colors"
+              style={{
+                color: hoveredBackButton ? '#111827' : '#4b5563'
+              }}
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Quay lại</span>
@@ -259,8 +277,8 @@ const AdminJobDetailPage = () => {
           )}
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-4">{job.title}</h1>
-                <div className="flex items-center gap-4 text-gray-600 flex-wrap">
+                <h1 className="text-4xl font-bold mb-4" style={{ color: '#111827' }}>{job.title}</h1>
+                <div className="flex items-center gap-4 flex-wrap" style={{ color: '#4b5563' }}>
                   <span className="flex items-center gap-2">
                     <MapPin className="w-5 h-5" />
                     N/A
@@ -276,7 +294,13 @@ const AdminJobDetailPage = () => {
               {!loadingProfile && isSuperAdminOrBackOffice() && (
                 <button
                   onClick={() => navigate(`/admin/jobs/${jobId}/edit`)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+                  onMouseEnter={() => setHoveredEditButton(true)}
+                  onMouseLeave={() => setHoveredEditButton(false)}
+                  className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+                  style={{
+                    backgroundColor: hoveredEditButton ? '#1d4ed8' : '#2563eb',
+                    color: 'white'
+                  }}
                 >
                   <Edit className="w-3.5 h-3.5" />
                   Chỉnh sửa
@@ -289,23 +313,23 @@ const AdminJobDetailPage = () => {
           <div className="space-y-8">
             {/* Basic Information */}
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
+              <h2 className="text-2xl font-semibold flex items-center gap-2" style={{ color: '#111827' }}>
                 <Briefcase className="w-6 h-6" />
                 Thông tin cơ bản
               </h2>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-gray-500">Mã việc làm:</span>
-                  <span className="ml-2 font-medium">{job.jobCode || job.id}</span>
+                  <span style={{ color: '#6b7280' }}>Mã việc làm:</span>
+                  <span className="ml-2 font-medium" style={{ color: '#111827' }}>{job.jobCode || job.id}</span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Danh mục:</span>
-                  <span className="ml-2 font-medium">{job.category?.name || 'N/A'}</span>
+                  <span style={{ color: '#6b7280' }}>Danh mục:</span>
+                  <span className="ml-2 font-medium" style={{ color: '#111827' }}>{job.category?.name || 'N/A'}</span>
                 </div>
                 {job.recruitmentType && (
                   <div>
-                    <span className="text-gray-500">Loại tuyển dụng:</span>
-                    <span className="ml-2 font-medium">{getRecruitmentTypeText(job.recruitmentType)}</span>
+                    <span style={{ color: '#6b7280' }}>Loại tuyển dụng:</span>
+                    <span className="ml-2 font-medium" style={{ color: '#111827' }}>{getRecruitmentTypeText(job.recruitmentType)}</span>
                   </div>
                 )}
               </div>
@@ -314,67 +338,67 @@ const AdminJobDetailPage = () => {
             {/* Recruiting Company Information */}
             {job.recruitingCompany && (
               <div className="space-y-4">
-                <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                <h2 className="text-2xl font-semibold flex items-center gap-2" style={{ color: '#111827' }}>
                   <Building2 className="w-6 h-6" />
                   Thông tin công ty tuyển dụng
                 </h2>
             <div className="space-y-4">
               {job.recruitingCompany.companyName && (
                 <div>
-                  <span className="text-xs font-semibold text-gray-500">Tên công ty:</span>
-                  <p className="text-sm font-medium text-gray-900 mt-1">{job.recruitingCompany.companyName}</p>
+                  <span className="text-xs font-semibold" style={{ color: '#6b7280' }}>Tên công ty:</span>
+                  <p className="text-sm font-medium mt-1" style={{ color: '#111827' }}>{job.recruitingCompany.companyName}</p>
                 </div>
               )}
               <div className="grid grid-cols-2 gap-4">
                 {job.recruitingCompany.revenue && (
                   <div>
-                    <span className="text-xs font-semibold text-gray-500">Doanh thu:</span>
-                    <p className="text-sm text-gray-700 mt-1">{job.recruitingCompany.revenue}</p>
+                    <span className="text-xs font-semibold" style={{ color: '#6b7280' }}>Doanh thu:</span>
+                    <p className="text-sm mt-1" style={{ color: '#374151' }}>{job.recruitingCompany.revenue}</p>
                   </div>
                 )}
                 {job.recruitingCompany.numberOfEmployees && (
                   <div>
-                    <span className="text-xs font-semibold text-gray-500">Số nhân viên:</span>
-                    <p className="text-sm text-gray-700 mt-1">{job.recruitingCompany.numberOfEmployees}</p>
+                    <span className="text-xs font-semibold" style={{ color: '#6b7280' }}>Số nhân viên:</span>
+                    <p className="text-sm mt-1" style={{ color: '#374151' }}>{job.recruitingCompany.numberOfEmployees}</p>
                   </div>
                 )}
                 {job.recruitingCompany.headquarters && (
                   <div>
-                    <span className="text-xs font-semibold text-gray-500">Trụ sở tại:</span>
-                    <p className="text-sm text-gray-700 mt-1">{job.recruitingCompany.headquarters}</p>
+                    <span className="text-xs font-semibold" style={{ color: '#6b7280' }}>Trụ sở tại:</span>
+                    <p className="text-sm mt-1" style={{ color: '#374151' }}>{job.recruitingCompany.headquarters}</p>
                   </div>
                 )}
                 {job.recruitingCompany.establishedDate && (
                   <div>
-                    <span className="text-xs font-semibold text-gray-500">Thành lập:</span>
-                    <p className="text-sm text-gray-700 mt-1">{job.recruitingCompany.establishedDate}</p>
+                    <span className="text-xs font-semibold" style={{ color: '#6b7280' }}>Thành lập:</span>
+                    <p className="text-sm mt-1" style={{ color: '#374151' }}>{job.recruitingCompany.establishedDate}</p>
                   </div>
                 )}
                 {job.recruitingCompany.stockExchangeInfo && (
                   <div>
-                    <span className="text-xs font-semibold text-gray-500">Sàn chứng khoán:</span>
-                    <p className="text-sm text-gray-700 mt-1">{job.recruitingCompany.stockExchangeInfo}</p>
+                    <span className="text-xs font-semibold" style={{ color: '#6b7280' }}>Sàn chứng khoán:</span>
+                    <p className="text-sm mt-1" style={{ color: '#374151' }}>{job.recruitingCompany.stockExchangeInfo}</p>
                   </div>
                 )}
                 {job.recruitingCompany.investmentCapital && (
                   <div>
-                    <span className="text-xs font-semibold text-gray-500">Vốn đầu tư:</span>
-                    <p className="text-sm text-gray-700 mt-1">{job.recruitingCompany.investmentCapital}</p>
+                    <span className="text-xs font-semibold" style={{ color: '#6b7280' }}>Vốn đầu tư:</span>
+                    <p className="text-sm mt-1" style={{ color: '#374151' }}>{job.recruitingCompany.investmentCapital}</p>
                   </div>
                 )}
               </div>
               {job.recruitingCompany.companyIntroduction && (
                 <div>
-                  <span className="text-xs font-semibold text-gray-500">Giới thiệu:</span>
-                  <p className="text-sm text-gray-700 mt-1 whitespace-pre-line">{job.recruitingCompany.companyIntroduction}</p>
+                  <span className="text-xs font-semibold" style={{ color: '#6b7280' }}>Giới thiệu:</span>
+                  <p className="text-sm mt-1 whitespace-pre-line" style={{ color: '#374151' }}>{job.recruitingCompany.companyIntroduction}</p>
                 </div>
               )}
               {job.recruitingCompany.services && job.recruitingCompany.services.length > 0 && (
                 <div>
-                  <span className="text-xs font-semibold text-gray-500">Dịch vụ cung cấp:</span>
+                  <span className="text-xs font-semibold" style={{ color: '#6b7280' }}>Dịch vụ cung cấp:</span>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {job.recruitingCompany.services.map((service, index) => (
-                      <span key={index} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs">
+                      <span key={index} className="px-3 py-1 rounded-full text-xs" style={{ backgroundColor: '#eff6ff', color: '#1d4ed8' }}>
                         {service.serviceName}
                       </span>
                     ))}
@@ -383,10 +407,10 @@ const AdminJobDetailPage = () => {
               )}
               {job.recruitingCompany.businessSectors && job.recruitingCompany.businessSectors.length > 0 && (
                 <div>
-                  <span className="text-xs font-semibold text-gray-500">Lĩnh vực kinh doanh:</span>
+                  <span className="text-xs font-semibold" style={{ color: '#6b7280' }}>Lĩnh vực kinh doanh:</span>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {job.recruitingCompany.businessSectors.map((sector, index) => (
-                      <span key={index} className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs">
+                      <span key={index} className="px-3 py-1 rounded-full text-xs" style={{ backgroundColor: '#f0fdf4', color: '#166534' }}>
                         {sector.sectorName}
                       </span>
                     ))}
@@ -401,26 +425,39 @@ const AdminJobDetailPage = () => {
       </div>
 
       {/* Sidebar - Right Column */}
-      <div className="w-96 flex-shrink-0 bg-white border-l border-gray-100 p-6">
+      <div className="w-96 flex-shrink-0 border-l p-6" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
         <div className="sticky top-6 space-y-6">
           {/* Nomination Section - Đặt đầu tiên để dễ thấy */}
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <UserPlus className="w-4 h-4 text-green-600" />
+          <div className="rounded-lg p-4" style={{ backgroundColor: '#f0fdf4', borderColor: '#bbf7d0', border: '1px solid' }}>
+            <h3 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: '#111827' }}>
+              <UserPlus className="w-4 h-4" style={{ color: '#16a34a' }} />
               Tiến cử ứng viên
             </h3>
             
             {/* Search */}
             <div className="mb-3">
               <div className="relative">
-                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
                 <input
                   type="text"
                   placeholder="Tìm kiếm ứng viên..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onFocus={handleNominate}
-                  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 text-xs bg-white"
+                  className="w-full pl-8 pr-3 py-2 border rounded-lg text-xs"
+                  style={{
+                    backgroundColor: 'white',
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#16a34a';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(22, 163, 74, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
             </div>
@@ -428,36 +465,42 @@ const AdminJobDetailPage = () => {
             {/* Candidate List */}
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {loadingCandidates ? (
-                <div className="text-center py-4 text-gray-500 text-xs">Đang tải...</div>
+                <div className="text-center py-4 text-xs" style={{ color: '#6b7280' }}>Đang tải...</div>
               ) : candidates.length === 0 && searchTerm ? (
-                <div className="text-center py-4 text-gray-500 text-xs">Không tìm thấy ứng viên</div>
+                <div className="text-center py-4 text-xs" style={{ color: '#6b7280' }}>Không tìm thấy ứng viên</div>
               ) : candidates.length === 0 ? (
-                <div className="text-center py-4 text-gray-400 text-xs">Nhập tên để tìm kiếm</div>
+                <div className="text-center py-4 text-xs" style={{ color: '#9ca3af' }}>Nhập tên để tìm kiếm</div>
               ) : (
-                candidates.map((candidate) => (
+                candidates.map((candidate, index) => (
                   <div
                     key={candidate.id}
                     onClick={() => setSelectedCandidateId(candidate.id)}
-                    className={`p-2 border rounded-lg cursor-pointer transition-colors bg-white ${
-                      selectedCandidateId === candidate.id
-                        ? 'border-green-600 bg-green-100'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                    }`}
+                    className="p-2 border rounded-lg cursor-pointer transition-colors"
+                    style={{
+                      backgroundColor: selectedCandidateId === candidate.id
+                        ? '#dcfce7'
+                        : (hoveredCandidateItemIndex === index ? '#f9fafb' : 'white'),
+                      borderColor: selectedCandidateId === candidate.id
+                        ? '#16a34a'
+                        : (hoveredCandidateItemIndex === index ? '#d1d5db' : '#e5e7eb')
+                    }}
+                    onMouseEnter={() => setHoveredCandidateItemIndex(index)}
+                    onMouseLeave={() => setHoveredCandidateItemIndex(null)}
                   >
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-[10px] flex-shrink-0">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-[10px] flex-shrink-0" style={{ backgroundColor: '#9333ea' }}>
                         {(candidate.name || candidate.fullName || '?').charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-gray-900 text-xs truncate">
+                        <div className="font-semibold text-xs truncate" style={{ color: '#111827' }}>
                           {candidate.name || candidate.fullName || 'N/A'}
                         </div>
                         {candidate.code && (
-                          <div className="text-[10px] text-gray-500">Mã: {candidate.code}</div>
+                          <div className="text-[10px]" style={{ color: '#6b7280' }}>Mã: {candidate.code}</div>
                         )}
                       </div>
                       {selectedCandidateId === candidate.id && (
-                        <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: '#16a34a' }} />
                       )}
                     </div>
                   </div>
@@ -470,7 +513,17 @@ const AdminJobDetailPage = () => {
               <button
                 onClick={handleSubmitNomination}
                 disabled={submitting}
-                className="w-full mt-3 px-3 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                onMouseEnter={() => !submitting && setHoveredSubmitNominationButton(true)}
+                onMouseLeave={() => setHoveredSubmitNominationButton(false)}
+                className="w-full mt-3 px-3 py-2 rounded-lg text-xs font-semibold transition-colors"
+                style={{
+                  backgroundColor: submitting
+                    ? '#86efac'
+                    : (hoveredSubmitNominationButton ? '#15803d' : '#16a34a'),
+                  color: 'white',
+                  opacity: submitting ? 0.5 : 1,
+                  cursor: submitting ? 'not-allowed' : 'pointer'
+                }}
               >
                 {submitting ? 'Đang xử lý...' : 'Tiến cử ứng viên'}
               </button>
@@ -479,22 +532,22 @@ const AdminJobDetailPage = () => {
 
           {/* Details */}
           <div className="space-y-4">
-            <div className="text-sm text-gray-500 mb-2">Details</div>
+            <div className="text-sm mb-2" style={{ color: '#6b7280' }}>Details</div>
             {job.category && (
               <div className="flex items-center gap-3">
-                <Settings className="w-5 h-5 text-gray-400" />
+                <Settings className="w-5 h-5" style={{ color: '#9ca3af' }} />
                 <div>
-                  <div className="text-xs text-gray-500">Industry</div>
-                  <div className="text-sm font-medium text-gray-900">{job.category.name}</div>
+                  <div className="text-xs" style={{ color: '#6b7280' }}>Industry</div>
+                  <div className="text-sm font-medium" style={{ color: '#111827' }}>{job.category.name}</div>
                 </div>
               </div>
             )}
             {job.recruitmentType && (
               <div className="flex items-center gap-3">
-                <Briefcase className="w-5 h-5 text-gray-400" />
+                <Briefcase className="w-5 h-5" style={{ color: '#9ca3af' }} />
                 <div>
-                  <div className="text-xs text-gray-500">Employment Type</div>
-                  <div className="text-sm font-medium text-gray-900">{getRecruitmentTypeText(job.recruitmentType)}</div>
+                  <div className="text-xs" style={{ color: '#6b7280' }}>Employment Type</div>
+                  <div className="text-sm font-medium" style={{ color: '#111827' }}>{getRecruitmentTypeText(job.recruitmentType)}</div>
                 </div>
               </div>
             )}
@@ -502,13 +555,13 @@ const AdminJobDetailPage = () => {
 
           {/* Recruiting Company Information */}
           {job.recruitingCompany && (
-            <div className="pt-6 border-t border-gray-100">
-              <div className="text-sm text-gray-500 mb-3">Công ty tuyển dụng</div>
+            <div className="pt-6 border-t" style={{ borderColor: '#f3f4f6' }}>
+              <div className="text-sm mb-3" style={{ color: '#6b7280' }}>Công ty tuyển dụng</div>
               <div className="space-y-3">
                 {job.recruitingCompany.companyName && (
-                  <div className="font-semibold text-gray-900">{job.recruitingCompany.companyName}</div>
+                  <div className="font-semibold" style={{ color: '#111827' }}>{job.recruitingCompany.companyName}</div>
                 )}
-                <div className="space-y-2 text-sm text-gray-600">
+                <div className="space-y-2 text-sm" style={{ color: '#4b5563' }}>
                   {job.recruitingCompany.revenue && (
                     <div>
                       <span className="font-medium">Doanh thu:</span> {job.recruitingCompany.revenue}
@@ -531,17 +584,17 @@ const AdminJobDetailPage = () => {
                   )}
                 </div>
                 {job.recruitingCompany.companyIntroduction && (
-                  <p className="text-sm text-gray-600 leading-relaxed">
+                  <p className="text-sm leading-relaxed" style={{ color: '#4b5563' }}>
                     {job.recruitingCompany.companyIntroduction.substring(0, 150)}
                     {job.recruitingCompany.companyIntroduction.length > 150 ? '...' : ''}
                   </p>
                 )}
                 {job.recruitingCompany.services && job.recruitingCompany.services.length > 0 && (
                   <div>
-                    <div className="text-xs font-medium text-gray-500 mb-2">Dịch vụ:</div>
+                    <div className="text-xs font-medium mb-2" style={{ color: '#6b7280' }}>Dịch vụ:</div>
                     <div className="flex flex-wrap gap-1">
                       {job.recruitingCompany.services.map((service, index) => (
-                        <span key={index} className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs">
+                        <span key={index} className="px-2 py-1 rounded text-xs" style={{ backgroundColor: '#eff6ff', color: '#1d4ed8' }}>
                           {service.serviceName}
                         </span>
                       ))}
@@ -550,10 +603,10 @@ const AdminJobDetailPage = () => {
                 )}
                 {job.recruitingCompany.businessSectors && job.recruitingCompany.businessSectors.length > 0 && (
                   <div>
-                    <div className="text-xs font-medium text-gray-500 mb-2">Lĩnh vực:</div>
+                    <div className="text-xs font-medium mb-2" style={{ color: '#6b7280' }}>Lĩnh vực:</div>
                     <div className="flex flex-wrap gap-1">
                       {job.recruitingCompany.businessSectors.map((sector, index) => (
-                        <span key={index} className="px-2 py-1 bg-green-50 text-green-700 rounded text-xs">
+                        <span key={index} className="px-2 py-1 rounded text-xs" style={{ backgroundColor: '#f0fdf4', color: '#166534' }}>
                           {sector.sectorName}
                         </span>
                       ))}

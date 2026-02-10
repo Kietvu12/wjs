@@ -27,6 +27,14 @@ const AddJobCategoryPage = () => {
   const [loading, setLoading] = useState(false);
   const [childCategories, setChildCategories] = useState([]); // Array of child categories to create
   const [showAddChildren, setShowAddChildren] = useState(false);
+  
+  // Hover states
+  const [hoveredBackButton, setHoveredBackButton] = useState(false);
+  const [hoveredCancelButton, setHoveredCancelButton] = useState(false);
+  const [hoveredSaveButton, setHoveredSaveButton] = useState(false);
+  const [hoveredAddChildrenButton, setHoveredAddChildrenButton] = useState(false);
+  const [hoveredRemoveChildCategoryButtonIndex, setHoveredRemoveChildCategoryButtonIndex] = useState(null);
+  const [hoveredAddChildCategoryButton, setHoveredAddChildCategoryButton] = useState(false);
 
   // Helper function to find category and all its descendants in tree
   const findCategoryAndDescendants = (categoryId, tree) => {
@@ -433,19 +441,24 @@ const AddJobCategoryPage = () => {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center justify-between">
+      <div className="rounded-lg p-4 border flex items-center justify-between" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/admin/job-categories')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            onMouseEnter={() => setHoveredBackButton(true)}
+            onMouseLeave={() => setHoveredBackButton(false)}
+            className="p-2 rounded-lg transition-colors"
+            style={{
+              backgroundColor: hoveredBackButton ? '#f3f4f6' : 'transparent'
+            }}
           >
-            <ArrowLeft className="w-4 h-4 text-gray-600" />
+            <ArrowLeft className="w-4 h-4" style={{ color: '#4b5563' }} />
           </button>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">
+            <h1 className="text-lg font-bold" style={{ color: '#111827' }}>
               {categoryId ? 'Chỉnh sửa danh mục' : 'Thêm danh mục việc làm'}
             </h1>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs mt-1" style={{ color: '#6b7280' }}>
               {categoryId ? 'Cập nhật thông tin danh mục' : 'Thêm danh mục mới vào hệ thống'}
             </p>
           </div>
@@ -453,7 +466,13 @@ const AddJobCategoryPage = () => {
         <div className="flex gap-2">
           <button
             onClick={handleCancel}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center gap-1.5"
+            onMouseEnter={() => setHoveredCancelButton(true)}
+            onMouseLeave={() => setHoveredCancelButton(false)}
+            className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: hoveredCancelButton ? '#e5e7eb' : '#f3f4f6',
+              color: '#374151'
+            }}
           >
             <X className="w-3.5 h-3.5" />
             Hủy
@@ -461,7 +480,17 @@ const AddJobCategoryPage = () => {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={() => !loading && setHoveredSaveButton(true)}
+            onMouseLeave={() => setHoveredSaveButton(false)}
+            className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{
+              backgroundColor: loading 
+                ? '#93c5fd' 
+                : (hoveredSaveButton ? '#1d4ed8' : '#2563eb'),
+              color: 'white',
+              opacity: loading ? 0.5 : 1,
+              cursor: loading ? 'not-allowed' : 'pointer'
+            }}
           >
             <Save className="w-3.5 h-3.5" />
             {loading ? (categoryId ? 'Đang cập nhật...' : 'Đang lưu...') : (categoryId ? 'Cập nhật' : 'Lưu')}
@@ -470,12 +499,12 @@ const AddJobCategoryPage = () => {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg p-6 border border-gray-200 space-y-4">
+      <form onSubmit={handleSubmit} className="rounded-lg p-6 border space-y-4" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Name */}
           <div>
-            <label className="block text-xs font-semibold text-gray-900 mb-2">
-              Tên danh mục <span className="text-red-500">*</span>
+            <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+              Tên danh mục <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <input
               type="text"
@@ -484,18 +513,28 @@ const AddJobCategoryPage = () => {
               onChange={handleInputChange}
               placeholder="VD: Công nghệ thông tin"
               required
-              className={`w-full px-3 py-2 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-                errors.name ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className="w-full px-3 py-2 border rounded-lg text-xs"
+              style={{
+                borderColor: errors.name ? '#ef4444' : '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = errors.name ? '#ef4444' : '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             />
-            {errors.name && <p className="text-[10px] text-red-500 mt-1">{errors.name}</p>}
+            {errors.name && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.name}</p>}
           </div>
 
           {/* Slug */}
           <div>
-            <label className="block text-xs font-semibold text-gray-900 mb-2">
-              Slug <span className="text-red-500">*</span>
-              <span className="text-gray-500 text-[10px] ml-2">(Tự động tạo từ tên)</span>
+            <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+              Slug <span style={{ color: '#ef4444' }}>*</span>
+              <span className="text-[10px] ml-2" style={{ color: '#6b7280' }}>(Tự động tạo từ tên)</span>
             </label>
             <input
               type="text"
@@ -504,17 +543,27 @@ const AddJobCategoryPage = () => {
               onChange={handleInputChange}
               placeholder="VD: cong-nghe-thong-tin"
               required
-              className={`w-full px-3 py-2 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-                errors.slug ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className="w-full px-3 py-2 border rounded-lg text-xs"
+              style={{
+                borderColor: errors.slug ? '#ef4444' : '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = errors.slug ? '#ef4444' : '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             />
-            {errors.slug && <p className="text-[10px] text-red-500 mt-1">{errors.slug}</p>}
+            {errors.slug && <p className="text-[10px] mt-1" style={{ color: '#ef4444' }}>{errors.slug}</p>}
           </div>
         </div>
 
         {/* Description */}
         <div>
-          <label className="block text-xs font-semibold text-gray-900 mb-2">
+          <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
             Mô tả
           </label>
           <textarea
@@ -523,18 +572,30 @@ const AddJobCategoryPage = () => {
             onChange={handleInputChange}
             placeholder="Mô tả về danh mục..."
             rows="3"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+            className="w-full px-3 py-2 border rounded-lg text-xs resize-none"
+            style={{
+              borderColor: '#d1d5db',
+              outline: 'none'
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#2563eb';
+              e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#d1d5db';
+              e.target.style.boxShadow = 'none';
+            }}
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Parent Category */}
           <div>
-            <label className="block text-xs font-semibold text-gray-900 mb-2">
+            <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
               Category cha (Parent Category)
             </label>
             <div className="relative">
-              <Folder className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Folder className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: '#9ca3af' }} />
               <select
                 name="parentId"
                 value={formData.parentId || ''}
@@ -544,7 +605,19 @@ const AddJobCategoryPage = () => {
                     parentId: e.target.value ? parseInt(e.target.value) : null
                   }));
                 }}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 font-mono"
+                className="w-full pl-10 pr-3 py-2 border rounded-lg text-xs font-mono"
+                style={{
+                  borderColor: '#d1d5db',
+                  outline: 'none'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#2563eb';
+                  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
               >
                 <option value="">-- Không có (Category cấp cha) --</option>
                 {parentCategories.length > 0 ? (
@@ -563,7 +636,7 @@ const AddJobCategoryPage = () => {
                 )}
               </select>
             </div>
-            <p className="text-[10px] text-gray-500 mt-1">
+            <p className="text-[10px] mt-1" style={{ color: '#6b7280' }}>
               {formData.parentId 
                 ? (() => {
                     const selectedParent = parentCategories.find(c => c.id === formData.parentId);
@@ -574,14 +647,14 @@ const AddJobCategoryPage = () => {
                   })()
                 : 'Đây là category cấp cha (không có parent) - Cấp 0'}
             </p>
-            <p className="text-[10px] text-blue-600 mt-1 font-medium">
+            <p className="text-[10px] mt-1 font-medium" style={{ color: '#2563eb' }}>
               💡 Bạn có thể chọn bất kỳ category nào (kể cả category đã có parent) để tạo category con
             </p>
           </div>
 
           {/* Order */}
           <div>
-            <label className="block text-xs font-semibold text-gray-900 mb-2">
+            <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
               Thứ tự hiển thị
             </label>
             <input
@@ -591,20 +664,44 @@ const AddJobCategoryPage = () => {
               onChange={handleInputChange}
               placeholder="0"
               min="0"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full px-3 py-2 border rounded-lg text-xs"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
 
           {/* Status */}
           <div>
-            <label className="block text-xs font-semibold text-gray-900 mb-2">
+            <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
               Trạng thái
             </label>
             <select
               name="status"
               value={formData.status}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full px-3 py-2 border rounded-lg text-xs"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             >
               <option value="1">Đang hoạt động</option>
               <option value="0">Ẩn</option>
@@ -614,11 +711,11 @@ const AddJobCategoryPage = () => {
 
         {/* Add Child Categories Section */}
         {!categoryId && (
-          <div className="border-t border-gray-200 pt-4">
+          <div className="border-t pt-4" style={{ borderColor: '#e5e7eb' }}>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-sm font-semibold text-gray-900">Thêm category con cùng lúc</h3>
-                <p className="text-[10px] text-gray-500 mt-1">
+                <h3 className="text-sm font-semibold" style={{ color: '#111827' }}>Thêm category con cùng lúc</h3>
+                <p className="text-[10px] mt-1" style={{ color: '#6b7280' }}>
                   Tạo nhiều category con của category này trong một lần
                 </p>
               </div>
@@ -630,7 +727,13 @@ const AddJobCategoryPage = () => {
                     addChildCategory();
                   }
                 }}
-                className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors flex items-center gap-1.5"
+                onMouseEnter={() => setHoveredAddChildrenButton(true)}
+                onMouseLeave={() => setHoveredAddChildrenButton(false)}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
+                style={{
+                  backgroundColor: hoveredAddChildrenButton ? '#dbeafe' : '#eff6ff',
+                  color: '#2563eb'
+                }}
               >
                 <Plus className="w-3.5 h-3.5" />
                 {showAddChildren ? 'Ẩn' : 'Thêm category con'}
@@ -640,15 +743,21 @@ const AddJobCategoryPage = () => {
             {showAddChildren && (
               <div className="space-y-3">
                 {childCategories.map((child, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <div key={index} className="border rounded-lg p-4" style={{ borderColor: '#e5e7eb', backgroundColor: '#f9fafb' }}>
                     <div className="flex items-start justify-between mb-3">
-                      <h4 className="text-xs font-semibold text-gray-700">
+                      <h4 className="text-xs font-semibold" style={{ color: '#374151' }}>
                         Category con #{index + 1}
                       </h4>
                       <button
                         type="button"
                         onClick={() => removeChildCategory(index)}
-                        className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                        onMouseEnter={() => setHoveredRemoveChildCategoryButtonIndex(index)}
+                        onMouseLeave={() => setHoveredRemoveChildCategoryButtonIndex(null)}
+                        className="p-1 rounded transition-colors"
+                        style={{
+                          color: hoveredRemoveChildCategoryButtonIndex === index ? '#b91c1c' : '#ef4444',
+                          backgroundColor: hoveredRemoveChildCategoryButtonIndex === index ? '#fef2f2' : 'transparent'
+                        }}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -656,40 +765,64 @@ const AddJobCategoryPage = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[10px] font-semibold text-gray-700 mb-1">
-                          Tên category con <span className="text-red-500">*</span>
+                        <label className="block text-[10px] font-semibold mb-1" style={{ color: '#374151' }}>
+                          Tên category con <span style={{ color: '#ef4444' }}>*</span>
                         </label>
                         <input
                           type="text"
                           value={child.name}
                           onChange={(e) => updateChildCategory(index, 'name', e.target.value)}
                           placeholder="VD: Software Development"
-                          className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          className="w-full px-2 py-1.5 border rounded text-xs"
+                          style={{
+                            borderColor: '#d1d5db',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = '#2563eb';
+                            e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                            e.target.style.boxShadow = 'none';
+                          }}
                         />
                         {errors[`child_${index}_name`] && (
-                          <p className="text-[10px] text-red-500 mt-0.5">{errors[`child_${index}_name`]}</p>
+                          <p className="text-[10px] mt-0.5" style={{ color: '#ef4444' }}>{errors[`child_${index}_name`]}</p>
                         )}
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-semibold text-gray-700 mb-1">
-                          Slug <span className="text-red-500">*</span>
+                        <label className="block text-[10px] font-semibold mb-1" style={{ color: '#374151' }}>
+                          Slug <span style={{ color: '#ef4444' }}>*</span>
                         </label>
                         <input
                           type="text"
                           value={child.slug}
                           onChange={(e) => updateChildCategory(index, 'slug', e.target.value)}
                           placeholder="VD: software-development"
-                          className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          className="w-full px-2 py-1.5 border rounded text-xs"
+                          style={{
+                            borderColor: '#d1d5db',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = '#2563eb';
+                            e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                            e.target.style.boxShadow = 'none';
+                          }}
                         />
                         {errors[`child_${index}_slug`] && (
-                          <p className="text-[10px] text-red-500 mt-0.5">{errors[`child_${index}_slug`]}</p>
+                          <p className="text-[10px] mt-0.5" style={{ color: '#ef4444' }}>{errors[`child_${index}_slug`]}</p>
                         )}
                       </div>
                     </div>
 
                     <div className="mt-3">
-                      <label className="block text-[10px] font-semibold text-gray-700 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#374151' }}>
                         Mô tả
                       </label>
                       <textarea
@@ -697,13 +830,25 @@ const AddJobCategoryPage = () => {
                         onChange={(e) => updateChildCategory(index, 'description', e.target.value)}
                         placeholder="Mô tả về category con..."
                         rows="2"
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                        className="w-full px-2 py-1.5 border rounded text-xs resize-none"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#2563eb';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 mt-3">
                       <div>
-                        <label className="block text-[10px] font-semibold text-gray-700 mb-1">
+                        <label className="block text-[10px] font-semibold mb-1" style={{ color: '#374151' }}>
                           Thứ tự
                         </label>
                         <input
@@ -711,18 +856,42 @@ const AddJobCategoryPage = () => {
                           value={child.order}
                           onChange={(e) => updateChildCategory(index, 'order', parseInt(e.target.value) || 0)}
                           min="0"
-                          className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          className="w-full px-2 py-1.5 border rounded text-xs"
+                          style={{
+                            borderColor: '#d1d5db',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = '#2563eb';
+                            e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                            e.target.style.boxShadow = 'none';
+                          }}
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-semibold text-gray-700 mb-1">
+                        <label className="block text-[10px] font-semibold mb-1" style={{ color: '#374151' }}>
                           Trạng thái
                         </label>
                         <select
                           value={child.status}
                           onChange={(e) => updateChildCategory(index, 'status', parseInt(e.target.value))}
-                          className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          className="w-full px-2 py-1.5 border rounded text-xs"
+                          style={{
+                            borderColor: '#d1d5db',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = '#2563eb';
+                            e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = '#d1d5db';
+                            e.target.style.boxShadow = 'none';
+                          }}
                         >
                           <option value="1">Đang hoạt động</option>
                           <option value="0">Ẩn</option>
@@ -732,13 +901,25 @@ const AddJobCategoryPage = () => {
 
                     {/* Parent for child category (can be current category, another existing category, or another child being created) */}
                     <div className="mt-3">
-                      <label className="block text-[10px] font-semibold text-gray-700 mb-1">
+                      <label className="block text-[10px] font-semibold mb-1" style={{ color: '#374151' }}>
                         Category cha của category con này
                       </label>
                       <select
                         value={child.parentId || ''}
                         onChange={(e) => updateChildCategory(index, 'parentId', e.target.value ? parseInt(e.target.value) : null)}
-                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        className="w-full px-2 py-1.5 border rounded text-xs"
+                        style={{
+                          borderColor: '#d1d5db',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#2563eb';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#d1d5db';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       >
                         <option value="">-- Sử dụng category chính làm parent --</option>
                         {/* Show other child categories being created (for nested children) */}
@@ -757,7 +938,7 @@ const AddJobCategoryPage = () => {
                           </option>
                         ))}
                       </select>
-                      <p className="text-[9px] text-gray-500 mt-1">
+                      <p className="text-[9px] mt-1" style={{ color: '#6b7280' }}>
                         {(() => {
                           if (!child.parentId) {
                             return `Category con này sẽ thuộc về category chính "${formData.name || 'category đang tạo'}"`;
@@ -780,7 +961,13 @@ const AddJobCategoryPage = () => {
                 <button
                   type="button"
                   onClick={addChildCategory}
-                  className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-xs text-gray-600 hover:border-blue-400 hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
+                  onMouseEnter={() => setHoveredAddChildCategoryButton(true)}
+                  onMouseLeave={() => setHoveredAddChildCategoryButton(false)}
+                  className="w-full py-2 border-2 border-dashed rounded-lg text-xs transition-colors flex items-center justify-center gap-2"
+                  style={{
+                    borderColor: hoveredAddChildCategoryButton ? '#60a5fa' : '#d1d5db',
+                    color: hoveredAddChildCategoryButton ? '#2563eb' : '#4b5563'
+                  }}
                 >
                   <Plus className="w-4 h-4" />
                   Thêm category con khác
@@ -791,19 +978,19 @@ const AddJobCategoryPage = () => {
         )}
 
         {/* Info Box */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <div className="rounded-lg p-3 border" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
           <div className="flex items-start gap-2">
-            <Tag className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-            <div className="text-xs text-blue-800">
+            <Tag className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#2563eb' }} />
+            <div className="text-xs" style={{ color: '#1e40af' }}>
               <p className="font-semibold mb-1">Lưu ý về cấu trúc category:</p>
               <ul className="list-disc list-inside space-y-1">
                 <li><strong>Không chọn parent</strong> → Tạo category cấp cha (Cấp 0) - parentId = NULL</li>
                 <li><strong>Chọn category cấp cha</strong> → Tạo category con (Cấp 1)</li>
                 <li><strong>Chọn category cấp 1</strong> → Tạo category con của category con (Cấp 2)</li>
                 <li><strong>Chọn category cấp 2</strong> → Tạo category cấp 3, và cứ thế...</li>
-                <li className="mt-2 font-semibold text-blue-900">✅ Bạn có thể chọn BẤT KỲ category nào (kể cả category đã có parent) để tạo category con!</li>
+                <li className="mt-2 font-semibold" style={{ color: '#1e3a8a' }}>✅ Bạn có thể chọn BẤT KỲ category nào (kể cả category đã có parent) để tạo category con!</li>
                 {!categoryId && (
-                  <li className="mt-2 font-semibold text-blue-900">✅ Bạn có thể tạo nhiều category con cùng lúc bằng cách sử dụng phần "Thêm category con cùng lúc"!</li>
+                  <li className="mt-2 font-semibold" style={{ color: '#1e3a8a' }}>✅ Bạn có thể tạo nhiều category con cùng lúc bằng cách sử dụng phần "Thêm category con cùng lúc"!</li>
                 )}
                 <li>Slug sẽ được tự động tạo từ tên, bạn có thể chỉnh sửa nếu cần</li>
               </ul>

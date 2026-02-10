@@ -6,7 +6,7 @@ import BottomNavbar from './BottomNavbar';
 
 const AgentLayout = () => {
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen" style={{ backgroundColor: '#f9fafb' }}>
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />

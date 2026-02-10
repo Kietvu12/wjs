@@ -36,6 +36,20 @@ const JobCategoriesPage = () => {
     order: 0,
     status: 1,
   });
+  
+  // Hover states
+  const [hoveredAddCategoryButton, setHoveredAddCategoryButton] = useState(false);
+  const [hoveredRefreshButton, setHoveredRefreshButton] = useState(false);
+  const [hoveredCategoryItemIndex, setHoveredCategoryItemIndex] = useState(null);
+  const [hoveredExpandButtonIndex, setHoveredExpandButtonIndex] = useState(null);
+  const [hoveredQuickAddButtonIndex, setHoveredQuickAddButtonIndex] = useState(null);
+  const [hoveredToggleStatusButtonIndex, setHoveredToggleStatusButtonIndex] = useState(null);
+  const [hoveredDuplicateButtonIndex, setHoveredDuplicateButtonIndex] = useState(null);
+  const [hoveredEditButtonIndex, setHoveredEditButtonIndex] = useState(null);
+  const [hoveredDeleteButtonIndex, setHoveredDeleteButtonIndex] = useState(null);
+  const [hoveredCloseModalButton, setHoveredCloseModalButton] = useState(false);
+  const [hoveredCancelModalButton, setHoveredCancelModalButton] = useState(false);
+  const [hoveredSubmitModalButton, setHoveredSubmitModalButton] = useState(false);
 
   useEffect(() => {
     loadCategories();
@@ -232,32 +246,44 @@ const JobCategoriesPage = () => {
     });
   };
 
-  const renderCategory = (category, level = 0) => {
+  const renderCategory = (category, level = 0, index = null) => {
     const isExpanded = expandedCategories.has(category.id);
     const hasChildren = category.children && category.children.length > 0;
     const isParent = !category.parentId; // Loại công việc
     const isChild = category.parentId; // Lĩnh vực
 
     const filteredChildren = category.children ? filterCategories(category.children) : [];
+    const uniqueKey = `${category.id}-${level}-${index}`;
 
     return (
       <div key={category.id} className="mb-1">
         <div
-          className={`flex items-center gap-2 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors ${
-            selectedCategory?.id === category.id ? 'bg-blue-50 border-blue-300' : ''
-          }`}
-          style={{ paddingLeft: `${level * 24 + 12}px` }}
+          className="flex items-center gap-2 p-3 rounded-lg border transition-colors"
+          style={{
+            paddingLeft: `${level * 24 + 12}px`,
+            borderColor: selectedCategory?.id === category.id ? '#93c5fd' : '#e5e7eb',
+            backgroundColor: selectedCategory?.id === category.id
+              ? '#eff6ff'
+              : (hoveredCategoryItemIndex === uniqueKey ? '#f9fafb' : 'transparent')
+          }}
+          onMouseEnter={() => setHoveredCategoryItemIndex(uniqueKey)}
+          onMouseLeave={() => setHoveredCategoryItemIndex(null)}
         >
           {/* Expand/Collapse Button */}
           {hasChildren ? (
             <button
               onClick={() => toggleExpand(category.id)}
-              className="p-1 hover:bg-gray-200 rounded transition-colors"
+              onMouseEnter={() => setHoveredExpandButtonIndex(uniqueKey)}
+              onMouseLeave={() => setHoveredExpandButtonIndex(null)}
+              className="p-1 rounded transition-colors"
+              style={{
+                backgroundColor: hoveredExpandButtonIndex === uniqueKey ? '#e5e7eb' : 'transparent'
+              }}
             >
               {isExpanded ? (
-                <ChevronDown className="w-4 h-4 text-gray-600" />
+                <ChevronDown className="w-4 h-4" style={{ color: '#4b5563' }} />
               ) : (
-                <ChevronRight className="w-4 h-4 text-gray-600" />
+                <ChevronRight className="w-4 h-4" style={{ color: '#4b5563' }} />
               )}
             </button>
           ) : (
@@ -266,38 +292,38 @@ const JobCategoriesPage = () => {
 
           {/* Icon */}
           {isParent ? (
-            <FolderOpen className="w-5 h-5 text-blue-600" />
+            <FolderOpen className="w-5 h-5" style={{ color: '#2563eb' }} />
           ) : (
-            <Tag className="w-4 h-4 text-green-600 ml-1" />
+            <Tag className="w-4 h-4 ml-1" style={{ color: '#16a34a' }} />
           )}
 
           {/* Category Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm text-gray-900 truncate">
+              <span className="font-semibold text-sm truncate" style={{ color: '#111827' }}>
                 {category.name}
               </span>
               {isParent && (
-                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-semibold rounded">
+                <span className="px-2 py-0.5 text-[10px] font-semibold rounded" style={{ backgroundColor: '#dbeafe', color: '#1d4ed8' }}>
                   Loại công việc
                 </span>
               )}
               {isChild && (
-                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-semibold rounded">
+                <span className="px-2 py-0.5 text-[10px] font-semibold rounded" style={{ backgroundColor: '#dcfce7', color: '#166534' }}>
                   Lĩnh vực
                 </span>
               )}
               {category.status === 0 && (
-                <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] font-semibold rounded">
+                <span className="px-2 py-0.5 text-[10px] font-semibold rounded" style={{ backgroundColor: '#f3f4f6', color: '#4b5563' }}>
                   Ẩn
                 </span>
               )}
             </div>
-            <div className="text-xs text-gray-500 mt-0.5">
+            <div className="text-xs mt-0.5" style={{ color: '#6b7280' }}>
               Slug: {category.slug} | Thứ tự: {category.order} | Số việc làm: {category.jobsCount || 0}
             </div>
             {category.description && (
-              <div className="text-xs text-gray-600 mt-1 line-clamp-1">
+              <div className="text-xs mt-1 line-clamp-1" style={{ color: '#4b5563' }}>
                 {category.description}
               </div>
             )}
@@ -308,42 +334,67 @@ const JobCategoriesPage = () => {
             {/* Quick Add Child Button */}
             <button
               onClick={() => handleQuickAdd(category.id)}
-              className="p-2 hover:bg-green-100 rounded transition-colors"
+              onMouseEnter={() => setHoveredQuickAddButtonIndex(uniqueKey)}
+              onMouseLeave={() => setHoveredQuickAddButtonIndex(null)}
+              className="p-2 rounded transition-colors"
+              style={{
+                backgroundColor: hoveredQuickAddButtonIndex === uniqueKey ? '#dcfce7' : 'transparent'
+              }}
               title="Thêm category con nhanh"
             >
-              <Plus className="w-4 h-4 text-green-600" />
+              <Plus className="w-4 h-4" style={{ color: '#16a34a' }} />
             </button>
             <button
               onClick={() => toggleStatus(category)}
-              className="p-2 hover:bg-gray-200 rounded transition-colors"
+              onMouseEnter={() => setHoveredToggleStatusButtonIndex(uniqueKey)}
+              onMouseLeave={() => setHoveredToggleStatusButtonIndex(null)}
+              className="p-2 rounded transition-colors"
+              style={{
+                backgroundColor: hoveredToggleStatusButtonIndex === uniqueKey ? '#e5e7eb' : 'transparent'
+              }}
               title={category.status === 1 ? 'Ẩn' : 'Hiện'}
             >
               {category.status === 1 ? (
-                <Eye className="w-4 h-4 text-gray-600" />
+                <Eye className="w-4 h-4" style={{ color: '#4b5563' }} />
               ) : (
-                <EyeOff className="w-4 h-4 text-gray-400" />
+                <EyeOff className="w-4 h-4" style={{ color: '#9ca3af' }} />
               )}
             </button>
             <button
               onClick={() => handleDuplicate(category)}
-              className="p-2 hover:bg-purple-100 rounded transition-colors"
+              onMouseEnter={() => setHoveredDuplicateButtonIndex(uniqueKey)}
+              onMouseLeave={() => setHoveredDuplicateButtonIndex(null)}
+              className="p-2 rounded transition-colors"
+              style={{
+                backgroundColor: hoveredDuplicateButtonIndex === uniqueKey ? '#f3e8ff' : 'transparent'
+              }}
               title="Sao chép"
             >
-              <Copy className="w-4 h-4 text-purple-600" />
+              <Copy className="w-4 h-4" style={{ color: '#9333ea' }} />
             </button>
             <button
               onClick={() => navigate(`/admin/job-categories/${category.id}/edit`)}
-              className="p-2 hover:bg-blue-100 rounded transition-colors"
+              onMouseEnter={() => setHoveredEditButtonIndex(uniqueKey)}
+              onMouseLeave={() => setHoveredEditButtonIndex(null)}
+              className="p-2 rounded transition-colors"
+              style={{
+                backgroundColor: hoveredEditButtonIndex === uniqueKey ? '#dbeafe' : 'transparent'
+              }}
               title="Chỉnh sửa"
             >
-              <Edit className="w-4 h-4 text-blue-600" />
+              <Edit className="w-4 h-4" style={{ color: '#2563eb' }} />
             </button>
             <button
               onClick={() => handleDelete(category.id, category.name)}
-              className="p-2 hover:bg-red-100 rounded transition-colors"
+              onMouseEnter={() => setHoveredDeleteButtonIndex(uniqueKey)}
+              onMouseLeave={() => setHoveredDeleteButtonIndex(null)}
+              className="p-2 rounded transition-colors"
+              style={{
+                backgroundColor: hoveredDeleteButtonIndex === uniqueKey ? '#fee2e2' : 'transparent'
+              }}
               title="Xóa"
             >
-              <Trash2 className="w-4 h-4 text-red-600" />
+              <Trash2 className="w-4 h-4" style={{ color: '#dc2626' }} />
             </button>
           </div>
         </div>
@@ -351,7 +402,7 @@ const JobCategoriesPage = () => {
         {/* Children */}
         {hasChildren && isExpanded && (
           <div className="mt-1">
-            {filteredChildren.map(child => renderCategory(child, level + 1))}
+            {filteredChildren.map((child, childIndex) => renderCategory(child, level + 1, `${index}-${childIndex}`))}
           </div>
         )}
       </div>
@@ -363,16 +414,22 @@ const JobCategoriesPage = () => {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200 flex items-center justify-between">
+      <div className="rounded-lg p-4 border flex items-center justify-between" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div>
-          <h1 className="text-lg font-bold text-gray-900">Quản lý danh mục việc làm</h1>
-          <p className="text-xs text-gray-500 mt-1">
+          <h1 className="text-lg font-bold" style={{ color: '#111827' }}>Quản lý danh mục việc làm</h1>
+          <p className="text-xs mt-1" style={{ color: '#6b7280' }}>
             Quản lý các loại công việc và lĩnh vực
           </p>
         </div>
         <button
           onClick={() => navigate('/admin/job-categories/add')}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+          onMouseEnter={() => setHoveredAddCategoryButton(true)}
+          onMouseLeave={() => setHoveredAddCategoryButton(false)}
+          className="px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2"
+          style={{
+            backgroundColor: hoveredAddCategoryButton ? '#1d4ed8' : '#2563eb',
+            color: 'white'
+          }}
         >
           <Plus className="w-4 h-4" />
           Thêm danh mục
@@ -380,31 +437,55 @@ const JobCategoriesPage = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <div className="rounded-lg p-4 border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-gray-900 mb-2">
+            <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
               Tìm kiếm
             </label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: '#9ca3af' }} />
               <input
                 type="text"
                 placeholder="Tìm theo tên, slug..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className="w-full pl-10 pr-3 py-2 border rounded-lg text-xs"
+                style={{
+                  borderColor: '#d1d5db',
+                  outline: 'none'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#2563eb';
+                  e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#d1d5db';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-900 mb-2">
+            <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
               Trạng thái
             </label>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full px-3 py-2 border rounded-lg text-xs"
+              style={{
+                borderColor: '#d1d5db',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2563eb';
+                e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             >
               <option value="">Tất cả</option>
               <option value="1">Đang hoạt động</option>
@@ -414,7 +495,13 @@ const JobCategoriesPage = () => {
           <div className="flex items-end">
             <button
               onClick={loadCategories}
-              className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+              onMouseEnter={() => setHoveredRefreshButton(true)}
+              onMouseLeave={() => setHoveredRefreshButton(false)}
+              className="w-full px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-2"
+              style={{
+                backgroundColor: hoveredRefreshButton ? '#e5e7eb' : '#f3f4f6',
+                color: '#374151'
+              }}
             >
               <ArrowUpDown className="w-4 h-4" />
               Làm mới
@@ -424,18 +511,18 @@ const JobCategoriesPage = () => {
       </div>
 
       {/* Categories List */}
-      <div className="bg-white rounded-lg border border-gray-200">
+      <div className="rounded-lg border" style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}>
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#2563eb' }}></div>
           </div>
         ) : filteredCategories.length === 0 ? (
-          <div className="text-center py-12 text-sm text-gray-500">
+          <div className="text-center py-12 text-sm" style={{ color: '#6b7280' }}>
             {searchQuery ? 'Không tìm thấy danh mục nào' : 'Chưa có danh mục nào'}
           </div>
         ) : (
           <div className="p-4">
-            {filteredCategories.map(category => renderCategory(category))}
+            {filteredCategories.map((category, index) => renderCategory(category, 0, index))}
           </div>
         )}
       </div>
@@ -448,25 +535,31 @@ const JobCategoriesPage = () => {
           onClick={() => setShowQuickAddModal(false)}
         >
           <div 
-            className="bg-white rounded-lg shadow-xl w-full max-w-md p-6"
+            className="rounded-lg shadow-xl w-full max-w-md p-6"
+            style={{ backgroundColor: 'white' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold" style={{ color: '#111827' }}>
                 Thêm category con nhanh
               </h3>
               <button
                 onClick={() => setShowQuickAddModal(false)}
-                className="p-1 hover:bg-gray-100 rounded transition-colors"
+                onMouseEnter={() => setHoveredCloseModalButton(true)}
+                onMouseLeave={() => setHoveredCloseModalButton(false)}
+                className="p-1 rounded transition-colors"
+                style={{
+                  backgroundColor: hoveredCloseModalButton ? '#f3f4f6' : 'transparent'
+                }}
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <X className="w-5 h-5" style={{ color: '#4b5563' }} />
               </button>
             </div>
 
             <form onSubmit={handleQuickAddSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
-                  Tên danh mục <span className="text-red-500">*</span>
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+                  Tên danh mục <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <input
                   type="text"
@@ -481,14 +574,26 @@ const JobCategoriesPage = () => {
                   }}
                   placeholder="VD: Software Development"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full px-3 py-2 border rounded-lg text-xs"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                   autoFocus
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
-                  Slug <span className="text-red-500">*</span>
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
+                  Slug <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <input
                   type="text"
@@ -499,12 +604,24 @@ const JobCategoriesPage = () => {
                   }))}
                   placeholder="VD: software-development"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full px-3 py-2 border rounded-lg text-xs"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-900 mb-2">
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                   Mô tả
                 </label>
                 <textarea
@@ -515,13 +632,25 @@ const JobCategoriesPage = () => {
                   }))}
                   placeholder="Mô tả về danh mục..."
                   rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+                  className="w-full px-3 py-2 border rounded-lg text-xs resize-none"
+                  style={{
+                    borderColor: '#d1d5db',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb';
+                    e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Thứ tự
                   </label>
                   <input
@@ -532,12 +661,24 @@ const JobCategoriesPage = () => {
                       order: parseInt(e.target.value) || 0
                     }))}
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs font-semibold mb-2" style={{ color: '#111827' }}>
                     Trạng thái
                   </label>
                   <select
@@ -546,7 +687,19 @@ const JobCategoriesPage = () => {
                       ...prev,
                       status: parseInt(e.target.value)
                     }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg text-xs"
+                    style={{
+                      borderColor: '#d1d5db',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563eb';
+                      e.target.style.boxShadow = '0 0 0 2px rgba(37, 99, 235, 0.5)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   >
                     <option value="1">Đang hoạt động</option>
                     <option value="0">Ẩn</option>
@@ -558,13 +711,25 @@ const JobCategoriesPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowQuickAddModal(false)}
-                  className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors"
+                  onMouseEnter={() => setHoveredCancelModalButton(true)}
+                  onMouseLeave={() => setHoveredCancelModalButton(false)}
+                  className="flex-1 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"
+                  style={{
+                    backgroundColor: hoveredCancelModalButton ? '#e5e7eb' : '#f3f4f6',
+                    color: '#374151'
+                  }}
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors"
+                  onMouseEnter={() => setHoveredSubmitModalButton(true)}
+                  onMouseLeave={() => setHoveredSubmitModalButton(false)}
+                  className="flex-1 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"
+                  style={{
+                    backgroundColor: hoveredSubmitModalButton ? '#1d4ed8' : '#2563eb',
+                    color: 'white'
+                  }}
                 >
                   Tạo nhanh
                 </button>
